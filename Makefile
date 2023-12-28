@@ -4,7 +4,7 @@ RM = rm -rf
 FLAGS =  -Wall -Wextra -Werror -std=c++98
 SRC =	webserv.cpp \
 		main.cpp
-OBJ = $(SRC:.c=.o)
+OBJ = $(SRC:.cpp=.o)
 
 %.o:%.cpp
 	@$(CC) $(FLAGS) -c $<
@@ -15,9 +15,9 @@ $(NAME) : $(OBJ)
 	@$(CC) $(FLAGS) $^ -o $@
 
 clean :
-	$(RM) $(OBJ)
+	@$(RM) $(OBJ)
 
 fclean : clean
-	$(RM) $(NAME)
+	@$(RM) $(NAME)
 
 re : fclean all

@@ -22,7 +22,7 @@ std::string readImageFile(const std::string& filename) {
 std::string readHtmlFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error opening HTML file: " << filename << "\n";
+        std::cerr << "Erroropening HTML file: " << filename << "\n";
         return "";
     }
 
@@ -66,7 +66,7 @@ int main() {
     }
 
     while (true) {
-        std::cout << "Server listening on port 80...\n";
+        std::cout << "Server listening on port 8080...\n";
 
         // Accept a connection
         sockaddr_in clientAddress;

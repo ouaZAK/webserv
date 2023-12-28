@@ -6,7 +6,12 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #define PORT 8080
-
+char *scan()
+{
+	char buff[3000];
+	scanf(buff);
+	return buff;
+}
 int main(int argc, char const* argv[])
 {
 	int status, valread, client_fd;
@@ -37,7 +42,7 @@ int main(int argc, char const* argv[])
 		printf("\nConnection Failed \n");
 		return -1;
 	}
-	send(client_fd, hello, strlen(hello), 0);
+	send(client_fd, scan(), strlen(hello), 0);
 	printf("Hello message sent\n");
 	valread = read(client_fd, buffer, 1024 - 1); // subtract 1 for the null terminator at the end
 	printf("%s\n", buffer);
