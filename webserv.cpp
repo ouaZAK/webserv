@@ -44,8 +44,9 @@ webserv::webserv()
 	int flags = fcntl(serverSocket, F_GETFL, 0);
 	fcntl(serverSocket, F_SETFL, flags | O_NONBLOCK);
 
-	int r = 1;
-	setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &r, sizeof(r));
+	//close the socket after program ends
+	int nbr = 1;
+	setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &nbr, sizeof(nbr));
 
 	std::cout << "sokt is : " << serverSocket << std::endl;
 	// create server address
@@ -86,7 +87,7 @@ webserv::webserv()
 		if (check < 0)
 			return;
 		std::cout << check << " after select "<< std::endl;
-		if (FD_ISSET(serverSocket, &read_set))
+		if (FD_ISSET(serverSocket, &copyRead))
 		{
 			std::cout <<"serversoket set to read"<< std::endl;
 
@@ -98,13 +99,13 @@ webserv::webserv()
 				std::cout << "failed to accept" << std::endl;
 				return;
 			}
-			
+
 			//nonblocking fds
 			int flags = fcntl(newClientSocket, F_GETFL, 0);
 			fcntl(newClientSocket, F_SETFL, flags | O_NONBLOCK);
 
-			//set newclient to read_set
-			FD_SET(newClientSocket, &read_set);
+			//set newclient to copyRead
+			FD_SET(newClientSocket, &copyRead);
 			if (newClientSocket > maxSocket)
 				maxSocket = newClientSocket;
 		}
