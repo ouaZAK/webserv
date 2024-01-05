@@ -14,25 +14,67 @@
 #include <arpa/inet.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <map>
+#include <list>
 
-#define PORT 8080
+// #define PORT 8080
 #define MAX_CLIENTS 4
+
+class webInfo
+{
+	private:
+		struct sockaddr_in serverAddress;
+		int port;
+		int sock;
+		webInfo(){}
+	public:
+		webInfo(int port) : port(port)
+		{
+			sock = socket(AF_INET, SOCK_STREAM, 0);
+			serverAddress.sin_family = AF_INET;
+			serverAddress.sin_port = htons(port);
+			serverAddress.sin_addr.s_addr = INADDR_ANY;
+		}
+		int getPort() const
+		{
+			return (port);
+		}
+		int getSock() const
+		{
+			return (sock);
+		}
+		struct sockaddr_in getServerAddress() const
+		{
+			return (serverAddress);
+		}
+};
 
 class webserv
 {
 	private:
-		struct sockaddr_in	serverAddress;
-		struct sockaddr_in	clientAddress;
+		std::map<int, webInfo> serverMap;
+		std::map<int, webInfo>::iterator mapIt;
+		std::list<struct sockaddr_in>	serverAddress;
+		std::list<struct sockaddr_in>	clientAddress;
 		socklen_t			clientAddressLen;
-		int					newClientSocket;
+		std::list<int>		newClientSocket;
 		int					maxSocket;
-		int					serverSocket;
+		std::list<webInfo>	serverSocket;
+		// int					serverSocket;
 		char				buff[3000];
 		fd_set				read_set;
 		fd_set				write_set;
+		fd_set 				copyRead;
+		fd_set 				copyWrite;
 	public:
-		webserv();
+		webserv(){}
+		webserv(std::list<webInfo> &serverList);
 		~webserv();
+		void	creatAddresses();
+		void	bindSockets();
+		void	listening();
+		void	setFds();
+		void	acceptSockets();
 
 		// virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;
 		// void	testConnection(int);

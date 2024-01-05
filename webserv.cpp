@@ -30,51 +30,110 @@ int parse_the_request(const std::string &buff)
 
 }
 
-webserv::webserv()
+void	webserv::creatAddresses()
+{
+	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
+		serverAddress.push_back(mapIt->second.getServerAddress());
+}
+
+void	webserv::bindSockets()
+{
+	std::list<struct sockaddr_in>::iterator adrIt = serverAddress.begin();
+	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
+	{
+		std::cout << "first :" << mapIt->first << std::endl;
+		if (bind(mapIt->first, (struct sockaddr *)&(*adrIt), sizeof(*adrIt)) < 0)
+		{
+			std::cout << "failed to bind server socket" << std::endl;
+			return;
+		}
+		++adrIt;
+	}
+}
+
+void	webserv::listening()
+{
+	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
+	{
+		if (listen(mapIt->first, 5) < 0)
+		{
+			std::cout << "failed to listen" << std::endl;
+			return;
+		}
+	}
+}
+
+void	webserv::setFds()
+{
+	FD_ZERO(&read_set);
+	FD_ZERO(&write_set);
+	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
+		FD_SET(mapIt->first, &read_set);
+	maxSocket = serverMap.begin()->first;
+}
+
+void	webserv::acceptSockets()
+{
+	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
+	{
+		if (FD_ISSET(mapIt->first, &copyRead))
+		{
+			std::cout <<"serversoket set to read"<< std::endl;
+
+			// accept new connection
+			clientAddressLen = sizeof(*clientAddress.begin());
+			newClientSocket.push_back(accept(mapIt->first, (struct sockaddr *)&clientAddress, &clientAddressLen));
+			if (newClientSocket.back() < 0)
+			{
+				std::cout << "failed to accept" << std::endl;
+				return;
+			}
+
+			//nonblocking fds
+			int flags = fcntl(newClientSocket.back(), F_GETFL, 0);
+			fcntl(newClientSocket.back(), F_SETFL, flags | O_NONBLOCK);
+
+			//set newclient to copyRead
+			FD_SET(newClientSocket.back(), &copyRead);
+			if (newClientSocket.back() > maxSocket)
+				maxSocket = newClientSocket.back();
+		}
+	}
+}
+
+webserv::webserv(std::list<webInfo> &serverList)
 {
 
 	// create server socket
-	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (serverSocket == -1)
+	for (std::list<webInfo>::iterator it = serverList.begin(); it != serverList.end(); ++it)
+		serverMap.insert(std::make_pair(it->getSock(), *it));
+	
+
+	if (serverMap.begin()->first == -1)
 	{
 		std::cout << "failed to create server socket" << std::endl;
 		return;
 	}
 	
-	int flags = fcntl(serverSocket, F_GETFL, 0);
-	fcntl(serverSocket, F_SETFL, flags | O_NONBLOCK);
+	int flags = fcntl(serverMap.begin()->first, F_GETFL, 0);
+	fcntl(serverMap.begin()->first, F_SETFL, flags | O_NONBLOCK);
 
 	//close the socket after program ends
 	int nbr = 1;
-	setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &nbr, sizeof(nbr));
+	setsockopt(serverMap.begin()->first, SOL_SOCKET, SO_REUSEADDR, &nbr, sizeof(nbr));
 
-	std::cout << "sokt is : " << serverSocket << std::endl;
+	std::cout << "sokt is : " << serverMap.begin()->first << std::endl;
+
 	// create server address
-	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_port = htons(PORT);
-	serverAddress.sin_addr.s_addr = INADDR_ANY;
+	creatAddresses();
 
 	// bind socket to an address port
-	if (bind(serverSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0)
-	{
-		std::cout << "failed to bind server socket" << std::endl;
-		return;
-	}
-
+	bindSockets();
+	
 	// listen
-	if (listen(serverSocket, 5) < 0)
-	{
-		std::cout << "failed to listen" << std::endl;
-		return;
-	}
+	listening();
 
-	FD_ZERO(&read_set);
-	FD_ZERO(&write_set);
-	FD_SET(serverSocket, &read_set);
-	maxSocket = serverSocket;
-
-	fd_set copyRead;
-	fd_set copyWrite;
+	setFds();
 	while(1)
 	{
 		std::cout << "start \n";
@@ -87,28 +146,9 @@ webserv::webserv()
 		if (check < 0)
 			return;
 		std::cout << check << " after select "<< std::endl;
-		if (FD_ISSET(serverSocket, &copyRead))
-		{
-			std::cout <<"serversoket set to read"<< std::endl;
-
-			// accept new connection
-			clientAddressLen = sizeof(clientAddress);
-			newClientSocket = accept(serverSocket, (struct sockaddr *)&clientAddress, &clientAddressLen);
-			if (newClientSocket < 0)
-			{
-				std::cout << "failed to accept" << std::endl;
-				return;
-			}
-
-			//nonblocking fds
-			int flags = fcntl(newClientSocket, F_GETFL, 0);
-			fcntl(newClientSocket, F_SETFL, flags | O_NONBLOCK);
-
-			//set newclient to copyRead
-			FD_SET(newClientSocket, &copyRead);
-			if (newClientSocket > maxSocket)
-				maxSocket = newClientSocket;
-		}
+		
+		//accept all sockets
+		acceptSockets();
 
 		// accept connection
 		for (int i = 3; i <= maxSocket; ++i)
@@ -150,7 +190,7 @@ webserv::webserv()
 		}
 		
 	}
-	close(serverSocket);
+	close(serverMap.begin()->first);
 }
 
 webserv::~webserv()
