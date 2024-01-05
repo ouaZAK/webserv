@@ -31,6 +31,11 @@ class webInfo
 		webInfo(int port) : port(port)
 		{
 			sock = socket(AF_INET, SOCK_STREAM, 0);
+			if (sock == -1)
+			{
+				std::cout << "failed to create server socket" << std::endl;
+				exit(1);
+			}
 			serverAddress.sin_family = AF_INET;
 			serverAddress.sin_port = htons(port);
 			serverAddress.sin_addr.s_addr = INADDR_ANY;
@@ -70,11 +75,13 @@ class webserv
 		webserv(){}
 		webserv(std::list<webInfo> &serverList);
 		~webserv();
+		void	setNoBlocking();
 		void	creatAddresses();
 		void	bindSockets();
 		void	listening();
 		void	setFds();
-		void	acceptSockets();
+		void	acceptSockets(int i);
+		// void	updateMaxSocket(int i);
 
 		// virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;
 		// void	testConnection(int);
