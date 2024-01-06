@@ -81,6 +81,9 @@ class webserv
 		void	listening();
 		void	setFds();
 		void	acceptSockets(int i);
+		void	reading(int i);
+		void	writing(int i);
+
 		// void	updateMaxSocket(int i);
 
 		// virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;

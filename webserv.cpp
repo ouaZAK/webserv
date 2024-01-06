@@ -121,24 +121,72 @@ void	webserv::acceptSockets(int i)
 	// return false;
 }
 
+void	webserv::reading(int i)
+{
+	std::cout << "COPY_READ block " << std::endl;
+	int bytesReaded = recv(i, buff, sizeof(buff), 0);
+	if (bytesReaded < 0)
+	{
+		std::cout << "failed to recv" << std::endl;
+		FD_CLR(i, &read_set);
+		FD_CLR(i, &write_set);
+		// continue;
+	}
+
+	buff[bytesReaded] = '\0';
+	std::cout << "readed -> " << buff << std::endl;
+
+	//set to write on the client socket
+	FD_SET(i, &write_set);
+	//clear it from read cuz now it need to be writing on it only
+	FD_CLR(i, &read_set);
+}
+
+void	webserv::writing(int i)
+{
+	std::cout << "COPY_WRITE block " << std::endl;
+	std::cout << "the request size : -> " << strlen(buff) << '\n';
+	std::string tmp = static_cast<std::string>(buff);
+	if (parse_the_request(tmp))
+	{
+		std::string htmlFile = readFile("favicon.ico");
+		std::string fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: image/x-icon\r\n\r\n" + htmlFile;
+		send(i, fileContent.c_str(), fileContent.length(), 0);
+
+		std::cout << "send \n";
+		shutdown(i, SHUT_WR);
+		FD_CLR(i, &write_set);
+		// for (std::list<int>::const_iterator it = newClientSocket.begin(); it != newClientSocket.end(); ++it)
+		// {
+		// 	std::cout << "newclient " << *it << " i " << i << std::endl;
+		// 	if (*it == i)
+		// 		newClientSocket.erase(it);
+		// for (std::list<int>::const_iterator it2 = newClientSocket.begin(); it2 != newClientSocket.end(); ++it2)
+		// 		std::cout << "newc " << *it2 << std::endl;
+		// }
+		// ToDo: update max fd socket
+		// if (i == maxSocket)
+		// 	--maxSocket;
+	}
+}
+
 webserv::webserv(std::list<webInfo> &serverList)
 {
 	timeval timeout;
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 
-	// create server socket
+	// create server socket in a map
 	for (std::list<webInfo>::iterator it = serverList.begin(); it != serverList.end(); ++it)
 		serverMap.insert(std::make_pair(it->getSock(), *it));
-	
 	//set to non blocking
 	setNoBlocking();
-
-	//close the socket after program ends
+	// to close the socket after program ends
 	int nbr = 1;
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 		setsockopt(mapIt->first, SOL_SOCKET, SO_REUSEADDR, &nbr, sizeof(nbr));
 
+	//print
 	std::cout << "serversokt are : ";
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 		 std::cout << "[" << mapIt->first << "] ";
@@ -146,13 +194,11 @@ webserv::webserv(std::list<webInfo> &serverList)
 
 	// create server address
 	creatAddresses();
-
 	// bind socket to an address port
 	bindSockets();
-	
 	// listen
 	listening();
-
+	// set servermap to read
 	setFds();
 	while(1)
 	{
@@ -173,58 +219,13 @@ webserv::webserv(std::list<webInfo> &serverList)
 		for (int i = 3; i <= maxSocket; ++i)
 		{
 			std::cout << "socket = " << i << std::endl;
-
-			// if its server socket we have to accept it not read it
-			if (serverMap.count(i))
+			if (serverMap.count(i)) // if its server socket we have to accept it not read it
 				acceptSockets(i);
 			else if (FD_ISSET(i, &copyRead))
-			{
-				std::cout << "COPY_READ block " << std::endl;
-				//recv(i, buff, sizeof(buff), 0);
-				int bytesReaded = read(i, buff, sizeof(buff));
-				if (bytesReaded < 0)
-				{
-					std::cout << "failed to recv" << std::endl;
-					FD_CLR(i, &read_set);
-					FD_CLR(i, &write_set);
-					continue;
-				}
-				buff[bytesReaded] = '\0';
-				std::cout << "readed -> " << buff << std::endl;
-				FD_SET(i, &write_set);
-				FD_CLR(i, &read_set);
-			}
-			else if (FD_ISSET(i, &copyWrite))// receiv request from clinet
-			{
-				std::cout << "COPY_WRITE block " << std::endl;
-				std::cout << "the request size : -> " << strlen(buff) << '\n';
-				std::string tmp = static_cast<std::string>(buff);
-				if (parse_the_request(tmp))
-				{
-					std::string htmlFile = readFile("favicon.ico");
-					std::string fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: image/x-icon\r\n\r\n" + htmlFile;
-					send(i, fileContent.c_str(), fileContent.length(), 0);
-
-					std::cout << "send \n";
-					shutdown(i, SHUT_WR);
-					FD_CLR(i, &write_set);
-					// FD_CLR(i, &copyWrite);
-					// FD_CLR(i, &copyRead);
-					// for (std::list<int>::const_iterator it = newClientSocket.begin(); it != newClientSocket.end(); ++it)
-					// {
-					// 	std::cout << "newclient " << *it << " i " << i << std::endl;
-					// 	if (*it == i)
-					// 		newClientSocket.erase(it);
-					// for (std::list<int>::const_iterator it2 = newClientSocket.begin(); it2 != newClientSocket.end(); ++it2)
-					// 		std::cout << "newc " << *it2 << std::endl;
-					// }
-					// ToDo: update max fd socket
-					// if (i == maxSocket)
-					// 	--maxSocket;
-				}
-			}
+				reading(i);
+			else if (FD_ISSET(i, &copyWrite)) // receiv request from clinet
+				writing(i);
 		}
-		
 	}
 	close(serverMap.begin()->first);
 }
