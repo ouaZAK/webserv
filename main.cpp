@@ -15,7 +15,7 @@ int main()
 {
 	std::list<webInfo> listWebInfo;
 	int port = 8080;
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		webInfo info(port++);
 		listWebInfo.push_back(info);

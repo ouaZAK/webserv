@@ -93,7 +93,6 @@ void	webserv::acceptSockets(int i)
 		//if sock server is in read which is always in read whadaheck
 		if (FD_ISSET(i, &copyRead))
 		{
-			std::cout <<"serversoket set to read"<< std::endl;
 
 			// accept new connection
 			clientAddressLen = sizeof(*clientAddress.begin());
@@ -103,6 +102,7 @@ void	webserv::acceptSockets(int i)
 				std::cout << "failed to accept" << std::endl;
 				// return true;
 			}
+			std::cout <<"new client accepted [" << newClientSocket.back() << "] " <<  std::endl;
 
 			//nonblocking fds
 			int flags = fcntl(newClientSocket.back(), F_GETFL, 0);
@@ -110,6 +110,7 @@ void	webserv::acceptSockets(int i)
 
 			//set newclient to copyRead
 			FD_SET(newClientSocket.back(), &read_set);
+			std::cout <<"new client set to READ " <<  std::endl;
 
 			if (newClientSocket.back() > maxSocket)
 				maxSocket = newClientSocket.back();
@@ -122,6 +123,9 @@ void	webserv::acceptSockets(int i)
 
 webserv::webserv(std::list<webInfo> &serverList)
 {
+	timeval timeout;
+	timeout.tv_sec = 2;
+	timeout.tv_usec = 0;
 
 	// create server socket
 	for (std::list<webInfo>::iterator it = serverList.begin(); it != serverList.end(); ++it)
@@ -135,7 +139,10 @@ webserv::webserv(std::list<webInfo> &serverList)
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 		setsockopt(mapIt->first, SOL_SOCKET, SO_REUSEADDR, &nbr, sizeof(nbr));
 
-	std::cout << "sokt is : " << serverMap.begin()->first << std::endl;
+	std::cout << "serversokt are : ";
+	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
+		 std::cout << "[" << mapIt->first << "] ";
+	std::cout << std::endl;
 
 	// create server address
 	creatAddresses();
@@ -172,6 +179,7 @@ webserv::webserv(std::list<webInfo> &serverList)
 				acceptSockets(i);
 			else if (FD_ISSET(i, &copyRead))
 			{
+				std::cout << "COPY_READ block " << std::endl;
 				//recv(i, buff, sizeof(buff), 0);
 				int bytesReaded = read(i, buff, sizeof(buff));
 				if (bytesReaded < 0)
@@ -188,6 +196,7 @@ webserv::webserv(std::list<webInfo> &serverList)
 			}
 			else if (FD_ISSET(i, &copyWrite))// receiv request from clinet
 			{
+				std::cout << "COPY_WRITE block " << std::endl;
 				std::cout << "the request size : -> " << strlen(buff) << '\n';
 				std::string tmp = static_cast<std::string>(buff);
 				if (parse_the_request(tmp))
@@ -197,9 +206,18 @@ webserv::webserv(std::list<webInfo> &serverList)
 					send(i, fileContent.c_str(), fileContent.length(), 0);
 
 					std::cout << "send \n";
+					shutdown(i, SHUT_WR);
 					FD_CLR(i, &write_set);
-					FD_CLR(i, &copyWrite);
-
+					// FD_CLR(i, &copyWrite);
+					// FD_CLR(i, &copyRead);
+					// for (std::list<int>::const_iterator it = newClientSocket.begin(); it != newClientSocket.end(); ++it)
+					// {
+					// 	std::cout << "newclient " << *it << " i " << i << std::endl;
+					// 	if (*it == i)
+					// 		newClientSocket.erase(it);
+					// for (std::list<int>::const_iterator it2 = newClientSocket.begin(); it2 != newClientSocket.end(); ++it2)
+					// 		std::cout << "newc " << *it2 << std::endl;
+					// }
 					// ToDo: update max fd socket
 					// if (i == maxSocket)
 					// 	--maxSocket;
