@@ -1,7 +1,7 @@
 NAME = webserv
 CC = c++
 RM = rm -rf
-FLAGS =  -Wall -Wextra -Werror -std=c++98
+FLAGS =  -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g
 SRC =	webserv.cpp \
 		main.cpp
 OBJ = $(SRC:.cpp=.o)

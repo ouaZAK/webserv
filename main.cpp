@@ -21,7 +21,7 @@ int main()
 		listWebInfo.push_back(info);
 	}
 	std::cout << "size is " << listWebInfo.size() << std::endl;
-	
+
 	// std::map<int, webInfo> server;
 	// for (std::list<webInfo>::iterator it = listWebInfo.begin(); it != listWebInfo.end(); ++it)
 	// {

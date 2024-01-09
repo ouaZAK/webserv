@@ -14,12 +14,12 @@ std::string readFile(const std::string &str)
 	return (inStr.str());
 }
 
-int parse_the_request(const std::string &buff)
+int webserv::parse_the_request(int i)
 {
-	
-	if (buff.find("GET", 0) != std::string::npos)
+	std::cout << i << std::endl;
+	if (reqContent.find("GET", 0) != std::string::npos)
 	{
-		std::cout << "\nthe request is : [" << buff << "]" << std::endl;
+		std::cout << "\n############### the request is : \n" << reqContent << std::endl;
 		return (1);
 	}
 	else
@@ -27,7 +27,6 @@ int parse_the_request(const std::string &buff)
 	return (0);
 	// buff.substr(4, buff.find('\n', 0))
 	// std::cout << buff.find('\n', 0) - buff.find(' ', 5) << std::endl;
-
 }
 
 void	webserv::setNoBlocking()
@@ -91,30 +90,33 @@ void	webserv::acceptSockets(int i)
 	// for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	// {
 		//if sock server is in read which is always in read whadaheck
+		std::cout << "accept " << i << std::endl;
 		if (FD_ISSET(i, &copyRead))
 		{
 
 			// accept new connection
 			clientAddressLen = sizeof(*clientAddress.begin());
-			newClientSocket.push_back(accept(i, (struct sockaddr *)&clientAddress, &clientAddressLen));
-			if (newClientSocket.back() < 0)
+			newClientSocket = accept(i, (struct sockaddr *)&clientAddress, &clientAddressLen);
+			if (newClientSocket < 0)
 			{
 				std::cout << "failed to accept" << std::endl;
 				// return true;
 			}
-			std::cout <<"new client accepted [" << newClientSocket.back() << "] " <<  std::endl;
-
+			std::cout <<"new client accepted [" << newClientSocket << "] " <<  std::endl;
 			//nonblocking fds
-			int flags = fcntl(newClientSocket.back(), F_GETFL, 0);
-			fcntl(newClientSocket.back(), F_SETFL, flags | O_NONBLOCK);
+			int flags = fcntl(newClientSocket, F_GETFL, 0);
+			fcntl(newClientSocket, F_SETFL, flags | O_NONBLOCK);
 
 			//set newclient to copyRead
-			FD_SET(newClientSocket.back(), &read_set);
+			FD_SET(newClientSocket, &read_set);
 			std::cout <<"new client set to READ " <<  std::endl;
 
-			if (newClientSocket.back() > maxSocket)
-				maxSocket = newClientSocket.back();
-			
+			if (newClientSocket > maxSocket)
+				maxSocket = newClientSocket;
+
+			clientMap.insert(std::make_pair(newClientSocket, cliento));
+
+			std::cout << "acceptSockets " << maxSocket << std::endl;
 			// return false;
 		}
 	// }
@@ -124,7 +126,7 @@ void	webserv::acceptSockets(int i)
 void	webserv::reading(int i)
 {
 	std::cout << "COPY_READ block " << std::endl;
-	int bytesReaded = recv(i, buff, sizeof(buff), 0);
+	int bytesReaded = recv(i, buff, 100, 0);
 	if (bytesReaded < 0)
 	{
 		std::cout << "failed to recv" << std::endl;
@@ -132,9 +134,42 @@ void	webserv::reading(int i)
 		FD_CLR(i, &write_set);
 		// continue;
 	}
-
+	if (bytesReaded == 0)
+		std::cout << "the connectuion is done " << std::endl;
+	else
+		std::cout << "\nlen recv is < " << bytesReaded << " >\n" << std::endl;
 	buff[bytesReaded] = '\0';
-	std::cout << "readed -> " << buff << std::endl;
+	std::string bufTmp;
+	bufTmp = static_cast<std::string>(buff);
+	reqContent.append(bufTmp);
+	
+	std::cout << "[[[ \n\n" << reqContent << " \n]]]" << std::endl;
+
+	if (reqContent.find("\r\n\r\n", 0) != std::string::npos)
+	{
+		std::cout << "\n@@@@@@@@@@ end of req\n" << i << ' ' << reqContent.length() << '\n' << std::endl;
+		try
+		{
+			clientMap.at(i).setContent(reqContent);
+		}
+		catch (std::exception &e)
+		{
+			std::cout << e.what() << '\n';
+		}
+		reqContent.clear();
+	}
+	else
+	{
+		std::cout << "\n&&&&&&&&&&& keep recv not done yet\n" << std::endl;
+		// sleep(2);
+		return ;
+	}
+// sleep(2);
+			std::cout << "reading " << maxSocket << std::endl;
+
+	std::cout << "\n//--- begin req ---//\n" << std::endl;
+	std::cout << clientMap.find(i)->second.getContent() << std::endl;
+	std::cout << "//--- end req ---//\n\n" << "the request size : -> " << clientMap.find(i)->second.getContent().length() << '\n';
 
 	//set to write on the client socket
 	FD_SET(i, &write_set);
@@ -145,29 +180,37 @@ void	webserv::reading(int i)
 void	webserv::writing(int i)
 {
 	std::cout << "COPY_WRITE block " << std::endl;
-	std::cout << "the request size : -> " << strlen(buff) << '\n';
-	std::string tmp = static_cast<std::string>(buff);
-	if (parse_the_request(tmp))
-	{
-		std::string htmlFile = readFile("favicon.ico");
-		std::string fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: image/x-icon\r\n\r\n" + htmlFile;
-		send(i, fileContent.c_str(), fileContent.length(), 0);
-
+	// std::cout << "here\n[ " << serverMap.find(6)->second.getContent() << "]" << std::endl;
+	// std::string tmp = static_cast<std::string>(buff);
+	// if (parse_the_request(i))
+	// {
+		std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getContent() << std::endl;
+		// std::string htmlFile = readFile("favicon.ico");
+		// std::string fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: image/x-icon\r\n\r\n" + htmlFile;
+		std::string htmlFile = readFile("index.html");
+		std::string fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: text/html\r\n\r\n" + htmlFile;
+		long long len = send(i, fileContent.c_str(), fileContent.length(), 0);
+		if (len < 0)
+			std::cout << "error " << std::endl;
 		std::cout << "send \n";
 		shutdown(i, SHUT_WR);
 		FD_CLR(i, &write_set);
-		// for (std::list<int>::const_iterator it = newClientSocket.begin(); it != newClientSocket.end(); ++it)
+
+		//if you close the next client willtake fd 6 maybe dont close now
+		close(i);
+
+		// for (std::list<int>::const_iterator it = newClientSocket; it != newClientSocket; ++it)
 		// {
 		// 	std::cout << "newclient " << *it << " i " << i << std::endl;
 		// 	if (*it == i)
-		// 		newClientSocket.erase(it);
-		// for (std::list<int>::const_iterator it2 = newClientSocket.begin(); it2 != newClientSocket.end(); ++it2)
+		// 		newClientSockett);
+		// for (std::list<int>::const_iterator it2 = newClientSocket; it2 != newClientSocket; ++it2)
 		// 		std::cout << "newc " << *it2 << std::endl;
 		// }
 		// ToDo: update max fd socket
 		// if (i == maxSocket)
 		// 	--maxSocket;
-	}
+	// }
 }
 
 webserv::webserv(std::list<webInfo> &serverList)
@@ -179,6 +222,7 @@ webserv::webserv(std::list<webInfo> &serverList)
 	// create server socket in a map
 	for (std::list<webInfo>::iterator it = serverList.begin(); it != serverList.end(); ++it)
 		serverMap.insert(std::make_pair(it->getSock(), *it));
+	
 	//set to non blocking
 	setNoBlocking();
 	// to close the socket after program ends
@@ -218,6 +262,7 @@ webserv::webserv(std::list<webInfo> &serverList)
 		// accept connection
 		for (int i = 3; i <= maxSocket; ++i)
 		{
+		// sleep(1);
 			std::cout << "socket = " << i << std::endl;
 			if (serverMap.count(i)) // if its server socket we have to accept it not read it
 				acceptSockets(i);

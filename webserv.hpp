@@ -40,6 +40,7 @@ class webInfo
 			serverAddress.sin_port = htons(port);
 			serverAddress.sin_addr.s_addr = INADDR_ANY;
 		}
+		
 		int getPort() const
 		{
 			return (port);
@@ -54,19 +55,40 @@ class webInfo
 		}
 };
 
+class clientInfo
+{
+	private:
+		std::string content;
+
+	public:
+		
+		void	setContent(std::string cnt)
+		{
+			if (content.empty())
+				content = cnt;
+		}
+		std::string getContent() const
+		{
+			return (content);
+		}
+};
+
 class webserv
 {
 	private:
+		clientInfo cliento;
 		std::map<int, webInfo> serverMap;
 		std::map<int, webInfo>::iterator mapIt;
 		std::list<struct sockaddr_in>	serverAddress;
 		std::list<struct sockaddr_in>	clientAddress;
 		socklen_t			clientAddressLen;
-		std::list<int>		newClientSocket;
+		int					newClientSocket;
+		std::map<int, clientInfo>	clientMap;
 		int					maxSocket;
 		std::list<webInfo>	serverSocket;
 		// int					serverSocket;
 		char				buff[3000];
+		std::string 		reqContent;
 		fd_set				read_set;
 		fd_set				write_set;
 		fd_set 				copyRead;
@@ -75,6 +97,10 @@ class webserv
 		webserv(){}
 		webserv(std::list<webInfo> &serverList);
 		~webserv();
+		std::map<int, webInfo>  getmap() const
+		{
+			return (serverMap);
+		}
 		void	setNoBlocking();
 		void	creatAddresses();
 		void	bindSockets();
@@ -83,6 +109,7 @@ class webserv
 		void	acceptSockets(int i);
 		void	reading(int i);
 		void	writing(int i);
+		int 	parse_the_request(int i);
 
 		// void	updateMaxSocket(int i);
 
