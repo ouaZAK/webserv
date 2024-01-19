@@ -59,17 +59,31 @@ class clientInfo
 {
 	private:
 		std::string content;
+		std::string reqContent;
 
 	public:
-		
 		void	setContent(std::string cnt)
 		{
-			if (content.empty())
+			// if (content.empty())
 				content = cnt;
 		}
 		std::string getContent() const
 		{
 			return (content);
+		}
+
+		void	setReqCnt(std::string cnt)
+		{
+			// if (reqContent.empty())
+				reqContent = cnt;
+		}
+		std::string getReqCnt() const
+		{
+			return (reqContent);
+		}
+		void	reqClear()
+		{
+			reqContent.clear();
 		}
 };
 
