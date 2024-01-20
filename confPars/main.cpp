@@ -6,7 +6,7 @@
 /*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:46:31 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/19 22:54:56 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/01/20 17:35:02 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,13 +60,13 @@ int main(int ac, char *av[])
 	{
 		std::cout << e << '\n';
 	}
-	std::cout << "====================== " << std::endl;
-	for (std::vector<ServerInf>::iterator it = sInf.begin(); it != sInf.end(); ++it)
-	{
-		(*it).print();
-		std::cout << "intcrement: "<<(*it).locs.size()<<"\n";
-		std::cout << "size of serverinf: "<< sInf.size() <<"\n";
-	}
-	std::cout << "====================== " << std::endl;
+	// std::cout << "====================== " << std::endl;
+	// for (std::vector<ServerInf>::iterator it = sInf.begin(); it != sInf.end(); ++it)
+	// {
+	// 	(*it).print();
+	// 	std::cout << "intcrement: "<<(*it).locs.size()<<"\n";
+	// 	std::cout << "size of serverinf: "<< sInf.size() <<"\n";
+	// }
+	// std::cout << "====================== " << std::endl;
 	return (0);
 }
