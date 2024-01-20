@@ -1,0 +1,305 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ServerInf.hpp                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/03 19:44:04 by asidqi            #+#    #+#             */
+/*   Updated: 2024/01/20 00:10:12 by asidqi           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#pragma once
+
+#include "Location.hpp"
+/**
+ * @param ports: ports that the server will be listening to
+ * @param server_name: this element is not mandatory and specifies domain name
+ * @brief contains all configuration file's directives
+ */
+class ServerInf
+{
+private:
+	std::vector<double> ports;
+	std::string server_name;
+	std::vector<std::string> error_pages;
+	int body_size;
+	std::string root;
+	static std::string s;
+
+public:
+	std::vector<Location> locs;
+	std::vector<double> getPorts()
+	{
+		return (ports);
+	}
+	std::string filcbs(std::stringstream &ss)
+	{
+		std::string el;
+		ss >> el;
+		while (el != ";" && !el.empty())
+		{
+			body_size = atoi(el.c_str());
+			ss >> el;
+		}
+		return (el);
+	}
+	std::string ferrp(std::stringstream &ss)
+	{
+		std::string el;
+		ss >> el;
+		while (el != ";" && !el.empty())
+		{
+			error_pages.push_back(el);
+			ss >> el;
+		}
+		return (el);
+	}
+	std::string filroot(std::stringstream &ss)
+	{
+		std::string el;
+		ss >> el;
+		while (el != ";" && !el.empty())
+		{
+			root = el;
+			ss >> el;
+		}
+		return (el);
+	}
+	std::string fillports(std::stringstream &ss)
+	{
+		std::string el;
+		ss >> el;
+		while (el != ";" && !el.empty())
+		{
+			// check number if its goochie
+			ports.push_back(strtod(el.c_str(), NULL));
+			ss >> el;
+		}
+		return (el);
+	}
+
+	static bool isbrac(std::string line, char c)
+	{
+		for (int i = 0; line[i]; i++)
+			if (!std::isspace(line[i]) && line[i] != c)
+				throw "Check brackets";
+		return (true);
+	}
+	bool chekFilld(std::stringstream &ss, std::string line)
+	{
+		std::string el;
+		ss >> el;
+		while (!el.empty())
+		{
+			if (el.compare(line))
+				throw "Unknown token";
+			ss >> el;
+		}
+		return (true);
+	}
+
+	void getMethods(std::stringstream &ss , Location &tmp)
+	{
+		std::string el;
+		ss >> el;
+
+		while (!el.empty())
+		{
+			if (el == "GET" || el == "POST" || el == "DELETE")
+				tmp.methods.push_back(el);
+				// locs.back().methods.push_back(el);
+			else if (el == ";")
+				return;
+			else
+				throw "Unsupported method";
+			ss >> el;
+		}
+	}
+
+	std::string filloc(std::ifstream &inFile , Location &tmp)
+	{
+		std::string el;
+		std::string ell;
+		std::string line;
+
+		while (std::getline(inFile, line))
+		{
+			std::stringstream ss(line);
+
+			ss >> el;
+			if ("default_file" == el)
+			{
+				ss >> el >> ell;
+				if (el.empty() || !chekFilld(ss, s) /* needs to be checked */)
+					throw "Missing element or extra elements in default_file directive";
+				// locs.back().default_file = el;
+				tmp.default_file = el;
+			}
+			else if ("methods" == el)
+			{
+				getMethods(ss, tmp);
+			}
+			else if ("cgi_bin" == el)
+			{
+				ss >> el >> ell;
+				if (el.empty() || !chekFilld(ss, s) /* needs to be checked */)
+					throw "Missing element or extra elements in cgi_bin directive";
+				// locs.back().cgi_bin.push_back(el);
+				tmp.cgi_bin.push_back(el);
+			}
+			else if ("cgi_extension" == el)
+			{
+				ss >> el >> ell;
+				if (el.empty() || !chekFilld(ss, s) /* needs to be checked */)
+					throw "Missing element or extra elements in cgi_extension directive";
+				// locs.back().cgi_extension.push_back(el);
+				tmp.cgi_extension.push_back(el);
+			}
+			else if ("}" == el)
+				break;
+		}
+		return (line);
+	}
+
+	void reset()
+	{
+		ports.clear();
+		server_name.clear();
+		error_pages.clear();
+		body_size = 0;
+		root.clear();
+		locs.clear();
+	}
+
+	std::string filltmp(std::ifstream &inFile)
+	{
+		std::string el;
+		std::string ell;
+		std::string line;
+
+		while (std::getline(inFile, line))
+		{
+			Location ltmp ;
+			std::stringstream ss(line);
+			ss >> el;
+			if (el == "listen")
+			{
+				el.clear();
+				el = fillports(ss);
+			}
+			else if (el == "server_name")
+			{
+				el.clear();
+				ss >> el;
+				server_name = el;
+				ss >> el;
+			}
+			else if (el == "error_pages")
+			{
+				el.clear();
+				el = ferrp(ss);
+			}
+			else if (el == "client_body_size")
+			{
+				el.clear();
+				el = filcbs(ss);
+			}
+
+			else if (el == "root")
+			{
+				el.clear();
+				el = filroot(ss);
+			}
+			else if (el == "location")
+			{
+				el.clear();
+				ss >> el >> ell;
+				if (el.empty() || !ell.empty())
+				{
+					throw "Location context related error.";
+				}
+				// locs.push_back(Location());
+				ltmp.path.push_back(el);
+				// locs.back().path.push_back(el);
+				std::getline(inFile, line);
+				if (chekFilld(ss, s))
+				{
+					ServerInf::isbrac(line, '{');
+					line = filloc(inFile, ltmp);
+				}
+				if (ServerInf::isbrac(line, '}'))
+				{
+					locs.push_back(ltmp);
+					std::cout << "HANA PUSHIT LOC::::::::::::::::\n";
+					for(std::vector<Location>::iterator it = locs.begin(); it != locs.end(); ++it)
+					{
+						std::cout << "Path: " << (*it).path.back() << "\n";
+						std::cout << "Default_file:	" << (*it).default_file << "\n";
+						std::cout << "cgi_bin:	" << (*it).cgi_bin.back() << "\n";
+						std::cout << "cgi_extension:	" << (*it).cgi_extension.back() << "\n";
+						std::cout << "incremented LOCATION+++++++++++:	"  << "\n";
+					}
+						// std::cout << "methods:	" << (it).methods.back() << "\n";
+					continue;
+				}
+			}
+			else if (el == "}")
+				break;
+			if (el != ";"  && el != locs.back().path.back())
+			{
+				throw "Missing ;";
+			}
+		}
+		return (line);
+	}
+
+	void	print() const
+	{
+		std::cout << "Server Name: " << server_name << std::endl;
+		std::cout << "Ports: ";
+		for (std::vector<double>::const_iterator it = ports.begin(); it != ports.end(); ++it)
+		{
+			std::cout << *it << " ";
+		}
+		std::cout << std::endl;
+
+		std::cout << "Error Pages: ";
+		for (std::vector<std::string>::const_iterator it = error_pages.begin(); it != error_pages.end(); ++it)
+		{
+			std::cout << *it << " ";
+		}
+		std::cout << std::endl;
+
+		std::cout << "Body Size: " << body_size << std::endl;
+		std::cout << "Root: " << root << std::endl;
+		std::cout << "Location: ";
+		for (std::vector<Location>::const_iterator it = locs.begin(); it != locs.end(); ++it)
+		{
+			std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" <<"\n";
+			std::cout << "Path: " << *(*it).path.begin() << "\n";
+			std::cout << "methods:	" << *(*it).methods.begin() << "\n";
+			std::cout << "Default_file:	" << (*it).default_file << "\n";
+			std::cout << "cgi_bin:	" << *(*it).cgi_bin.begin() << "\n";
+			std::cout << "cgi_extension:	" << *(*it).cgi_extension.begin() << "\n";
+			std::cout << "BACK Path: " << (*it).path.back() << "\n";
+			std::cout << "BACK methods:	" << (*it).methods.back() << "\n";
+			std::cout << "BACK Default_file:	" << (*it).default_file << "\n";
+			std::cout << "BACK cgi_bin:	" << (*it).cgi_bin.back() << "\n";
+			std::cout << "BACK cgi_extension:	" << (*it).cgi_extension.back() << "\n";
+			std::cout << "			Increment location" <<"\n";
+			std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" <<"\n";
+			
+		}
+		std::cout << std::endl;
+	}
+};
+
+std::string ServerInf::s = "{";
+
+std::ostream &operator<<(std::ostream &o, ServerInf &rhs)
+{
+	o << "MAMA:		" << *rhs.getPorts().begin();
+	return (o);
+}
