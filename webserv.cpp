@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   webserv.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
+/*   Updated: 2024/01/24 09:34:24 by zouaraqa         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "webserv.hpp"
 
 std::string readFile(const std::string &str)
@@ -46,7 +58,7 @@ void	webserv::creatAddresses()
 
 void	webserv::bindSockets()
 {
-	std::list<struct sockaddr_in>::iterator adrIt = serverAddress.begin();
+	std::vector<struct sockaddr_in>::iterator adrIt = serverAddress.begin();
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
 		if (bind(mapIt->first, (struct sockaddr *)&(*adrIt), sizeof(*adrIt)) < 0)
@@ -92,14 +104,14 @@ void	webserv::acceptSockets(int i)
 		//if sock server is in read which is always in read whadaheck
 		if (FD_ISSET(i, &copyRead))
 		{
-		std::cout << "server " << i  << " accepted"<< std::endl;
+		// std::cout << "server " << i  << " accepted"<< std::endl;
 
 			// accept new connection
 			clientAddressLen = sizeof(*clientAddress.begin());
 			newClientSocket = accept(i, (struct sockaddr *)&clientAddress, &clientAddressLen);
 			if (newClientSocket < 0)
 			{
-				std::cout << "failed to accept" << std::endl;
+				// std::cout << "failed to accept" << std::endl;
 				// return true;
 			}
 			// std::cout <<"new client accepted [" << newClientSocket << "] " <<  std::endl;
@@ -115,6 +127,8 @@ void	webserv::acceptSockets(int i)
 				maxSocket = newClientSocket;
 
 			clientMap.insert(std::make_pair(newClientSocket, cliento));
+		// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
+
 			// return false;
 		}
 	// }
@@ -123,57 +137,83 @@ void	webserv::acceptSockets(int i)
 
 void	webserv::reading(int i)
 {
-	std::cout << "READ block " << std::endl;
-		std::cout << "i : " << i << std::endl;
-	int bytesReaded = recv(i, buff, 100, 0);
-	if (bytesReaded < 0)
-	{
-		std::cout << "failed to recv" << std::endl;
-		FD_CLR(i, &read_set);
-		FD_CLR(i, &write_set);
-		// continue;
-	}
-	if (bytesReaded == 0)
-		std::cout << "the connectuion is done " << std::endl;
-	else
-		// std::cout << "\nlen recv is < " << bytesReaded << " >\n" << std::endl;
-	buff[bytesReaded] = '\0';
-	std::string bufTmp;
-	bufTmp = static_cast<std::string>(buff);
-	try
-	{
-		std::string tmp = clientMap.at(i).getReqCnt();
+	// std::cout << "READ block " << std::endl;
+	// 	std::cout << "i : " << i << std::endl;
+	// if (!recStop)
+	// {
+		
+		int bytesReaded = recv(i, buff, 1000, 0);
+		if (bytesReaded < 0)
+			// std::cout << "failed to recv" << std::endl;
+		if (bytesReaded == 0)
+			// std::cout << "the connectuion is done " << std::endl;
+		// else
+		// 	std::cout << "\nlen recv is < " << bytesReaded << " >\n" << std::endl;
+		buff[bytesReaded] = '\0';
+		std::string bufTmp;
+		std::string tmp = clientMap[i].getReqCnt();
+		bufTmp = std::string(buff, bytesReaded);
 		tmp.append(bufTmp);
 		clientMap.at(i).setReqCnt(tmp);
-	}
-	catch (std::exception &e)
-	{
-		std::cout << e.what() << '\n';
-	}
+	// }
 
 	// std::cout << "[[[ \n\n" << clientMap.at(i).getReqCnt() << " \n]]]" << std::endl;
+	Request req(tmp);
+	size_t bodyLength = std::strtod(req.get_headers()["Content-Length"].c_str(), NULL);
 
-	if (clientMap.at(i).getReqCnt().find("\r\n\r\n", 0) != std::string::npos)
+
+	// std::cout  << " " << clientMap.at(i).getReqCnt().find("\r\n\r\n", 0) << std::endl;
+	// sleep(1);
+	std::string tmpBody;
+	std::string body;
+	size_t posNwl;
+	std::string cleanBody;
+	if (req.get_method() == "POST")
 	{
 		try
 		{
-			clientMap.at(i).setContent(clientMap.at(i).getReqCnt());
-		std::cout << "\n@@@@@@@@@@ end of req\n" << i << ' ' << clientMap.at(i).getContent() << '\n' << std::endl;
+			pos = clientMap[i].getReqCnt().find("\r\n\r\n", 0);
+			tmpBody = clientMap[i].getReqCnt();
+			body = tmpBody.substr(pos + 4, tmpBody.length() - (pos + 4));
+			posNwl = body.find("\r\n", 0);
+			// std::cout << "\nfirst nwl " << pos << '\n' << std::endl;
+			pos = body.find("\r\n\r\n", 0);
+			cleanBody = body.substr(pos + 4, body.length() - (pos + 4) - (posNwl + 4));
 		}
-		catch (std::exception &e)
+		catch(const std::exception& e)
 		{
-			std::cout << e.what() << '\n';
+			std::cerr << e.what() << "$$$$$$$$$$$$$$$$$________________$$$$$$$$$$$$$$$$$" << '\n';
 		}
+	}
+
+
+	// std::cout << "\n\n[[[--------\n\n" << cleanBody << "\n\n------]]]\nbodylength: " 
+	// 			 << body.length() << " " << bodyLength << std::endl;
+		
+	if (clientMap[i].getReqCnt().find("\r\n\r\n", 0) != std::string::npos)
+	{
+		if (req.get_method() == "POST")
+		{
+			if (body.length() < bodyLength)
+			{
+				// std::cout << "body less\n";
+				return;
+			}
+			int fd = open("img.png", O_CREAT | O_RDWR, 0644);
+			write(fd, cleanBody.c_str(), cleanBody.length());
+		}
+		clientMap[i].setContent(clientMap.at(i).getReqCnt());
+		// std::cout << "\n@@@@@@@@@@ end of req\ni : " << i << " \n" << clientMap.at(i).getContent() << '\n'
+		// 		<< body.length() << " " << bodyLength << std::endl;
 		clientMap.at(i).reqClear();
 	}
 	else
 	{
-		// std::cout << "\n&&&&&&&&&&& keep recv not done yet\n" << std::endl;
-		// sleep(2);
+		// std::cout << "\npos = npos so returned\n";
 		return ;
 	}
 // sleep(2);
-			// std::cout << "reading " << maxSocket << std::endl;
+			// std::cout << "\nreading to writing" << std::endl;
 
 	// std::cout << "\n//--- begin req ---//\n" << std::endl;
 	// std::cout << clientMap.find(i)->second.getContent() << std::endl;
@@ -187,39 +227,53 @@ void	webserv::reading(int i)
 
 void	webserv::writing(int i)
 {
-	std::cout << "WRITE block " << std::endl;
+	// std::cout << "WRITE block " << std::endl;
 	// std::cout << "here\n[ " << serverMap.find(6)->second.getContent() << "]" << std::endl;
 	// std::string tmp = static_cast<std::string>(buff);
 	// if (parse_the_request(i))
 	// {
+		// std::string	test = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\r\nUser-Agent: MyTestApp\r\n\r\n";
+		// Request reqHakimeeee(clientMap.at(i).getContent());
+		
+		// std::map <std::string, std::string> test2 = reqHakimeeee.get_headers();
+		// for (std::map <std::string, std::string>::iterator a = test2.begin(); a != test2.end(); a++)
+		// 	std::cout <<  a->first << " | " << a->second << std::endl;
+		
+		// std::cout << "hakimeeeeeeee ---->>>>>  \n" << reqHakimeeee.get_body() << '\n' << std::endl;
+		// int fd = open("tst.png", O_CREAT | O_RDWR | O_TRUNC, 0644);
+		// if (fd == -1)
+		// 	std::cout << "im losing it\n";
+		// write(fd, reqHakimeeee.get_body().c_str(), reqHakimeeee.get_body().length());
+
+		
 		std::string htmlFile;
 		std::string fileContent;
-		std::cout << "i : " << i << std::endl;
-		std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getContent() << std::endl;
+		// std::cout << "i : " << i << std::endl;
+		// std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getContent() << std::endl;
 		if (clientMap.at(i).getContent().substr(0, 30).find(".html") != std::string::npos)
 		{
-			htmlFile = readFile("example.html");
+			htmlFile = readFile("./stuff/example.html");
 			fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: text/html\r\n\r\n" + htmlFile;
 		}
 		else if (clientMap.at(i).getContent().substr(0, 30).find(".js") != std::string::npos)
 		{
-			htmlFile = readFile("script.js");
+			htmlFile = readFile("./stuff/script.js");
 			fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: application/javascript\r\n\r\n" + htmlFile;
 		}
 		else if (clientMap.at(i).getContent().substr(0, 30).find(".css") != std::string::npos)
 		{
-			htmlFile = readFile("styles.css");
+			htmlFile = readFile("./stuff/styles.css");
 			fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: text/css\r\n\r\n" + htmlFile;
 		}
 		else if (clientMap.at(i).getContent().substr(0, 30).find(".ico") != std::string::npos)
 		{
-			htmlFile = readFile("favicon.ico");
+			htmlFile = readFile("./stuff/favicon.ico");
 			fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: image/x-icon\r\n\r\n" + htmlFile;
 		}
 		long long len = send(i, fileContent.c_str(), fileContent.length(), 0);
 		if (len < 0)
 			std::cout << "error " << std::endl;
-		std::cout << "send \n";
+		// std::cout << "send \n";
 		shutdown(i, SHUT_WR);
 		FD_CLR(i, &write_set);
 
@@ -240,15 +294,16 @@ void	webserv::writing(int i)
 	// }
 }
 
-webserv::webserv(std::list<webInfo> &serverList)
+webserv::webserv(std::vector<webInfo> &serverList)
 {
 	timeval timeout;
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 
 	// create server socket in a map
-	for (std::list<webInfo>::iterator it = serverList.begin(); it != serverList.end(); ++it)
+	for (std::vector<webInfo>::iterator it = serverList.begin(); it != serverList.end(); ++it)
 		serverMap.insert(std::make_pair(it->getSock(), *it));
+	
 	
 	//set to non blocking
 	setNoBlocking();
@@ -271,9 +326,11 @@ webserv::webserv(std::list<webInfo> &serverList)
 	listening();
 	// set servermap to read
 	setFds();
+
+
 	while(1)
 	{
-		std::cout << "\nstart \n----------------\n";
+		// std::cout << "\nstart \n----------------\n";
 
 		copyRead = read_set;
 		copyWrite = write_set;
@@ -282,7 +339,7 @@ webserv::webserv(std::list<webInfo> &serverList)
 		int check = select(maxSocket + 1, &copyRead, &copyWrite, NULL, NULL);
 		if (check < 0)
 			return;
-		std::cout << "after select " << std::endl;
+		// std::cout << "after select " << std::endl;
 		
 		//accept all sockets
 
@@ -304,3 +361,20 @@ webserv::webserv(std::list<webInfo> &serverList)
 webserv::~webserv()
 {
 }
+	// stop 
+	// {
+	// 	receve
+	// }
+	// join
+	// checki
+	// rnrn 
+	// {
+	// 	stop = true
+	// 	check body size m3a cont size
+	// 	receve
+	// }
+
+
+	//create vector of characters from buffer 
+	// creat a file and put the buffer in it append the rest
+	// or put the buffer in  a stream then put it back in a std string

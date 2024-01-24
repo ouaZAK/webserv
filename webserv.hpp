@@ -15,10 +15,14 @@
 #include <sys/time.h>
 #include <fcntl.h>
 #include <map>
-#include <list>
+#include <vector>
+
+
+#include "Request.hpp"
+#include "ServerInf.hpp"
 
 // #define PORT 8080
-#define MAX_CLIENTS 4
+#define MAX_CLIENTS 10
 
 class webInfo
 {
@@ -26,10 +30,16 @@ class webInfo
 		struct sockaddr_in serverAddress;
 		int port;
 		int sock;
+		std::string name;
 		webInfo(){}
 	public:
-		webInfo(int port) : port(port)
+		webInfo(int port, ServerInf &inf) : port(port)
 		{
+			// print
+			name = inf.getServName();
+			std::cout << "\nserv name is : " << name << '\n'
+					<< "port nbr : " << port << '\n';
+
 			sock = socket(AF_INET, SOCK_STREAM, 0);
 			if (sock == -1)
 			{
@@ -93,13 +103,13 @@ class webserv
 		clientInfo cliento;
 		std::map<int, webInfo> serverMap;
 		std::map<int, webInfo>::iterator mapIt;
-		std::list<struct sockaddr_in>	serverAddress;
-		std::list<struct sockaddr_in>	clientAddress;
+		std::vector<struct sockaddr_in>	serverAddress;
+		std::vector<struct sockaddr_in>	clientAddress;
 		socklen_t			clientAddressLen;
 		int					newClientSocket;
 		std::map<int, clientInfo>	clientMap;
 		int					maxSocket;
-		std::list<webInfo>	serverSocket;
+		std::vector<webInfo>	serverSocket;
 		// int					serverSocket;
 		char				buff[3000];
 		std::string 		reqContent;
@@ -107,9 +117,12 @@ class webserv
 		fd_set				write_set;
 		fd_set 				copyRead;
 		fd_set 				copyWrite;
+
+		size_t pos;
+		// int stop;
 	public:
 		webserv(){}
-		webserv(std::list<webInfo> &serverList);
+		webserv(std::vector<webInfo> &servervector);
 		~webserv();
 		std::map<int, webInfo>  getmap() const
 		{
@@ -118,8 +131,9 @@ class webserv
 		void	setNoBlocking();
 		void	creatAddresses();
 		void	bindSockets();
-		void	listening();
+		void	vectorening();
 		void	setFds();
+		void	listening();
 		void	acceptSockets(int i);
 		void	reading(int i);
 		void	writing(int i);

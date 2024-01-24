@@ -1,30 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   getServerInf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:46:31 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/19 22:54:56 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/01/23 16:39:07 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerInf.hpp"
 
-
-
-int main(int ac, char *av[])
+std::vector<ServerInf> confInf(char *av[])
 {
-	if (ac != 2)
-		return (1);
 	std::vector<ServerInf> sInf;
 	ServerInf tmp;
 	std::ifstream inFile(av[1]);
 	std::string el;
 
 	if (inFile.fail())
-		return (1);
+		throw "File failed to open";
 	std::string line;
 	try
 	{
@@ -63,10 +59,31 @@ int main(int ac, char *av[])
 	std::cout << "====================== " << std::endl;
 	for (std::vector<ServerInf>::iterator it = sInf.begin(); it != sInf.end(); ++it)
 	{
-		(*it).print();
+		// (*it).print();
 		std::cout << "intcrement: "<<(*it).locs.size()<<"\n";
 		std::cout << "size of serverinf: "<< sInf.size() <<"\n";
 	}
 	std::cout << "====================== " << std::endl;
-	return (0);
+	return (sInf);
+}
+
+std::map<std::string, std::string> populateMimeMap()
+{
+	std::map<std::string, std::string> mimeMap;
+	std::ifstream sis("mime.types"); //./confPars/mime.types
+	if (!sis)
+	{
+		std::cerr << "Failed to open file." << std::endl;
+		return mimeMap; 
+	}
+	std::string line;
+	while (std::getline(sis, line))
+	{ 
+		std::stringstream iss(line);
+		std::string key, value;
+		iss >> value >> key;
+		if (!key.empty() && !value.empty())
+			mimeMap.insert(std::pair<std::string, std::string>(key, value));
+	}
+	return mimeMap;
 }

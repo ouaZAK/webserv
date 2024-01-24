@@ -1,4 +1,5 @@
 #include "webserv.hpp"
+#include "ServerInf.hpp"
 
 int	creatSock()
 {
@@ -11,25 +12,31 @@ int	creatSock()
 	return (serversock);
 }
 
-int main()
+int main(int ac, char **av)
 {
-	std::list<webInfo> listWebInfo;
-	int port = 8080;
-	for (int i = 0; i < 3; i++)
+	if (ac != 2)
+		return (std::cout << "Error" << std::endl, 1);
+	std::vector<ServerInf> serverInfAymaaaaaaan = confInf(av);
+	std::map<std::string, std::string> mimeMap = populateMimeMap();
+	std::vector<webInfo> listWebInfo;
+	std::vector<int> ports;
+	try
 	{
-		webInfo info(port++);
-		listWebInfo.push_back(info);
+		for (std::vector<ServerInf>::iterator it = serverInfAymaaaaaaan.begin(); it != serverInfAymaaaaaaan.end(); ++it)
+		{
+			ports = it->getPorts();
+			for (std::vector<int>::iterator itV = ports.begin(); itV != ports.end(); itV++)
+			{
+				webInfo info(*itV, *it);
+				listWebInfo.push_back(info);
+			}
+		}
+		// webserv start;
+		webserv start(listWebInfo);
 	}
-	std::cout << "size is " << listWebInfo.size() << std::endl;
-
-	// std::map<int, webInfo> server;
-	// for (std::list<webInfo>::iterator it = listWebInfo.begin(); it != listWebInfo.end(); ++it)
-	// {
-	// 	server.insert(std::make_pair(creatSock(), *it));
-	// }
-	// std::cout << server.begin()->first << std::endl;
-
-	webserv start(listWebInfo);
-	// webserv start;
+	catch(const std::exception& e)
+	{
+		std::cerr << "$$$$$$$------------------$$$$$$$$$\n" << e.what() << '\n';
+	}
 	return (0);
 }

@@ -3,6 +3,9 @@ CC = c++
 RM = rm -rf
 FLAGS =  -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g
 SRC =	webserv.cpp \
+		Request.cpp \
+		getServerInf.cpp \
+		ServerInf.cpp \
 		main.cpp
 OBJ = $(SRC:.cpp=.o)
 

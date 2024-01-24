@@ -6,7 +6,7 @@
 /*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 11:14:16 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/13 12:45:00 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/01/21 11:47:23 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,4 @@ public:
 	std::string					default_file;
 	std::vector<std::string>	cgi_bin;
 	std::vector<std::string>	cgi_extension;
-	std::vector<std::string> getPath() const;
 };
-
-std::vector<std::string> Location::getPath() const
-{
-	return (path);
-}

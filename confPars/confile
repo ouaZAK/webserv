@@ -1,6 +1,44 @@
+server 
+{
+    listen        8010 9090 ;
+    server_name   zzz ;
+    error_pages   404.html 500.html ;
+    client_body_size  100000 ;
+    root    assets/server_2 ;
+
+    location ./tEst/
+    {
+        path  ./my-webserv ;
+        default_file  form.html ;
+        methods  GET  POST DELETE ;
+        cgi_bin  /usr/bin/python3 ;
+        cgi_extension  .ayac ;
+    }
+
+}
+
+server 
+{
+    listen        6967 ;
+    server_name   localhost ;
+    error_pages   404.html 500.html ;
+    client_body_size  100000 ;
+    root    assets/server_2 ;
+
+    location ./tEst/
+    {
+        path  ./my-webserv ;
+        default_file  form.html ;
+        methods  GET  POST DELETE ;
+        cgi_bin  /usr/bin/python3 ;
+        cgi_extension  .ayac ;
+    }
+
+}
+
 server
 {
-    listen        8080 6969 ;
+    listen        8080 ;
     server_name   127.0.0.1 ;
     error_pages   404.html  500.html ;
     client_body_size  50000 ;
@@ -26,22 +64,4 @@ server
         cgi_bin  /usr/bin/python4 ;
         cgi_extension  .ZOOT ;
     }
-}
-server 
-{
-    listen        8012 ;
-    server_name   localhost ;
-    error_pages   404.html 500.html ;
-    client_body_size  100000 ;
-    root    assets/server_2 ;
-
-    location ./tEst/
-    {
-        path  ./my-webserv ;
-        default_file  form.html ;
-        methods  GET  POST DELETE ;
-        cgi_bin  /usr/bin/python3 ;
-        cgi_extension  .ayac ;
-    }
-
 }
