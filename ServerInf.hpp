@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:44:04 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/24 09:44:45 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/25 11:06:30 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ public:
 	std::string filltmp(std::ifstream &inFile);
 	std::vector<int> getPorts();
 	std::string getServName();
+	std::string getRoot();
+	int			getBodySize();
 	void reset();
 	void	print() const;
 };

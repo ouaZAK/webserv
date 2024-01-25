@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/24 09:47:23 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/25 11:06:38 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,16 @@ std::vector<int> ServerInf::getPorts()
 std::string ServerInf::getServName()
 {
 	return (server_name);
+}
+
+std::string ServerInf::getRoot()
+{
+	return (root);
+}
+
+int ServerInf::getBodySize()
+{
+	return (body_size);
 }
 
 std::string ServerInf::filcbs(std::stringstream &ss)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:28:05 by hcharia           #+#    #+#             */
-/*   Updated: 2024/01/21 16:47:00 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/25 11:55:13 by hcharia          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ Request::Request()
 {
 }
 
-Request::Request(std::string input) : postmessage("")
+Request::Request(std::string input) : postBody("")
 {
 	std::stringstream ss;
 	std::string line;
@@ -43,7 +43,7 @@ Request::Request(std::string input) : postmessage("")
 	if (method == "POST")
 	{
 		while (std::getline(ss, line))
-			postmessage += line + '\n';
+			postBody += line + '\n';
 	}
 }
 
@@ -75,6 +75,11 @@ int									Request::get_status()
 	return status;
 }
 
+void								Request::set_body(std::string& s)
+{
+	postBody = s;
+}
+
 void								Request::prl(std::string line) // parse request line
 {
 	std::stringstream	ss;
@@ -100,7 +105,27 @@ void								Request::prl(std::string line) // parse request line
 	}	
 }
 
+std::string							Request::get_file_name()
+{
+	 std::string str;
+	size_t pos = postBody.find("filename");
+	if (pos == std::string::npos)
+	{
+		std::cout << "no filename found" << std::endl;
+		return (NULL);
+	}
+	str = postBody.substr(pos + 10);
+	pos = str.find("\"");
+	if (pos == std::string::npos)
+	{
+		std::cout << "there is a  problem in filename format :p";
+		return (NULL);
+	}
+	str = str.substr(0, pos);
+	return (str);
+}
+
 std::string							Request::get_body()
 {
-	return (postmessage);
+	return (postBody);
 }

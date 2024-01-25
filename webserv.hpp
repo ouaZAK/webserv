@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   webserv.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
+/*   Updated: 2024/01/25 11:20:57 by zouaraqa         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #pragma once
 
@@ -27,19 +38,23 @@
 class webInfo
 {
 	private:
-		struct sockaddr_in serverAddress;
-		int port;
-		int sock;
-		std::string name;
-		webInfo(){}
+		struct sockaddr_in	serverAddress;
+		std::string 		serverName;
+		std::string 		root;
+		int 				bodySize;
+		int 				port;
+		int 				sock;
+		// std::vector<std::string> error_pages;
 	public:
+		webInfo(){}
 		webInfo(int port, ServerInf &inf) : port(port)
 		{
-			// print
-			name = inf.getServName();
-			std::cout << "\nserv name is : " << name << '\n'
-					<< "port nbr : " << port << '\n';
+			//print
+			std::cout << "\nserv name is : " << serverName << '\n' << "port nbr : " << port << '\n';
 
+			serverName = inf.getServName();
+			root = inf.getRoot();
+			bodySize = inf.getBodySize();
 			sock = socket(AF_INET, SOCK_STREAM, 0);
 			if (sock == -1)
 			{
@@ -63,61 +78,74 @@ class webInfo
 		{
 			return (serverAddress);
 		}
+		std::string getRoot()
+		{
+			return (root);
+		}
 };
 
 class clientInfo
 {
 	private:
-		std::string content;
-		std::string reqContent;
-
+		std::string reqFull;
+		std::string reqChunk;
+		std::string root;
 	public:
-		void	setContent(std::string cnt)
+		void	setReqFull(std::string cnt)
 		{
-			// if (content.empty())
-				content = cnt;
+			reqFull = cnt;
 		}
-		std::string getContent() const
+		std::string getReqFull() const
 		{
-			return (content);
+			return (reqFull);
 		}
 
-		void	setReqCnt(std::string cnt)
+		void	setReqChunk(std::string cnt)
 		{
-			// if (reqContent.empty())
-				reqContent = cnt;
+			reqChunk = cnt;
 		}
-		std::string getReqCnt() const
+		std::string getReqChunk() const
 		{
-			return (reqContent);
+			return (reqChunk);
 		}
 		void	reqClear()
 		{
-			reqContent.clear();
+			reqChunk.clear();
+		}
+		std::string getRoot()
+		{
+			return (root);
+		}
+		void	setRoot(std::string str)
+		{
+			root = str;
 		}
 };
 
 class webserv
 {
 	private:
-		clientInfo cliento;
-		std::map<int, webInfo> serverMap;
-		std::map<int, webInfo>::iterator mapIt;
-		std::vector<struct sockaddr_in>	serverAddress;
-		std::vector<struct sockaddr_in>	clientAddress;
-		socklen_t			clientAddressLen;
-		int					newClientSocket;
-		std::map<int, clientInfo>	clientMap;
-		int					maxSocket;
-		std::vector<webInfo>	serverSocket;
-		// int					serverSocket;
-		char				buff[3000];
-		std::string 		reqContent;
-		fd_set				read_set;
-		fd_set				write_set;
-		fd_set 				copyRead;
-		fd_set 				copyWrite;
+		clientInfo 							cliento;
+		std::map<int, webInfo> 				serverMap;
+		std::map<int, webInfo>::iterator 	mapIt;
+		std::vector<struct sockaddr_in>		serverAddress;
+		std::vector<struct sockaddr_in>		clientAddress;
+		socklen_t							clientAddressLen;
+		int									newClientSocket;
+		std::map<int, clientInfo>			clientMap;
+		int									maxSocket;
+		std::vector<webInfo>				serverSocket;
+		// int								serverSocket;
+		char								buff[3000];
+		std::string 						reqContent;
+		fd_set								read_set;
+		fd_set								write_set;
+		fd_set 								copyRead;
+		fd_set 								copyWrite;
 
+		std::string cleanBody;
+		std::string body;
+		size_t bodyLength;
 		size_t pos;
 		// int stop;
 	public:
@@ -138,6 +166,8 @@ class webserv
 		void	reading(int i);
 		void	writing(int i);
 		int 	parse_the_request(int i);
+		void	extractBody(int i);
+		bool	getRequest(Request req, int i);
 
 		// void	updateMaxSocket(int i);
 

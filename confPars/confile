@@ -1,10 +1,10 @@
 server 
 {
-    listen        8010 9090 ;
+    listen        8080 ;
     server_name   zzz ;
     error_pages   404.html 500.html ;
     client_body_size  100000 ;
-    root    assets/server_2 ;
+    root    stuff ;
 
     location ./tEst/
     {
@@ -19,11 +19,11 @@ server
 
 server 
 {
-    listen        6967 ;
+    listen        8000 ;
     server_name   localhost ;
     error_pages   404.html 500.html ;
     client_body_size  100000 ;
-    root    assets/server_2 ;
+    root    server_3 ;
 
     location ./tEst/
     {
@@ -38,7 +38,7 @@ server
 
 server
 {
-    listen        8080 ;
+    listen        6969 ;
     server_name   127.0.0.1 ;
     error_pages   404.html  500.html ;
     client_body_size  50000 ;

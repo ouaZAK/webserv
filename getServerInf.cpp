@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:46:31 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/23 16:39:07 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/24 12:17:26 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,13 +57,13 @@ std::vector<ServerInf> confInf(char *av[])
 		std::cout << e << '\n';
 	}
 	std::cout << "====================== " << std::endl;
-	for (std::vector<ServerInf>::iterator it = sInf.begin(); it != sInf.end(); ++it)
-	{
+	// for (std::vector<ServerInf>::iterator it = sInf.begin(); it != sInf.end(); ++it)
+	// {
 		// (*it).print();
-		std::cout << "intcrement: "<<(*it).locs.size()<<"\n";
-		std::cout << "size of serverinf: "<< sInf.size() <<"\n";
-	}
-	std::cout << "====================== " << std::endl;
+		// std::cout << "intcrement: "<<(*it).locs.size()<<"\n";
+		// std::cout << "size of serverinf: "<< sInf.size() <<"\n";
+	// }
+	// std::cout << "====================== " << std::endl;
 	return (sInf);
 }
 
