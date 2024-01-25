@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/25 11:20:57 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/25 15:17:09 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,6 +125,7 @@ class clientInfo
 class webserv
 {
 	private:
+		std::map<std::string, std::string>	mimeMap;
 		clientInfo 							cliento;
 		std::map<int, webInfo> 				serverMap;
 		std::map<int, webInfo>::iterator 	mapIt;
@@ -142,7 +143,8 @@ class webserv
 		fd_set								write_set;
 		fd_set 								copyRead;
 		fd_set 								copyWrite;
-
+		
+		std::string							urlPath;
 		std::string cleanBody;
 		std::string body;
 		size_t bodyLength;
@@ -150,7 +152,7 @@ class webserv
 		// int stop;
 	public:
 		webserv(){}
-		webserv(std::vector<webInfo> &servervector);
+		webserv(std::vector<webInfo> &servervector, std::map<std::string, std::string>	mime);
 		~webserv();
 		std::map<int, webInfo>  getmap() const
 		{
@@ -168,6 +170,7 @@ class webserv
 		int 	parse_the_request(int i);
 		void	extractBody(int i);
 		bool	getRequest(Request req, int i);
+		std::string	serveFile(int i);
 
 		// void	updateMaxSocket(int i);
 

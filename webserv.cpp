@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/25 13:09:25 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/25 16:14:23 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,13 @@
 
 std::string readFile(const std::string &str)
 {
+	std::cout << "file to open : " << str << '\n';
 	std::ifstream file(str, std::ios::binary);
 	if (!file.is_open())
 	{
 		std::cout << "failed to pen file" << std::endl;
-		return "";
+		return ("");
 	}
-
 	std::stringstream inStr;
 	inStr << file.rdbuf();
 	return (inStr.str());
@@ -165,15 +165,16 @@ bool	webserv::getRequest(Request req, int i)
 			return (true);
 		req.set_body(body);
 		std::string filename = req.get_file_name();
-		std::ofstream file(filename);
+		// add path where to store files instead of "stuff/"
+		std::ofstream file(clientMap[i].getRoot() + "/" + filename);
 		file << cleanBody;
 	}
 	clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
 	clientMap.at(i).reqClear();
 
 	//print
-	std::cout << "\n@@@@@@@@@@ end of req\ni : " << i << " \n" << clientMap.at(i).getReqFull() << '\n'
-			<< body.length() << " " << bodyLength << std::endl;
+	// std::cout << "\n@@@@@@@@@@ end of req\ni : " << i << " \n" << clientMap.at(i).getReqFull() << '\n'
+	// 		<< body.length() << " " << bodyLength << std::endl;
 	return (false);
 }
 
@@ -196,14 +197,9 @@ void	webserv::reading(int i)
 	tmp.append(bufTmp);
 	clientMap.at(i).setReqChunk(tmp);
 
+	//print
 	// std::cout << "[[[ \n\n" << clientMap.at(i).getReqChunk() << " \n]]]" << std::endl;
-
-	
-	
 	// std::cout  << " " << clientMap.at(i).getReqChunk().find("\r\n\r\n", 0) << std::endl;
-	
-	
-
 	// std::cout << "\n\n[[[--------\n\n" << cleanBody << "\n\n------]]]\nbodylength: " 
 	// 			 << body.length() << " " << bodyLength << std::endl;
 
@@ -217,6 +213,7 @@ void	webserv::reading(int i)
 	else
 		return ;
 
+	//print
 	// std::cout << "\nreadin to writin" << std::endl;
 	// std::cout << "\n//--- begin req ---//\n" << std::endl;
 	// std::cout << clientMap.find(i)->second.getReqFull() << std::endl;
@@ -228,56 +225,47 @@ void	webserv::reading(int i)
 	FD_CLR(i, &read_set);
 }
 
+std::string	webserv::serveFile(int i)
+{
+	std::string htmlFile;
+	std::string fileContent;
+	
+	htmlFile = readFile("stuff/default.html");
+	fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: text/html\r\n\r\n" + htmlFile;
+
+	int x = access(urlPath.c_str(), F_OK);
+	if (!x)
+		std::cout << "the file exist\n";
+	else if (x == -1)
+		return (fileContent);//make it 404 after
+
+	for (std::map<std::string, std::string>::iterator typeIt = mimeMap.begin(); typeIt != mimeMap.end(); ++typeIt)
+	{
+		if (clientMap.at(i).getReqFull().substr(0, 30).find("." + typeIt->first) != std::string::npos)
+		{
+			htmlFile = readFile(urlPath);
+			fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
+			return (fileContent);
+		}
+	}
+	//return default page
+	return (fileContent);
+}
+
 void	webserv::writing(int i)
 {
 	// std::cout << "WRITE block " << std::endl;
 	// std::cout << "here\n[ " << serverMap.find(6)->second.getReqFull() << "]" << std::endl;
 
-	// std::string	test = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\r\nUser-Agent: MyTestApp\r\n\r\n";
 	Request reqHakimeeee(clientMap.at(i).getReqFull());
-	std::string urlPath = clientMap[i].getRoot() + reqHakimeeee.get_path();
+	urlPath = clientMap[i].getRoot() + reqHakimeeee.get_path();
 	std::cout << "[" << urlPath  << "]" << '\n';
-	int x = access(urlPath.c_str(), F_OK);
-	if (!x)
-		std::cout << "the file exist\n";
-	else if (x == -1)
-		std::cout << "404\n";
-		
-	// std::map <std::string, std::string> test2 = reqHakimeeee.get_headers();
-	// for (std::map <std::string, std::string>::iterator a = test2.begin(); a != test2.end(); a++)
-	// 	std::cout <<  a->first << " | " << a->second << std::endl;
 	
-	// std::cout << "hakimeeeeeeee ---->>>>>  \n" << reqHakimeeee.get_body() << '\n' << std::endl;
-	// int fd = open("tst.png", O_CREAT | O_RDWR | O_TRUNC, 0644);
-	// if (fd == -1)
-	// 	std::cout << "im losing it\n";
-	// write(fd, reqHakimeeee.get_body().c_str(), reqHakimeeee.get_body().length());
-
 		
-	std::string htmlFile;
-	std::string fileContent;
 	// std::cout << "i : " << i << std::endl;
 	// std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getReqFull() << std::endl;
-	if (clientMap.at(i).getReqFull().substr(0, 30).find(".html") != std::string::npos)
-	{
-		htmlFile = readFile("./stuff/example.html");
-		fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: text/html\r\n\r\n" + htmlFile;
-	}
-	else if (clientMap.at(i).getReqFull().substr(0, 30).find(".js") != std::string::npos)
-	{
-		htmlFile = readFile("./stuff/script.js");
-		fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: application/javascript\r\n\r\n" + htmlFile;
-	}
-	else if (clientMap.at(i).getReqFull().substr(0, 30).find(".css") != std::string::npos)
-	{
-		htmlFile = readFile("./stuff/styles.css");
-		fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: text/css\r\n\r\n" + htmlFile;
-	}
-	else if (clientMap.at(i).getReqFull().substr(0, 30).find(".ico") != std::string::npos)
-	{
-		htmlFile = readFile("./stuff/favicon.ico");
-		fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: image/x-icon\r\n\r\n" + htmlFile;
-	}
+	
+	std::string fileContent = serveFile(i);	
 	long long len = send(i, fileContent.c_str(), fileContent.length(), 0);
 	if (len < 0)
 		std::cout << "error " << std::endl;
@@ -289,12 +277,13 @@ void	webserv::writing(int i)
 	close(i);
 }
 
-webserv::webserv(std::vector<webInfo> &serverList)
+webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::string> mime)
 {
 	timeval timeout;
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 
+	mimeMap = mime;
 	// create server socket in a map
 	for (std::vector<webInfo>::iterator it = serverList.begin(); it != serverList.end(); ++it)
 		serverMap.insert(std::make_pair(it->getSock(), *it));

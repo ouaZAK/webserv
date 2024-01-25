@@ -36,7 +36,7 @@ int main(int ac, char **av)
 		// std::cout << listWebInfo[0].getRoot() << '\n';
 		// std::cout << listWebInfo[1].getRoot() << '\n';
 		// std::cout << listWebInfo[2].getRoot() << '\n';
-		webserv start(listWebInfo);
+		webserv start(listWebInfo, mimeMap);
 	}
 	catch(const std::exception& e)
 	{

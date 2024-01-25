@@ -42,7 +42,7 @@ server
     server_name   127.0.0.1 ;
     error_pages   404.html  500.html ;
     client_body_size  50000 ;
-    root    ./oxer-html/test ;
+    root    ./test ;
     location /etc1
     {
         default_file  index.html ;

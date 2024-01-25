@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:46:31 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/24 12:17:26 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/25 15:47:36 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ std::vector<ServerInf> confInf(char *av[])
 std::map<std::string, std::string> populateMimeMap()
 {
 	std::map<std::string, std::string> mimeMap;
-	std::ifstream sis("mime.types"); //./confPars/mime.types
+	std::ifstream sis("confPars/mime.types"); //./confPars/mime.types
 	if (!sis)
 	{
 		std::cerr << "Failed to open file." << std::endl;
