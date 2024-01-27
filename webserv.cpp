@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/25 16:14:23 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/27 18:11:57 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 std::string readFile(const std::string &str)
 {
-	std::cout << "file to open : " << str << '\n';
+	// std::cout << "file to open : " << str << '\n';
 	std::ifstream file(str, std::ios::binary);
 	if (!file.is_open())
 	{
@@ -99,41 +99,31 @@ void	webserv::setFds()
 
 void	webserv::acceptSockets(int i)
 {
-	// for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
-	// {
-		//if sock server is in read which is always in read whadaheck
-		if (FD_ISSET(i, &copyRead))
-		{
-		// std::cout << "server " << i  << " accepted"<< std::endl;
+	//if sock server is in read which is always in read whadaheck
+	if (FD_ISSET(i, &copyRead))
+	{
+	// std::cout << "server " << i  << " accepted"<< std::endl;
 
-			// accept new connection
-			clientAddressLen = sizeof(*clientAddress.begin());
-			newClientSocket = accept(i, (struct sockaddr *)&clientAddress, &clientAddressLen);
-			if (newClientSocket < 0)
-			{
-				// std::cout << "failed to accept" << std::endl;
-				// return true;
-			}
-			// std::cout <<"new client accepted [" << newClientSocket << "] " <<  std::endl;
-			//nonblocking fds
-			int flags = fcntl(newClientSocket, F_GETFL, 0);
-			fcntl(newClientSocket, F_SETFL, flags | O_NONBLOCK);
+		// accept new connection
+		clientAddressLen = sizeof(*clientAddress.begin());
+		newClientSocket = accept(i, (struct sockaddr *)&clientAddress, &clientAddressLen);
+		if (newClientSocket < 0)
+			std::cout << "failed to accept" << std::endl;
+	
+		//nonblocking fds
+		int flags = fcntl(newClientSocket, F_GETFL, 0);
+		fcntl(newClientSocket, F_SETFL, flags | O_NONBLOCK);
 
-			//set newclient to copyRead
-			FD_SET(newClientSocket, &read_set);
-			// std::cout <<"new client set to READ " <<  std::endl;
+		//set newclient to copyRead
+		FD_SET(newClientSocket, &read_set);
 
-			if (newClientSocket > maxSocket)
-				maxSocket = newClientSocket;
+		if (newClientSocket > maxSocket)
+			maxSocket = newClientSocket;
 
-			clientMap.insert(std::make_pair(newClientSocket, cliento));
-			clientMap[newClientSocket].setRoot(serverMap[i].getRoot());
-		// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
-
-			// return false;
-		}
-	// }
-	// return false;
+		clientMap.insert(std::make_pair(newClientSocket, cliento));
+		clientMap[newClientSocket].setRoot(serverMap[i].getRoot());
+	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
+	}
 }
 
 void	webserv::extractBody(int i)
@@ -170,7 +160,7 @@ bool	webserv::getRequest(Request req, int i)
 		file << cleanBody;
 	}
 	clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
-	clientMap.at(i).reqClear();
+	clientMap.at(i).reqChunckClear();
 
 	//print
 	// std::cout << "\n@@@@@@@@@@ end of req\ni : " << i << " \n" << clientMap.at(i).getReqFull() << '\n'
@@ -234,9 +224,7 @@ std::string	webserv::serveFile(int i)
 	fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: text/html\r\n\r\n" + htmlFile;
 
 	int x = access(urlPath.c_str(), F_OK);
-	if (!x)
-		std::cout << "the file exist\n";
-	else if (x == -1)
+	if (x == -1)
 		return (fileContent);//make it 404 after
 
 	for (std::map<std::string, std::string>::iterator typeIt = mimeMap.begin(); typeIt != mimeMap.end(); ++typeIt)
@@ -259,7 +247,6 @@ void	webserv::writing(int i)
 
 	Request reqHakimeeee(clientMap.at(i).getReqFull());
 	urlPath = clientMap[i].getRoot() + reqHakimeeee.get_path();
-	std::cout << "[" << urlPath  << "]" << '\n';
 	
 		
 	// std::cout << "i : " << i << std::endl;
@@ -284,6 +271,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 	timeout.tv_usec = 0;
 
 	mimeMap = mime;
+	
 	// create server socket in a map
 	for (std::vector<webInfo>::iterator it = serverList.begin(); it != serverList.end(); ++it)
 		serverMap.insert(std::make_pair(it->getSock(), *it));
@@ -323,7 +311,6 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 		int check = select(maxSocket + 1, &copyRead, &copyWrite, NULL, NULL);
 		if (check < 0)
 			return;
-		// std::cout << "after select " << std::endl;
 
 		// accept connection
 		for (int i = 3; i <= maxSocket; ++i)

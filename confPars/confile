@@ -1,12 +1,12 @@
 server 
 {
-    listen        8080 ;
+    listen        8080 9090 ;
     server_name   zzz ;
     error_pages   404.html 500.html ;
-    client_body_size  100000 ;
+    client_body_size  100 ;
     root    stuff ;
-
-    location ./tEst/
+ 
+    location ./dir
     {
         path  ./my-webserv ;
         default_file  form.html ;
@@ -33,12 +33,11 @@ server
         cgi_bin  /usr/bin/python3 ;
         cgi_extension  .ayac ;
     }
-
 }
 
 server
 {
-    listen        6969 ;
+    listen        6060 ;
     server_name   127.0.0.1 ;
     error_pages   404.html  500.html ;
     client_body_size  50000 ;

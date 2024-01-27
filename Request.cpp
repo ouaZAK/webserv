@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:28:05 by hcharia           #+#    #+#             */
-/*   Updated: 2024/01/25 11:55:13 by hcharia          ###   ########.fr       */
+/*   Updated: 2024/01/27 10:46:23 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ Request::Request(std::string input) : postBody("")
 
 	ss << input;
 	std::getline(ss, line);
+	// std::cout << input << " paleelee " + line << std::endl;
 	prl(line);
 	while (std::getline(ss, line) && line != "\r")
 	{
@@ -100,6 +101,7 @@ void								Request::prl(std::string line) // parse request line
 	}
 	if (method != "POST" && method != "DELETE" && method != "GET")
 	{
+		std::cout << "*************---->> methode is : " << method << '\n';
 		std::cout << "wrong method" << std::endl;
 		exit (1);
 	}	
@@ -112,14 +114,14 @@ std::string							Request::get_file_name()
 	if (pos == std::string::npos)
 	{
 		std::cout << "no filename found" << std::endl;
-		return (NULL);
+		return ("");
 	}
 	str = postBody.substr(pos + 10);
 	pos = str.find("\"");
 	if (pos == std::string::npos)
 	{
 		std::cout << "there is a  problem in filename format :p";
-		return (NULL);
+		return ("");
 	}
 	str = str.substr(0, pos);
 	return (str);

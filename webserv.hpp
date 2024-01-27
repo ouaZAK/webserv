@@ -6,14 +6,13 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/25 15:17:09 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/27 10:00:42 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <iostream>
-#include <sys/socket.h>
 #include <stdlib.h>
 #include <string>
 #include <stdio.h>
@@ -22,7 +21,6 @@
 #include <sstream>
 #include <fstream>
 #include <sys/select.h>
-#include <arpa/inet.h>
 #include <sys/time.h>
 #include <fcntl.h>
 #include <map>
@@ -31,100 +29,34 @@
 
 #include "Request.hpp"
 #include "ServerInf.hpp"
+#include "webInfo.hpp"
+#include "clientInfo.hpp"
 
 // #define PORT 8080
 #define MAX_CLIENTS 10
 
-class webInfo
-{
-	private:
-		struct sockaddr_in	serverAddress;
-		std::string 		serverName;
-		std::string 		root;
-		int 				bodySize;
-		int 				port;
-		int 				sock;
-		// std::vector<std::string> error_pages;
-	public:
-		webInfo(){}
-		webInfo(int port, ServerInf &inf) : port(port)
-		{
-			//print
-			std::cout << "\nserv name is : " << serverName << '\n' << "port nbr : " << port << '\n';
-
-			serverName = inf.getServName();
-			root = inf.getRoot();
-			bodySize = inf.getBodySize();
-			sock = socket(AF_INET, SOCK_STREAM, 0);
-			if (sock == -1)
-			{
-				std::cout << "failed to create server socket" << std::endl;
-				exit(1);
-			}
-			serverAddress.sin_family = AF_INET;
-			serverAddress.sin_port = htons(port);
-			serverAddress.sin_addr.s_addr = INADDR_ANY;
-		}
-		
-		int getPort() const
-		{
-			return (port);
-		}
-		int getSock() const
-		{
-			return (sock);
-		}
-		struct sockaddr_in getServerAddress() const
-		{
-			return (serverAddress);
-		}
-		std::string getRoot()
-		{
-			return (root);
-		}
-};
-
-class clientInfo
+class response
 {
 	private:
 		std::string reqFull;
-		std::string reqChunk;
-		std::string root;
 	public:
 		void	setReqFull(std::string cnt)
 		{
 			reqFull = cnt;
 		}
+
 		std::string getReqFull() const
 		{
 			return (reqFull);
-		}
-
-		void	setReqChunk(std::string cnt)
-		{
-			reqChunk = cnt;
-		}
-		std::string getReqChunk() const
-		{
-			return (reqChunk);
-		}
-		void	reqClear()
-		{
-			reqChunk.clear();
-		}
-		std::string getRoot()
-		{
-			return (root);
-		}
-		void	setRoot(std::string str)
-		{
-			root = str;
 		}
 };
 
 class webserv
 {
 	private:
+		std::map<int, response>				respMap;
+		std::map<int, response>::iterator	respMapIt;
+		
 		std::map<std::string, std::string>	mimeMap;
 		clientInfo 							cliento;
 		std::map<int, webInfo> 				serverMap;
@@ -134,6 +66,7 @@ class webserv
 		socklen_t							clientAddressLen;
 		int									newClientSocket;
 		std::map<int, clientInfo>			clientMap;
+		std::map<int, clientInfo>::iterator	cliMapIt;
 		int									maxSocket;
 		std::vector<webInfo>				serverSocket;
 		// int								serverSocket;
