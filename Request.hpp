@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:27:27 by hcharia           #+#    #+#             */
-/*   Updated: 2024/01/29 16:58:48 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/31 16:31:00 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,20 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+
+#define OK 200
+#define CREATED 201
+#define NO_CONTENT 204
+#define MOVED_PERM 301
+#define BAD_REQUEST 400
+#define FORBIDDEN 403
+#define NOT_FOUND 404
+#define NOT_ALLOWED 405
+#define CONFLICT 409
+#define REQ_LARGE 413
+#define REQ_URL_L 414
+#define IN_SERV_ERR 500
+#define NOT_IMPLIMENTED 501
 
 class Request
 {

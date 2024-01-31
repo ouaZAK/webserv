@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:06:33 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/29 16:59:21 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/31 10:37:37 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,6 @@
 clientInfo::clientInfo()
 {
 	
-}
-
-clientInfo::clientInfo(Request req)
-{
-	this->req = req;
 }
 
 clientInfo::~clientInfo()
@@ -69,4 +64,14 @@ std::vector<Location> clientInfo::getLoc() const
 void	clientInfo::setLoc(std::vector<Location> loc)
 {
 	locationVec = loc;
+}
+
+Request		clientInfo::getReq() const
+{
+	return (req);
+}
+
+void	clientInfo::setReq(Request reqst)
+{
+	req = reqst;
 }

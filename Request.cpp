@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:28:05 by hcharia           #+#    #+#             */
-/*   Updated: 2024/01/27 10:46:23 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/31 16:49:17 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,22 +16,28 @@ Request::Request()
 {
 }
 
-Request::Request(std::string input) : postBody("")
+Request::Request(std::string input) : status(0), postBody("")
 {
 	std::stringstream ss;
 	std::string line;
 
 	ss << input;
 	std::getline(ss, line);
-	// std::cout << input << " paleelee " + line << std::endl;
 	prl(line);
+	if (status == BAD_REQUEST)
+		return ;
 	while (std::getline(ss, line) && line != "\r")
 	{
 		size_t pos = line.find(':', 0);
 		if (pos == std::string::npos)
 		{
-			std::cout << "error" << std::endl;
-			exit(1);
+			status = BAD_REQUEST;
+			return ;
+		}
+		if (line.find("\r") == std::string::npos || line[line.find("\r") + 1] != 0)
+		{
+			status = BAD_REQUEST;
+			return ;
 		}
 		// this is for eleminating spaces
 		std::stringstream ss2;
@@ -71,6 +77,7 @@ std::map<std::string, std::string>	Request::get_headers()
 {
 	return headers;
 }
+
 int									Request::get_status()
 {
 	return status;
@@ -89,6 +96,11 @@ void								Request::prl(std::string line) // parse request line
 
 	i = 0;
 	ss << line;
+	if (line.find("\r") == std::string::npos || line[line.find("\r") + 1] != 0)
+	{
+		status = BAD_REQUEST;
+		return ;
+	}
 	while (ss >> result)
 	{
 		if (i == 0)
@@ -99,12 +111,31 @@ void								Request::prl(std::string line) // parse request line
 			version = result;
 		i++;
 	}
-	if (method != "POST" && method != "DELETE" && method != "GET")
+	
+	if (ss >> result || (method != "POST" && method != "DELETE" && method != "GET") 
+		|| version != "HTTP/1.1\r")
 	{
-		std::cout << "*************---->> methode is : " << method << '\n';
-		std::cout << "wrong method" << std::endl;
-		exit (1);
-	}	
+		status = BAD_REQUEST;
+		return ;
+	}
+	if (path.size() >= 2048)
+	{
+		status = REQ_URL_L;
+		return ;
+	}
+	version = version.substr(0, version.find('\r'));
+	for (int i = 0; path[i]; i++)
+	{
+		if (!isprint(path[i]) || path[i] == '\"' 
+		 || path[i] == ';' || path[i] == '>' || path[i] == '<' 
+		 || path[i] == '\\' ||  (path[i] >= '[' && path[i] <= '^') 
+		 || path[i] == '`' ||  (path[i] >= '{' && path[i] <= '}'))
+		{
+			status = BAD_REQUEST;
+			return ;
+		}
+	}
+	
 }
 
 std::string							Request::get_file_name()

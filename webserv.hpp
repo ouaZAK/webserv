@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/31 09:27:05 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/31 10:39:47 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ class webserv
 		void					reading(int i);
 		void					writing(int i);
 		void					extractBody(int i);
-		bool					getRequest(Request req, int i);
+		bool					getRequest(int i);
 		std::string				serveFile(int i);
 		void					checkLocMeth(int i);
 

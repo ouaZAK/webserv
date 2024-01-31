@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/31 09:21:46 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/31 18:35:08 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,7 @@ void	webserv::acceptSockets(int i)
 		clientMap.insert(std::make_pair(newClientSocket, clientInf));
 		clientMap[newClientSocket].setRoot(serverMap[i].getRoot());
 		clientMap[newClientSocket].setLoc(serverMap[i].getLoc());
+		
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 	}
 }
@@ -133,8 +134,9 @@ void	webserv::extractBody(int i)
 	}
 }
 
-bool	webserv::getRequest(Request req, int i)
+bool	webserv::getRequest(int i)
 {
+	Request req = clientMap[i].getReq();
 	if (req.get_method() == "POST")
 	{
 		extractBody(i);
@@ -142,8 +144,9 @@ bool	webserv::getRequest(Request req, int i)
 			return (true);
 		req.set_body(body);
 		std::string filename = req.get_file_name();
-		// add path where to store files instead of "stuff/"
-		std::ofstream file(clientMap[i].getRoot() + "/" + filename);
+		
+		/***** get the proper root if its default one or inside location ******/
+		std::ofstream file(clientMap[i].getRoot() + "/" + filename);		/* get the root path */
 		file << cleanBody;
 	}
 	clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
@@ -183,8 +186,9 @@ void	webserv::reading(int i)
 	if (clientMap[i].getReqChunk().find("\r\n\r\n", 0) != std::string::npos)
 	{
 		Request req(clientMap[i].getReqChunk());
+		clientMap[i].setReq(req);
 		bodyLength = std::strtod(req.get_headers()["Content-Length"].c_str(), NULL);
-		if (getRequest(req, i))
+		if (getRequest(i))
 			return ;
 	}
 	else
@@ -234,18 +238,60 @@ std::string	webserv::serveFile(int i)
 	return (fileContent);
 }
 
+bool	countSlash(std::string dir)
+{
+	int count = 0;
+		// std::cout << " \n dir is [ " << dir << " ]" << '\n';
+	for (std::string::iterator it = dir.begin(); it != dir.end(); ++it)
+	{
+		if (*it == '/')
+			++count;
+		if (count >= 2)
+			return (true);
+	}
+	return (false);
+}
+
 void	webserv::checkLocMeth(int i)
 {
-	std::vector<Location> loc = clientMap[i].getLoc();
-	for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
+	/* ######### test 8080/dir/lala.html in ngnix ########### */
+	std::string dir = clientMap[i].getReq().get_path();
+	if (!countSlash(dir))
+			dir = dir.append("/");// taygadha ha ki me
+	
+	if (countSlash(dir))
 	{
-		for (std::vector<std::string>::iterator itV = locIt->methods.begin(); itV != locIt->methods.end(); itV++)
+		std::cout << "\n ---------- \n there is 2 slash dir is [ " << dir << " ]" << '\n';
+		size_t pos1 = urlPath.find("/", 0);
+		size_t pos2 = urlPath.find("/", pos1 + 1);
+		dir = urlPath.substr(pos1, pos2 - pos1 + 1);
+		std::cout << "last dir {" <<  dir << "}" << '\n';
+		std::vector<Location> loc = clientMap[i].getLoc();
+		for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
 		{
-			// if ()
-			std::cout << *itV << " ";
+			std::cout << "\n inside \n";
+			for (std::vector<std::string>::iterator itV = locIt->path.begin(); itV != locIt->path.end(); itV++)
+			{
+				std::cout << "location: <<< " << *itV << " >>>" << dir;
+				if (dir == *itV)
+				{
+					for (std::vector<std::string>::iterator itV2 = locIt->methods.begin(); itV2 != locIt->methods.end(); itV2++)
+					{
+						std::cout << clientMap[i].getReq().get_method() << " <- req itV -> " <<  *itV2 << " " << itV2->size() << " | \n";
+						if (clientMap[i].getReq().get_method() == *itV2)
+						{
+							std::cout << "good return \n";
+							return ;
+						}
+					}
+					std::cout << "not allowed return \n\n";
+					return;
+				}
+			}
 		}
-		std::cout << '\n';
 	}
+	// if ()
+	std::cout << "\nnot a dir\n";
 }
 
 void	webserv::writing(int i)
@@ -256,14 +302,17 @@ void	webserv::writing(int i)
 	// join url with path
 	Request reqHakimeeee(clientMap.at(i).getReqFull());
 	urlPath = clientMap[i].getRoot() + reqHakimeeee.get_path();
-	
+	std::cout << urlPath << '\n';
 	//check is dir
 	is_dir = false;
 	struct stat fileStat;
 	if (stat(urlPath.c_str(), &fileStat) == 0)
+	{
 		is_dir = true;
-	// checkLocMeth(i);
+	}
 
+	//check method if its allowed
+	checkLocMeth(i);
 
 	// std::cout << "i : " << i << std::endl;
 	// std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getReqFull() << std::endl;

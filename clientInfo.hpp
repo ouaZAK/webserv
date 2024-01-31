@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:05:40 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/29 17:25:23 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/31 10:37:17 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ class clientInfo
 		Request					req;
 	public:
 		clientInfo();
-		clientInfo(Request req);
 		~clientInfo();
 		
 		void					reqChunckClear();
@@ -36,6 +35,8 @@ class clientInfo
 		void					setReqChunk(std::string cnt);
 		std::string 			getRoot();
 		void					setRoot(std::string str);
+		Request 				getReq() const;
+		void					setReq(Request reqst);
 		std::vector<Location>	getLoc() const;
 		void					setLoc(std::vector<Location> loc);
 };
