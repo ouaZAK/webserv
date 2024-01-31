@@ -6,13 +6,11 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/25 11:06:38 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/30 15:52:23 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerInf.hpp"
-
-std::string ServerInf::s = "{";
 
 std::vector<int> ServerInf::getPorts()
 {
@@ -34,39 +32,56 @@ int ServerInf::getBodySize()
 	return (body_size);
 }
 
+std::string ServerInf::s = "{";
+
 std::string ServerInf::filcbs(std::stringstream &ss)
 {
-	std::string el;
-	ss >> el;
-	while (el != ";" && !el.empty())
-	{
-		body_size = atoi(el.c_str());
-		ss >> el;
-	}
-	return (el);
+    std::string el;
+    if (!(ss >> el))
+        throw "Failed to read body size directive";
+    while (el != ";" && !el.empty())
+    {
+        body_size = atoi(el.c_str());
+        if (!(ss >> el))
+            break;
+    }
+    if (el != ";")
+        throw "Body size directive's syntax error";
+    return el;
 }
 std::string ServerInf::ferrp(std::stringstream &ss)
 {
-	std::string el;
-	ss >> el;
-	while (el != ";" && !el.empty())
-	{
-		error_pages.push_back(el);
-		ss >> el;
-	}
-	return (el);
+    std::string el;
+    if (!(ss >> el))
+        throw "Failed to read error page directive";
+
+    while (el != ";" && !el.empty())
+    {
+        error_pages.push_back(el);
+        if (!(ss >> el))
+            break;
+    }
+    if (el != ";")
+        throw "Error page directive's syntax error";
+    return el;
 }
+
 std::string ServerInf::filroot(std::stringstream &ss)
 {
 	std::string el;
-	ss >> el;
+	if (!(ss >> el))
+		throw "Failed to read root directive";
 	while (el != ";" && !el.empty())
 	{
 		root = el;
-		ss >> el;
+		if (!(ss >> el)) // Check if the stream is in a good state
+			break;
 	}
+	if (el != ";")
+		throw "Root directive's syntax error";
 	return (el);
 }
+
 
 static void isNumWell(std::string el)
 {
@@ -78,17 +93,22 @@ static void isNumWell(std::string el)
 
 std::string ServerInf::fillports(std::stringstream &ss)
 {
-	std::string el;
-	ss >> el;
-	while (el != ";" && !el.empty())
-	{
-		// check number if its goochie
-		isNumWell(el);
-		ports.push_back(strtod(el.c_str(), NULL));
-		ss >> el;
-	}
-	return (el);
+    std::string el;
+    if (!(ss >> el))
+        throw "Failed to read ports directive";
+    while (el != ";" && !el.empty())
+    {
+        // check number if its goochie
+        isNumWell(el);
+        ports.push_back(strtod(el.c_str(), NULL));
+        if (!(ss >> el))
+            break;
+    }
+    if (el != ";")
+        throw "Ports directive's syntax error";
+    return el;
 }
+
 
 bool ServerInf::isbrac(std::string line, char c)
 {
@@ -154,6 +174,8 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 			ss >> el; // Read the file name
 			if (el.empty())
 				throw "Missing file name in default_file directive";
+			else if (!tmp.default_file.empty())
+				throw "default_file directive repeated!";
 			std::string nextToken;
 			ss >> nextToken; // Attempt to read the next token, which should be the semicolon
 			if (nextToken != ";")
@@ -165,6 +187,8 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 		else if ("cgi_bin" == el)
 		{
 			ss >> el >> ell;
+ 			if (!tmp.cgi_bin.empty())
+				throw "CGI_bin directive repeated!";
 			if (el.empty() || !chekFilld(ss, s))
 				throw "Missing element or extra elements in cgi_bin directive";
 			if (ell != ";")
@@ -175,11 +199,25 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 		else if ("cgi_extension" == el)
 		{
 			ss >> el >> ell;
+ 			if (!tmp.cgi_extension.empty())
+				throw "CGI_extension directive repeated!";
 			if (el.empty() || !chekFilld(ss, s))
 				throw "Missing element or extra elements in cgi_extension directive";
 			if (ell != ";")
 				throw "Missing or incorrect delimiter";
 			tmp.cgi_extension.push_back(el);
+		}
+		else if ("autoindex" == el)
+		{
+			el.clear();
+			ss >> el;
+			if (tmp.lai)
+				throw "Auto_index directive inside location is repeated!";
+			tmp.lai = (el == "on") ? true : ((el != "off") ? (throw "Unknown element", false) : false);
+			// std::cout << tmp.lai << "CHECK\n";
+			ss >> el;
+			if (el != ";")
+        		throw "Autoindex directive's syntax error";
 		}
 		else if ("}" == el)
 			break;
@@ -191,6 +229,8 @@ void ServerInf::reset()
 {
 	ports.clear();
 	server_name.clear();
+	host.clear();
+	ai = false;
 	error_pages.clear();
 	body_size = 0;
 	root.clear();
@@ -208,31 +248,67 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 		Location ltmp;
 		std::stringstream ss(line);
 		ss >> el;
+		// std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << el <<"\n";
 		if (el == "listen")
 		{
+			if (!ports.empty())
+				throw "Ports directive repeated!";
 			el.clear();
 			el = fillports(ss);
 		}
 		else if (el == "server_name")
 		{
+			if (!server_name.empty())
+				throw "Server_name directive repeated!";
 			el.clear();
 			ss >> el;
 			server_name = el;
 			ss >> el;
+			if (el != ";")
+        		throw "Server_name directive's syntax error";
+		}
+		else if (el == "host")
+		{
+			if (!host.empty())
+				throw "Host directive repeated!";
+			el.clear();
+			ss >> el;
+			host = el;
+			ss >> el;
+			if (el != ";")
+        		throw "Host directive's syntax error";
+		}
+		else if (el == "autoindex")
+		{
+			if (ai)
+				throw "Auto_index directive repeated!";
+			el.clear();
+			ss >> el;
+			ai = (el == "on") ? true : ((el != "off") ? (throw "Unknown element", false) : false);
+
+			ss >> el;
+			if (el != ";")
+        		throw "Autoindex directive's syntax error";
 		}
 		else if (el == "error_pages")
 		{
+			if (!error_pages.empty())
+				throw "Error_pages directive repeated!";
 			el.clear();
 			el = ferrp(ss);
 		}
 		else if (el == "client_body_size")
 		{
+			// if (body_size.)
+			// 	throw "clien_body_size directive repeated!";
 			el.clear();
 			el = filcbs(ss);
 		}
 
 		else if (el == "root")
 		{
+			if (!root.empty())
+				throw "Root directive repeated!";
 			el.clear();
 			el = filroot(ss);
 		}
@@ -241,9 +317,7 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 			el.clear();
 			ss >> el >> ell;
 			if (el.empty() || !ell.empty())
-			{
 				throw "Location context related error.";
-			}
 			ltmp.path.push_back(el);
 			std::getline(inFile, line);
 			if (chekFilld(ss, s))
@@ -259,6 +333,8 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 		}
 		else if (el == "}")
 			break;
+		else if (!el.empty())//needs checking
+			throw "Unknown element";
 		if (el != ";" && el != locs.back().path.back())
 		{
 			throw "Missing ;";

@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/27 10:00:42 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/31 09:27:05 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <map>
 #include <vector>
+#include <sys/stat.h>
 
 
 #include "Request.hpp"
@@ -58,7 +59,7 @@ class webserv
 		std::map<int, response>::iterator	respMapIt;
 		
 		std::map<std::string, std::string>	mimeMap;
-		clientInfo 							cliento;
+		clientInfo 							clientInf;
 		std::map<int, webInfo> 				serverMap;
 		std::map<int, webInfo>::iterator 	mapIt;
 		std::vector<struct sockaddr_in>		serverAddress;
@@ -69,7 +70,6 @@ class webserv
 		std::map<int, clientInfo>::iterator	cliMapIt;
 		int									maxSocket;
 		std::vector<webInfo>				serverSocket;
-		// int								serverSocket;
 		char								buff[3000];
 		std::string 						reqContent;
 		fd_set								read_set;
@@ -77,33 +77,31 @@ class webserv
 		fd_set 								copyRead;
 		fd_set 								copyWrite;
 		
+		bool								is_dir;
 		std::string							urlPath;
-		std::string cleanBody;
-		std::string body;
-		size_t bodyLength;
-		size_t pos;
-		// int stop;
+		std::string 						cleanBody;
+		std::string 						body;
+		size_t 								bodyLength;
+		size_t 								pos;
+		
 	public:
 		webserv(){}
 		webserv(std::vector<webInfo> &servervector, std::map<std::string, std::string>	mime);
 		~webserv();
-		std::map<int, webInfo>  getmap() const
-		{
-			return (serverMap);
-		}
-		void	setNoBlocking();
-		void	creatAddresses();
-		void	bindSockets();
-		void	vectorening();
-		void	setFds();
-		void	listening();
-		void	acceptSockets(int i);
-		void	reading(int i);
-		void	writing(int i);
-		int 	parse_the_request(int i);
-		void	extractBody(int i);
-		bool	getRequest(Request req, int i);
-		std::string	serveFile(int i);
+		
+		std::map<int, webInfo>  getmap() const;
+		void					setNoBlocking();
+		void					creatAddresses();
+		void					bindSockets();
+		void					setFds();
+		void					listening();
+		void					acceptSockets(int i);
+		void					reading(int i);
+		void					writing(int i);
+		void					extractBody(int i);
+		bool					getRequest(Request req, int i);
+		std::string				serveFile(int i);
+		void					checkLocMeth(int i);
 
 		// void	updateMaxSocket(int i);
 

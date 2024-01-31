@@ -6,11 +6,25 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:06:33 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/27 10:15:19 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/29 16:59:21 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "clientInfo.hpp"
+
+clientInfo::clientInfo()
+{
+	
+}
+
+clientInfo::clientInfo(Request req)
+{
+	this->req = req;
+}
+
+clientInfo::~clientInfo()
+{
+}
 
 void	clientInfo::setReqFull(std::string cnt)
 {
@@ -45,4 +59,14 @@ void	clientInfo::setRoot(std::string str)
 void	clientInfo::reqChunckClear()
 {
 	reqChunk.clear();
+}
+
+std::vector<Location> clientInfo::getLoc() const
+{
+	return (locationVec);
+}
+
+void	clientInfo::setLoc(std::vector<Location> loc)
+{
+	locationVec = loc;
 }

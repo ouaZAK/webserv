@@ -1,53 +1,19 @@
-server 
-{
-    listen        8080 9090 ;
-    server_name   zzz ;
-    error_pages   404.html 500.html ;
-    client_body_size  100 ;
-    root    stuff ;
- 
-    location ./dir
-    {
-        path  ./my-webserv ;
-        default_file  form.html ;
-        methods  GET  POST DELETE ;
-        cgi_bin  /usr/bin/python3 ;
-        cgi_extension  .ayac ;
-    }
-
-}
-
-server 
-{
-    listen        8000 ;
-    server_name   localhost ;
-    error_pages   404.html 500.html ;
-    client_body_size  100000 ;
-    root    server_3 ;
-
-    location ./tEst/
-    {
-        path  ./my-webserv ;
-        default_file  form.html ;
-        methods  GET  POST DELETE ;
-        cgi_bin  /usr/bin/python3 ;
-        cgi_extension  .ayac ;
-    }
-}
-
 server
 {
-    listen        6060 ;
-    server_name   127.0.0.1 ;
-    error_pages   404.html  500.html ;
+    listen        8080 6969 456 879 1231 ;
+    server_name   example.com ;
+    host            127.0.0.1 ;
+    error_pages   /path/to/404.html  500.html ;
     client_body_size  50000 ;
-    root    ./test ;
-    location /etc1
+    root    stuff ;
+    autoindex   on ;
+    location /dir
     {
         default_file  index.html ;
-        methods  GET   DELETE ;
+        methods  GET DELETE ;
+        cgi_extension   .py ;
+        autoindex       off ;
         cgi_bin  /usr/bin/python3 ;
-        cgi_extension  .py ;
     }
     location ./test/
     {
@@ -62,5 +28,21 @@ server
         methods  GET  POST DELETE ;
         cgi_bin  /usr/bin/python4 ;
         cgi_extension  .ZOOT ;
+    }
+}
+server 
+{
+    listen        8012 ;
+    server_name   localhost ;
+    error_pages   404.html 500.html ;
+    client_body_size  100000 ;
+    root    server_3 ;
+    location ./dr/
+    {
+        path  ./my-webserv ;
+        default_file  form.html ;
+        methods  GET  POST DELETE ;
+        cgi_bin  /usr/bin/python3 ;
+        cgi_extension  .ayac ;
     }
 }

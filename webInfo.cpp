@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:26 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/27 09:03:58 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/29 11:17:09 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ webInfo::webInfo()
 
 webInfo::webInfo(int port, ServerInf &inf) : port(port)
 {
-
+	locationVec = inf.locs;
 	serverName = inf.getServName();
 	root = inf.getRoot();
 	bodySize = inf.getBodySize();
@@ -53,4 +53,9 @@ struct sockaddr_in webInfo::getServerAddress() const
 std::string webInfo::getRoot() const
 {
 	return (root);
-		}
+}
+
+std::vector<Location> webInfo::getLoc() const
+{
+	return (locationVec);
+}

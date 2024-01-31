@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/27 18:11:57 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/31 09:21:46 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,21 +24,6 @@ std::string readFile(const std::string &str)
 	std::stringstream inStr;
 	inStr << file.rdbuf();
 	return (inStr.str());
-}
-
-int webserv::parse_the_request(int i)
-{
-	std::cout << i << std::endl;
-	// if (reqContent.find("GET", 0) != std::string::npos)
-	// {
-	// 	std::cout << "\n############### the request is : \n" << reqContent << std::endl;
-	// 	return (1);
-	// }
-	// else
-	// 	std::cout << "no get" << std::endl;
-	return (1);
-	// buff.substr(4, buff.find('\n', 0))
-	// std::cout << buff.find('\n', 0) - buff.find(' ', 5) << std::endl;
 }
 
 void	webserv::setNoBlocking()
@@ -119,9 +104,11 @@ void	webserv::acceptSockets(int i)
 
 		if (newClientSocket > maxSocket)
 			maxSocket = newClientSocket;
-
-		clientMap.insert(std::make_pair(newClientSocket, cliento));
+		
+		
+		clientMap.insert(std::make_pair(newClientSocket, clientInf));
 		clientMap[newClientSocket].setRoot(serverMap[i].getRoot());
+		clientMap[newClientSocket].setLoc(serverMap[i].getLoc());
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 	}
 }
@@ -220,9 +207,16 @@ std::string	webserv::serveFile(int i)
 	std::string htmlFile;
 	std::string fileContent;
 	
-	htmlFile = readFile("stuff/default.html");
+	//if its dir show default file or show index
+	if (is_dir)
+	{
+		//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
+		htmlFile = readFile("stuff/index.html");
+	}
+	else
+		htmlFile = readFile("stuff/default.html");
 	fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: text/html\r\n\r\n" + htmlFile;
-
+	
 	int x = access(urlPath.c_str(), F_OK);
 	if (x == -1)
 		return (fileContent);//make it 404 after
@@ -240,15 +234,37 @@ std::string	webserv::serveFile(int i)
 	return (fileContent);
 }
 
+void	webserv::checkLocMeth(int i)
+{
+	std::vector<Location> loc = clientMap[i].getLoc();
+	for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
+	{
+		for (std::vector<std::string>::iterator itV = locIt->methods.begin(); itV != locIt->methods.end(); itV++)
+		{
+			// if ()
+			std::cout << *itV << " ";
+		}
+		std::cout << '\n';
+	}
+}
+
 void	webserv::writing(int i)
 {
 	// std::cout << "WRITE block " << std::endl;
 	// std::cout << "here\n[ " << serverMap.find(6)->second.getReqFull() << "]" << std::endl;
 
+	// join url with path
 	Request reqHakimeeee(clientMap.at(i).getReqFull());
 	urlPath = clientMap[i].getRoot() + reqHakimeeee.get_path();
 	
-		
+	//check is dir
+	is_dir = false;
+	struct stat fileStat;
+	if (stat(urlPath.c_str(), &fileStat) == 0)
+		is_dir = true;
+	// checkLocMeth(i);
+
+
 	// std::cout << "i : " << i << std::endl;
 	// std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getReqFull() << std::endl;
 	
@@ -318,7 +334,12 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 			if (serverMap.count(i)) // if its server socket we have to accept it not read it
 				acceptSockets(i);
 			else if (FD_ISSET(i, &copyRead))
+			{
+				// ############## should do now #############
+				//request has to be in client map i guess
+
 				reading(i);
+			}
 			else if (FD_ISSET(i, &copyWrite)) // receiv request from clinet
 				writing(i);
 		}
@@ -328,6 +349,10 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 
 webserv::~webserv()
 {
+}
+std::map<int, webInfo>  webserv::getmap() const
+{
+	return (serverMap);
 }
 	//create vector of characters from buffer 
 	// creat a file and put the buffer in it append the rest

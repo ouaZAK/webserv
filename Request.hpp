@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:27:27 by hcharia           #+#    #+#             */
-/*   Updated: 2024/01/25 11:54:41 by hcharia          ###   ########.fr       */
+/*   Updated: 2024/01/29 16:58:48 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,8 @@ private:
 	std::string							version;
 	std::map<std::string, std::string>	headers;
 	std::string							postBody;
-	Request();
 public:
+	Request();
 	Request(std::string input);
 	
 	void								prl(std::string line);

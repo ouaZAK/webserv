@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:46:31 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/25 15:47:36 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/01/31 09:03:00 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ std::vector<ServerInf> confInf(char *av[])
 	std::string line;
 	try
 	{
-
 		while (std::getline(inFile, line))
 		{
 			std::stringstream ss(line);
@@ -54,14 +53,14 @@ std::vector<ServerInf> confInf(char *av[])
 	}
 	catch (char const *e)
 	{
-		std::cout << e << '\n';
+		std::cout << "\033[31m" << e << "\033[0m" << '\n';
 	}
-	std::cout << "====================== " << std::endl;
+	// std::cout << "====================== " << std::endl;
 	// for (std::vector<ServerInf>::iterator it = sInf.begin(); it != sInf.end(); ++it)
 	// {
-		// (*it).print();
-		// std::cout << "intcrement: "<<(*it).locs.size()<<"\n";
-		// std::cout << "size of serverinf: "<< sInf.size() <<"\n";
+	// 	(*it).print();
+	// 	std::cout << "intcrement: "<<(*it).locs.size()<<"\n";
+	// 	std::cout << "size of serverinf: "<< sInf.size() <<"\n";
 	// }
 	// std::cout << "====================== " << std::endl;
 	return (sInf);
