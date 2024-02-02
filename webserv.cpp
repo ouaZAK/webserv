@@ -6,11 +6,18 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/31 18:35:08 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/02 10:56:52 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
+
+#define GR1 "\x1b[32m"
+#define GR2 "\x1b[0m"
+#define OR1 "\x1b[38;5;208m"
+#define OR2 "\x1b[0m"
+#define YL1 "\x1b[33m"
+#define YL2 "\x1b[0m"
 
 std::string readFile(const std::string &str)
 {
@@ -18,7 +25,7 @@ std::string readFile(const std::string &str)
 	std::ifstream file(str, std::ios::binary);
 	if (!file.is_open())
 	{
-		std::cout << "failed to pen file" << std::endl;
+		std::cout << "failed to open file" << std::endl;
 		return ("");
 	}
 	std::stringstream inStr;
@@ -87,7 +94,7 @@ void	webserv::acceptSockets(int i)
 	//if sock server is in read which is always in read whadaheck
 	if (FD_ISSET(i, &copyRead))
 	{
-	// std::cout << "server " << i  << " accepted"<< std::endl;
+	std::cout << YL1 << "server " << i  << " accepted" << YL2 << std::endl;
 
 		// accept new connection
 		clientAddressLen = sizeof(*clientAddress.begin());
@@ -160,7 +167,7 @@ bool	webserv::getRequest(int i)
 
 void	webserv::reading(int i)
 {
-	// std::cout << "READ block " << std::endl;
+	std::cout << YL1 << "READ block " << YL2 << std::endl;
 	// 	std::cout << "i : " << i << std::endl;
 
 	int bytesReaded = recv(i, buff, 3000, 0);
@@ -255,8 +262,9 @@ bool	countSlash(std::string dir)
 void	webserv::checkLocMeth(int i)
 {
 	/* ######### test 8080/dir/lala.html in ngnix ########### */
+	std::cout << "is dir : -> " << is_dir << '\n';
 	std::string dir = clientMap[i].getReq().get_path();
-	if (!countSlash(dir))
+	if (is_dir && !countSlash(dir))
 			dir = dir.append("/");// taygadha ha ki me
 	
 	if (countSlash(dir))
@@ -280,7 +288,7 @@ void	webserv::checkLocMeth(int i)
 						std::cout << clientMap[i].getReq().get_method() << " <- req itV -> " <<  *itV2 << " " << itV2->size() << " | \n";
 						if (clientMap[i].getReq().get_method() == *itV2)
 						{
-							std::cout << "good return \n";
+							std::cout << GR1 << "good return " << GR2 << "\n";
 							return ;
 						}
 					}
@@ -296,20 +304,19 @@ void	webserv::checkLocMeth(int i)
 
 void	webserv::writing(int i)
 {
-	// std::cout << "WRITE block " << std::endl;
+	std::cout << YL1 <<  "WRITE block " << YL2 << std::endl;
 	// std::cout << "here\n[ " << serverMap.find(6)->second.getReqFull() << "]" << std::endl;
 
 	// join url with path
-	Request reqHakimeeee(clientMap.at(i).getReqFull());
-	urlPath = clientMap[i].getRoot() + reqHakimeeee.get_path();
-	std::cout << urlPath << '\n';
+	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
+	std::cout << "path: " << urlPath << '\n';
+	
 	//check is dir
 	is_dir = false;
 	struct stat fileStat;
 	if (stat(urlPath.c_str(), &fileStat) == 0)
-	{
-		is_dir = true;
-	}
+		if (S_ISDIR(fileStat.st_mode))
+			is_dir = true;
 
 	//check method if its allowed
 	checkLocMeth(i);
@@ -367,7 +374,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 
 	while(1)
 	{
-		// std::cout << "\nstart \n----------------\n";
+		std::cout << OR1 << "\nstart \n----------------" << OR2 << "\n";
 
 		copyRead = read_set;
 		copyWrite = write_set;
@@ -376,10 +383,11 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 		int check = select(maxSocket + 1, &copyRead, &copyWrite, NULL, NULL);
 		if (check < 0)
 			return;
-
+		std::cout << "after select " << check << '\n';
 		// accept connection
 		for (int i = 3; i <= maxSocket; ++i)
 		{
+			std::cout << i << '\n';
 			if (serverMap.count(i)) // if its server socket we have to accept it not read it
 				acceptSockets(i);
 			else if (FD_ISSET(i, &copyRead))
