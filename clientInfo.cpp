@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:06:33 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/31 10:37:37 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/03 09:22:35 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,4 +74,14 @@ Request		clientInfo::getReq() const
 void	clientInfo::setReq(Request reqst)
 {
 	req = reqst;
+}
+
+size_t	 clientInfo::getBodySize() const
+{
+	return (bodySize);
+}
+
+void	clientInfo::setBodySize(size_t bodySize) 
+{
+	this->bodySize = bodySize;
 }

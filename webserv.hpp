@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/02 10:41:55 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/04 09:51:44 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ class webserv
 		std::map<int, clientInfo>::iterator	cliMapIt;
 		int									maxSocket;
 		std::vector<webInfo>				serverSocket;
-		char								buff[3000];
+		char								*buff;
 		std::string 						reqContent;
 		fd_set								read_set;
 		fd_set								write_set;
@@ -88,6 +88,7 @@ class webserv
 		webserv(){}
 		webserv(std::vector<webInfo> &servervector, std::map<std::string, std::string>	mime);
 		~webserv();
+
 		
 		std::map<int, webInfo>  getmap() const;
 		void					setNoBlocking();
@@ -102,6 +103,7 @@ class webserv
 		bool					getRequest(int i);
 		std::string				serveFile(int i);
 		void					checkLocMeth(int i);
+		bool check_dir(int i);
 
 		// void	updateMaxSocket(int i);
 

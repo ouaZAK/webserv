@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:05:40 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/31 10:37:17 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/03 09:21:41 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class clientInfo
 		std::string 			root;
 		std::vector<Location>	locationVec;
 		Request					req;
+		size_t					bodySize;
 	public:
 		clientInfo();
 		~clientInfo();
@@ -37,6 +38,8 @@ class clientInfo
 		void					setRoot(std::string str);
 		Request 				getReq() const;
 		void					setReq(Request reqst);
+		size_t	 				getBodySize() const;
+		void					setBodySize(size_t bodySize);
 		std::vector<Location>	getLoc() const;
 		void					setLoc(std::vector<Location> loc);
 };

@@ -6,18 +6,27 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/02 10:56:52 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/04 10:30:00 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 
+#define BL1 "\x1b[34m"
+#define BL2 "\x1b[0m"
 #define GR1 "\x1b[32m"
 #define GR2 "\x1b[0m"
 #define OR1 "\x1b[38;5;208m"
 #define OR2 "\x1b[0m"
 #define YL1 "\x1b[33m"
 #define YL2 "\x1b[0m"
+
+template<typename T>
+void	print(T str, std::string s)
+{
+	std::cout << BL1 << s << BL2 << '\n';
+	std::cout << GR1 << "[" << str << "]" << GR2 << '\n';
+}
 
 std::string readFile(const std::string &str)
 {
@@ -116,6 +125,7 @@ void	webserv::acceptSockets(int i)
 		clientMap.insert(std::make_pair(newClientSocket, clientInf));
 		clientMap[newClientSocket].setRoot(serverMap[i].getRoot());
 		clientMap[newClientSocket].setLoc(serverMap[i].getLoc());
+		clientMap[newClientSocket].setBodySize(serverMap[i].getBodySize());
 		
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 	}
@@ -125,15 +135,16 @@ void	webserv::extractBody(int i)
 {
 	try
 	{
-		std::string tmpBody;
-		size_t posNwl;
+		std::string	tmpBody;
+		size_t 		posNwl;
 
-		pos = clientMap[i].getReqChunk().find("\r\n\r\n", 0);
 		tmpBody = clientMap[i].getReqChunk();
+		pos = tmpBody.find("\r\n\r\n", 0);
 		body = tmpBody.substr(pos + 4, tmpBody.length() - (pos + 4));
-		posNwl = body.find("\r\n", 0);// to know length of first line
+		posNwl = body.find("\r\n", 0); // to know length of first line
 		pos = body.find("\r\n\r\n", 0);
-		cleanBody = body.substr(pos + 4, body.length() - (pos + 4) - (posNwl + 4));
+		cleanBody = body.substr(pos + 4, body.length() - (pos + 4) - (posNwl + 7));/* 4 for "-" and 3 for '\n' */
+		// print(cleanBody, "cleanBody: " );
 	}
 	catch(const std::exception& e)
 	{
@@ -141,19 +152,68 @@ void	webserv::extractBody(int i)
 	}
 }
 
+bool webserv::check_dir(int i)
+{
+	std::string dir = clientMap[i].getReq().get_path();
+	std::cout << "dir: " << dir << '\n';
+	// size_t pos1 = urlPath.find("/", 0);
+	// size_t pos2 = urlPath.find("/", pos1 + 1);
+	// dir = urlPath.substr(pos1, pos2 - pos1 + 1);
+	std::cout << OR1 << "Post\n" << OR2 << '\n';
+	std::vector<Location> loc = clientMap[i].getLoc();
+	for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
+	{
+		std::cout << "\nha\n";
+		for (std::vector<std::string>::iterator itV = locIt->path.begin(); itV != locIt->path.end(); itV++)
+		{
+		std::cout << "lo\n";
+			std::cout << "location: <<< " << *itV << " >>> " << dir;
+			if (dir == *itV)
+			{
+				for (std::vector<std::string>::iterator itV2 = locIt->methods.begin(); itV2 != locIt->methods.end(); itV2++)
+				{
+					std::cout << clientMap[i].getReq().get_method() << " <- req itV -> " <<  *itV2 << " " << itV2->size() << " | \n";
+					if (clientMap[i].getReq().get_method() == *itV2)
+					{
+						std::cout << GR1 << "POST good return " << GR2 << "\n";
+						return (false);
+					}
+				}
+				std::cout << "POST not allowed return \n\n";
+				return (true);
+			}
+		}
+	}
+	return (true);
+}
+
 bool	webserv::getRequest(int i)
 {
 	Request req = clientMap[i].getReq();
 	if (req.get_method() == "POST")
 	{
+		if (check_dir(i))
+		{
+			
+			clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
+			clientMap.at(i).reqChunckClear();
+			return false;
+		}
+
 		extractBody(i);
 		if (body.length() < bodyLength)
 			return (true);
+		// std::cout << "clean body size" << cleanBody.size() << " " << "[" << cleanBody << "]" << clientMap[i].getBodySize()<< "\n";
+		if (cleanBody.size() > clientMap[i].getBodySize())
+		{
+			std::cout << "413 in a html error page\n";
+			return false;
+		}
 		req.set_body(body);
 		std::string filename = req.get_file_name();
 		
 		/***** get the proper root if its default one or inside location ******/
-		std::ofstream file(clientMap[i].getRoot() + "/" + filename);		/* get the root path */
+		std::ofstream file(clientMap[i].getRoot() + "/upload/" + filename);		/* get the root path */
 		file << cleanBody;
 	}
 	clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
@@ -167,10 +227,18 @@ bool	webserv::getRequest(int i)
 
 void	webserv::reading(int i)
 {
+	buff = new char[300000];
 	std::cout << YL1 << "READ block " << YL2 << std::endl;
 	// 	std::cout << "i : " << i << std::endl;
-
-	int bytesReaded = recv(i, buff, 3000, 0);
+	int bytesReaded = recv(i, buff, 300000, 0);
+	// std::cout <<  bytesReaded  << std::endl;
+	if (bytesReaded == -1)
+		std::cout <<  "error in reacv"  << std::endl;
+	// {
+		
+	// FD_CLR(i, &read_set);
+	// 	return ;
+	// }
 	if (bytesReaded < 0)
 		// std::cout << "failed to recv" << std::endl;
 	if (bytesReaded == 0)
@@ -180,21 +248,22 @@ void	webserv::reading(int i)
 	buff[bytesReaded] = '\0';
 	std::string bufTmp;
 	std::string tmp = clientMap[i].getReqChunk();
+// std::cout << "-------------------------------------\n";
 	bufTmp = std::string(buff, bytesReaded);
+// std::cout << "############@@@@@@@@@@@@*************\n";
 	tmp.append(bufTmp);
 	clientMap.at(i).setReqChunk(tmp);
 
 	//print
+	print(clientMap.at(i).getReqChunk(), "Request\n------------------------------");
 	// std::cout << "[[[ \n\n" << clientMap.at(i).getReqChunk() << " \n]]]" << std::endl;
 	// std::cout  << " " << clientMap.at(i).getReqChunk().find("\r\n\r\n", 0) << std::endl;
-	// std::cout << "\n\n[[[--------\n\n" << cleanBody << "\n\n------]]]\nbodylength: " 
-	// 			 << body.length() << " " << bodyLength << std::endl;
 
 	if (clientMap[i].getReqChunk().find("\r\n\r\n", 0) != std::string::npos)
 	{
 		Request req(clientMap[i].getReqChunk());
-		clientMap[i].setReq(req);
 		bodyLength = std::strtod(req.get_headers()["Content-Length"].c_str(), NULL);
+		clientMap[i].setReq(req);
 		if (getRequest(i))
 			return ;
 	}
@@ -226,6 +295,7 @@ std::string	webserv::serveFile(int i)
 	}
 	else
 		htmlFile = readFile("stuff/default.html");
+	/* response here  */
 	fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: text/html\r\n\r\n" + htmlFile;
 	
 	int x = access(urlPath.c_str(), F_OK);
@@ -238,6 +308,7 @@ std::string	webserv::serveFile(int i)
 		{
 			htmlFile = readFile(urlPath);
 			fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
+		print(fileContent, "filectn");
 			return (fileContent);
 		}
 	}
@@ -298,7 +369,6 @@ void	webserv::checkLocMeth(int i)
 			}
 		}
 	}
-	// if ()
 	std::cout << "\nnot a dir\n";
 }
 
@@ -309,8 +379,9 @@ void	webserv::writing(int i)
 
 	// join url with path
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
-	std::cout << "path: " << urlPath << '\n';
-	
+	print(urlPath, "url : ");
+	if (urlPath != (clientMap[i].getRoot() + "/upload/"))
+		
 	//check is dir
 	is_dir = false;
 	struct stat fileStat;
@@ -350,7 +421,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 
 	//set to non blocking
 	setNoBlocking();
-	
+
 	// to close the socket after program ends
 	int nbr = 1;
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
@@ -370,7 +441,6 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 	listening();
 	// set servermap to read
 	setFds();
-
 
 	while(1)
 	{
@@ -400,6 +470,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 			else if (FD_ISSET(i, &copyWrite)) // receiv request from clinet
 				writing(i);
 		}
+		// sleep(2);
 	}
 	close(serverMap.begin()->first);
 }

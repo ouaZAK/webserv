@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:28:05 by hcharia           #+#    #+#             */
-/*   Updated: 2024/01/31 16:49:17 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/02 18:53:43 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ Request::Request()
 {
 }
 
-Request::Request(std::string input) : status(0), postBody("")
+Request::Request(std::string input) : status(200), postBody("")
 {
 	std::stringstream ss;
 	std::string line;
@@ -24,14 +24,18 @@ Request::Request(std::string input) : status(0), postBody("")
 	ss << input;
 	std::getline(ss, line);
 	prl(line);
-	if (status == BAD_REQUEST)
-		return ;
+	// if (status == BAD_REQUEST)
+	// {
+	// 		std::cout << "************************** findddddddd **************************\n";
+	// 	return ;
+	// }
 	while (std::getline(ss, line) && line != "\r")
 	{
 		size_t pos = line.find(':', 0);
 		if (pos == std::string::npos)
 		{
 			status = BAD_REQUEST;
+			std::cout << "************************** poooooooosss **************************\n";
 			return ;
 		}
 		if (line.find("\r") == std::string::npos || line[line.find("\r") + 1] != 0)
@@ -135,7 +139,6 @@ void								Request::prl(std::string line) // parse request line
 			return ;
 		}
 	}
-	
 }
 
 std::string							Request::get_file_name()

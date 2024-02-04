@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/30 15:52:23 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/02 17:06:48 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -280,8 +280,8 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 		}
 		else if (el == "autoindex")
 		{
-			if (ai)
-				throw "Auto_index directive repeated!";
+			// if (ai)
+			// 	throw "Auto_index directive repeated!";
 			el.clear();
 			ss >> el;
 			ai = (el == "on") ? true : ((el != "off") ? (throw "Unknown element", false) : false);

@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:26 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/01/29 11:17:09 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/03 09:17:15 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,11 @@ webInfo::webInfo(int port, ServerInf &inf) : port(port)
 int webInfo::getPort() const
 {
 	return (port);
+}
+
+size_t webInfo::getBodySize() const
+{
+	return (bodySize);
 }
 
 int webInfo::getSock() const
