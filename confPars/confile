@@ -4,13 +4,13 @@ server
     listen        8012 ;
     server_name   localhost ;
     error_pages   404.html 500.html ;
-    client_body_size  100000 ;
+    client_body_size  7 ;
     root    server_3 ;
     location /dr/
     {
         path  ./my-webserv ;
         default_file  form.html ;
-        methods  GET   DELETE ;
+        methods    DELETE ;
         cgi_bin  /usr/bin/python3 ;
         cgi_extension  .ayac ;
     }

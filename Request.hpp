@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:27:27 by hcharia           #+#    #+#             */
-/*   Updated: 2024/01/31 16:31:00 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/08 16:33:35 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,5 +52,6 @@ public:
 	std::string							get_body();
 	void								set_body(std::string&);
 	std::string							get_file_name();
+	void								set_status(int s);
 	~Request();
 };

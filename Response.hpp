@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 10:29:22 by hcharia           #+#    #+#             */
-/*   Updated: 2024/01/31 16:52:03 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/08 18:54:18 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,20 +18,17 @@
 class Response
 {
 private:
-	std::string	res;
-	std::string	head;
+	std::string	responseHead;
 	std::string	error_body;
-	std::string success_body;
 	std::vector<std::string> headers;
-	// map statusstr statusnbr 
-
+	std::string html_error;
 public:
 	Response();
-	Response(Request &, const std::string);
-	void	get_res(Request &r);
-	void	set_body(Request &r);
-	void	set_headers(Request &r);
+	Response(Request);
+	void	set_html_err(Request &r);
+	// void	set_OKheads(Request r);
 	void	set_head(Request &r, std::string);
+	std::string	getHead() const;
+	std::string	getHtmlError() const;
 	~Response();
 };
-

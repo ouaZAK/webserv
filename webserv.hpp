@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/04 09:51:44 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/08 16:00:11 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 
 
+#include "Response.hpp"
 #include "Request.hpp"
 #include "ServerInf.hpp"
 #include "webInfo.hpp"

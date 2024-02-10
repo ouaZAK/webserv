@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:28:05 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/02 18:53:43 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/10 12:05:40 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,12 @@
 Request::Request()
 {
 }
+
+void	Request::set_status(int s)
+{
+	status = s;
+}
+
 
 Request::Request(std::string input) : status(200), postBody("")
 {
@@ -40,6 +46,7 @@ Request::Request(std::string input) : status(200), postBody("")
 		}
 		if (line.find("\r") == std::string::npos || line[line.find("\r") + 1] != 0)
 		{
+			std::cout << "anaaaaaaaa hnaaaa 1\n";
 			status = BAD_REQUEST;
 			return ;
 		}
@@ -67,32 +74,33 @@ std::string 						Request::get_method()
 	return method;
 }
 
-std::string							Request::get_path()
+int	Request::get_status()
+{
+	return status;
+}
+
+void	Request::set_body(std::string& s)
+{
+	postBody = s;
+}
+std::string	Request::get_path()
 {
 	return path;
 }
 
-std::string							Request::get_version()
+std::string	Request::get_version()
 {
 	return version;
 }
+
+
 
 std::map<std::string, std::string>	Request::get_headers()
 {
 	return headers;
 }
 
-int									Request::get_status()
-{
-	return status;
-}
-
-void								Request::set_body(std::string& s)
-{
-	postBody = s;
-}
-
-void								Request::prl(std::string line) // parse request line
+void	Request::prl(std::string line) // parse request line
 {
 	std::stringstream	ss;
 	std::string			result;
@@ -102,6 +110,8 @@ void								Request::prl(std::string line) // parse request line
 	ss << line;
 	if (line.find("\r") == std::string::npos || line[line.find("\r") + 1] != 0)
 	{
+			std::cout << "anaaaaaaaa hnaaaa 2\n";
+
 		status = BAD_REQUEST;
 		return ;
 	}
@@ -117,8 +127,9 @@ void								Request::prl(std::string line) // parse request line
 	}
 	
 	if (ss >> result || (method != "POST" && method != "DELETE" && method != "GET") 
-		|| version != "HTTP/1.1\r")
+		|| version != "HTTP/1.1")
 	{
+		std::cout << "anaaaaaaaa hnaaaa 3\n";
 		status = BAD_REQUEST;
 		return ;
 	}
@@ -135,6 +146,7 @@ void								Request::prl(std::string line) // parse request line
 		 || path[i] == '\\' ||  (path[i] >= '[' && path[i] <= '^') 
 		 || path[i] == '`' ||  (path[i] >= '{' && path[i] <= '}'))
 		{
+			std::cout << "anaaaaaaaa hnaaaa 4\n";
 			status = BAD_REQUEST;
 			return ;
 		}

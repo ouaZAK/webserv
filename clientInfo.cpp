@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:06:33 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/03 09:22:35 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/10 12:03:22 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void	clientInfo::setLoc(std::vector<Location> loc)
 	locationVec = loc;
 }
 
-Request		clientInfo::getReq() const
+Request		&clientInfo::getReq()
 {
 	return (req);
 }
@@ -84,4 +84,14 @@ size_t	 clientInfo::getBodySize() const
 void	clientInfo::setBodySize(size_t bodySize) 
 {
 	this->bodySize = bodySize;
+}
+
+Response 	&clientInfo::getRes()
+{
+	return (res);
+}
+
+void	clientInfo::setRes(Response resp)
+{
+	res = resp;
 }

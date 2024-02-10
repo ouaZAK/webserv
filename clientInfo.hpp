@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:05:40 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/03 09:21:41 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/10 12:03:19 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <iostream>
 #include "Location.hpp"
 #include "Request.hpp"
+#include "Response.hpp"
 
 class clientInfo
 {
@@ -24,6 +25,7 @@ class clientInfo
 		std::string 			root;
 		std::vector<Location>	locationVec;
 		Request					req;
+		Response				res;
 		size_t					bodySize;
 	public:
 		clientInfo();
@@ -36,8 +38,10 @@ class clientInfo
 		void					setReqChunk(std::string cnt);
 		std::string 			getRoot();
 		void					setRoot(std::string str);
-		Request 				getReq() const;
+		Request 				&getReq();
 		void					setReq(Request reqst);
+		Response 				&getRes();
+		void					setRes(Response resp);
 		size_t	 				getBodySize() const;
 		void					setBodySize(size_t bodySize);
 		std::vector<Location>	getLoc() const;

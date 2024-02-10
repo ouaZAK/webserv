@@ -5,6 +5,7 @@ FLAGS =  -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -g
 SRC =	webserv.cpp \
 		webInfo.cpp \
 		Request.cpp \
+		Response.cpp \
 		clientInfo.cpp \
 		getServerInf.cpp \
 		ServerInf.cpp \

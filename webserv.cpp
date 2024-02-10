@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/04 10:30:00 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/10 12:42:38 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,7 +194,6 @@ bool	webserv::getRequest(int i)
 	{
 		if (check_dir(i))
 		{
-			
 			clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
 			clientMap.at(i).reqChunckClear();
 			return false;
@@ -204,9 +203,12 @@ bool	webserv::getRequest(int i)
 		if (body.length() < bodyLength)
 			return (true);
 		// std::cout << "clean body size" << cleanBody.size() << " " << "[" << cleanBody << "]" << clientMap[i].getBodySize()<< "\n";
-		if (cleanBody.size() > clientMap[i].getBodySize())
+		if (cleanBody.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200/* and 200 range */)
 		{
-			std::cout << "413 in a html error page\n";
+			clientMap[i].getReq().set_status(413);
+			Response res(clientMap[i].getReq());
+			clientMap[i].setRes(res);
+			clientMap.at(i).reqChunckClear();
 			return false;
 		}
 		req.set_body(body);
@@ -296,11 +298,21 @@ std::string	webserv::serveFile(int i)
 	else
 		htmlFile = readFile("stuff/default.html");
 	/* response here  */
-	fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: text/html\r\n\r\n" + htmlFile;
-	
 	int x = access(urlPath.c_str(), F_OK);
 	if (x == -1)
-		return (fileContent);//make it 404 after
+	{
+		clientMap[i].getReq().set_status(404);
+		clientMap[i].setRes(clientMap[i].getReq());
+	}
+	if (clientMap[i].getReq().get_status() != 200)
+	{
+		htmlFile = clientMap[i].getRes().getHtmlError();
+		print(htmlFile, "BOOOOOM------");
+		fileContent = clientMap[i].getRes().getHead() + "Content-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
+		return (fileContent);
+	}
+	fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
+	
 
 	for (std::map<std::string, std::string>::iterator typeIt = mimeMap.begin(); typeIt != mimeMap.end(); ++typeIt)
 	{
@@ -308,7 +320,7 @@ std::string	webserv::serveFile(int i)
 		{
 			htmlFile = readFile(urlPath);
 			fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
-		print(fileContent, "filectn");
+		// print(fileContent, "file ctn");
 			return (fileContent);
 		}
 	}
@@ -363,6 +375,8 @@ void	webserv::checkLocMeth(int i)
 							return ;
 						}
 					}
+					clientMap[i].getReq().set_status(405);
+					clientMap[i].setRes(clientMap[i].getReq());
 					std::cout << "not allowed return \n\n";
 					return;
 				}
