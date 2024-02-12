@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInf.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/02 17:06:48 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/06 00:29:17 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,6 +182,19 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 				throw "Missing or incorrect delimiter in default_file directive";
 			tmp.default_file = el;
 		}
+		else if ("root" == el)
+		{
+			ss >> el; // Read the file name
+			if (el.empty())
+				throw "Missing root in root directive";
+			else if (!tmp.root.empty())
+				throw "Root directive repeated!";
+			std::string nextToken;
+			ss >> nextToken; // Attempt to read the next token, which should be the semicolon
+			if (nextToken != ";")
+				throw "Missing or incorrect delimiter in root directive";
+			tmp.root = el;
+		}
 		else if ("methods" == el)
 			getMethods(ss, tmp);
 		else if ("cgi_bin" == el)
@@ -195,6 +208,19 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 				throw "Missing or incorrect delimiter";
 			// locs.back().cgi_bin.push_back(el);
 			tmp.cgi_bin.push_back(el);
+		}
+		else if ("return" == el)
+		{
+			std::string	elll;
+			ss >> el >> ell >> elll;
+			if (!tmp.redirect_to_dir.empty())
+				throw "redirect_to_dir directive repeated!";
+			if (el.empty() || ell.empty() || elll.empty() || !chekFilld(ss, s))
+				throw "Missing element or extra elements in redirection directive";
+			if (elll != ";")
+				throw "Missing or incorrect delimiter";
+			tmp.redirect_status = atoi(el.c_str());
+			tmp.redirect_to_dir = ell;
 		}
 		else if ("cgi_extension" == el)
 		{
@@ -248,7 +274,6 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 		Location ltmp;
 		std::stringstream ss(line);
 		ss >> el;
-		// std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << el <<"\n";
 		if (el == "listen")
 		{
 			if (!ports.empty())
@@ -280,8 +305,8 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 		}
 		else if (el == "autoindex")
 		{
-			// if (ai)
-			// 	throw "Auto_index directive repeated!";
+			if (ai)
+				throw "Auto_index directive repeated!";
 			el.clear();
 			ss >> el;
 			ai = (el == "on") ? true : ((el != "off") ? (throw "Unknown element", false) : false);
@@ -314,6 +339,7 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 		}
 		else if (el == "location")
 		{
+			ltmp.redirect_status = 0;
 			el.clear();
 			ss >> el >> ell;
 			if (el.empty() || !ell.empty())
@@ -376,6 +402,8 @@ void	ServerInf::print() const
 		std::cout << "BACK Default_file:	" << (*it).default_file << "\n";
 		std::cout << "BACK cgi_bin:	" << (*it).cgi_bin.back() << "\n";
 		std::cout << "BACK cgi_extension:	" << (*it).cgi_extension.back() << "\n";
+		std::cout << "BACK redirect_to_dir:	" << (*it).redirect_to_dir << "\n";
+		std::cout << "BACK redirect_status:	" << (*it).redirect_status << "\n";
 		std::cout << "			Increment location" <<"\n";
 		std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" <<"\n";
 
