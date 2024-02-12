@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/10 12:42:38 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/11 10:32:26 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,9 +156,6 @@ bool webserv::check_dir(int i)
 {
 	std::string dir = clientMap[i].getReq().get_path();
 	std::cout << "dir: " << dir << '\n';
-	// size_t pos1 = urlPath.find("/", 0);
-	// size_t pos2 = urlPath.find("/", pos1 + 1);
-	// dir = urlPath.substr(pos1, pos2 - pos1 + 1);
 	std::cout << OR1 << "Post\n" << OR2 << '\n';
 	std::vector<Location> loc = clientMap[i].getLoc();
 	for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
@@ -179,6 +176,8 @@ bool webserv::check_dir(int i)
 						return (false);
 					}
 				}
+				clientMap[i].getReq().set_status(405);
+				clientMap[i].setRes(clientMap[i].getReq());
 				std::cout << "POST not allowed return \n\n";
 				return (true);
 			}
@@ -195,7 +194,7 @@ bool	webserv::getRequest(int i)
 		if (check_dir(i))
 		{
 			clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
-			clientMap.at(i).reqChunckClear();
+			clientMap.at(i).clearReqChunk();
 			return false;
 		}
 
@@ -205,10 +204,10 @@ bool	webserv::getRequest(int i)
 		// std::cout << "clean body size" << cleanBody.size() << " " << "[" << cleanBody << "]" << clientMap[i].getBodySize()<< "\n";
 		if (cleanBody.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200/* and 200 range */)
 		{
-			clientMap[i].getReq().set_status(413);
-			Response res(clientMap[i].getReq());
+			clientMap[i].getReq().set_status(413);// first fill status in req 
+			Response res(clientMap[i].getReq()); // then send req to res
 			clientMap[i].setRes(res);
-			clientMap.at(i).reqChunckClear();
+			clientMap.at(i).clearReqChunk();
 			return false;
 		}
 		req.set_body(body);
@@ -219,7 +218,7 @@ bool	webserv::getRequest(int i)
 		file << cleanBody;
 	}
 	clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
-	clientMap.at(i).reqChunckClear();
+	clientMap.at(i).clearReqChunk();
 
 	//print
 	// std::cout << "\n@@@@@@@@@@ end of req\ni : " << i << " \n" << clientMap.at(i).getReqFull() << '\n'
@@ -290,7 +289,12 @@ std::string	webserv::serveFile(int i)
 	std::string fileContent;
 	
 	//if its dir show default file or show index
-	if (is_dir)
+	if (is_dir && clientMap[i].getReq().get_path() == "/upload/" && clientMap[i].getReq().get_method() == "POST") /* if we upload we should show DONE or the same example.html page */
+	{
+		std::cout << "upload html response ***********************************\n";
+		htmlFile = readFile("stuff/example.html");
+	}
+	else if (is_dir)
 	{
 		//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
 		htmlFile = readFile("stuff/index.html");
@@ -357,31 +361,7 @@ void	webserv::checkLocMeth(int i)
 		size_t pos2 = urlPath.find("/", pos1 + 1);
 		dir = urlPath.substr(pos1, pos2 - pos1 + 1);
 		std::cout << "last dir {" <<  dir << "}" << '\n';
-		std::vector<Location> loc = clientMap[i].getLoc();
-		for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
-		{
-			std::cout << "\n inside \n";
-			for (std::vector<std::string>::iterator itV = locIt->path.begin(); itV != locIt->path.end(); itV++)
-			{
-				std::cout << "location: <<< " << *itV << " >>>" << dir;
-				if (dir == *itV)
-				{
-					for (std::vector<std::string>::iterator itV2 = locIt->methods.begin(); itV2 != locIt->methods.end(); itV2++)
-					{
-						std::cout << clientMap[i].getReq().get_method() << " <- req itV -> " <<  *itV2 << " " << itV2->size() << " | \n";
-						if (clientMap[i].getReq().get_method() == *itV2)
-						{
-							std::cout << GR1 << "good return " << GR2 << "\n";
-							return ;
-						}
-					}
-					clientMap[i].getReq().set_status(405);
-					clientMap[i].setRes(clientMap[i].getReq());
-					std::cout << "not allowed return \n\n";
-					return;
-				}
-			}
-		}
+		check_dir(i);
 	}
 	std::cout << "\nnot a dir\n";
 }
@@ -394,7 +374,7 @@ void	webserv::writing(int i)
 	// join url with path
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
 	print(urlPath, "url : ");
-	if (urlPath != (clientMap[i].getRoot() + "/upload/"))
+	// if (urlPath != (clientMap[i].getRoot() + "/upload/"))
 		
 	//check is dir
 	is_dir = false;
@@ -475,12 +455,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 			if (serverMap.count(i)) // if its server socket we have to accept it not read it
 				acceptSockets(i);
 			else if (FD_ISSET(i, &copyRead))
-			{
-				// ############## should do now #############
-				//request has to be in client map i guess
-
 				reading(i);
-			}
 			else if (FD_ISSET(i, &copyWrite)) // receiv request from clinet
 				writing(i);
 		}

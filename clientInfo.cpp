@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:06:33 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/10 12:03:22 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/11 10:08:27 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void	clientInfo::setRoot(std::string str)
 	root = str;
 }
 
-void	clientInfo::reqChunckClear()
+void	clientInfo::clearReqChunk()
 {
 	reqChunk.clear();
 }

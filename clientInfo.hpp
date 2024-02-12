@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:05:40 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/10 12:03:19 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/11 10:08:27 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ class clientInfo
 		clientInfo();
 		~clientInfo();
 		
-		void					reqChunckClear();
+		void					clearReqChunk();
 		std::string 			getReqFull() const;
 		void					setReqFull(std::string cnt);
 		std::string 			getReqChunk() const;

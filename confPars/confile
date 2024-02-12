@@ -25,11 +25,11 @@ server
 
 server
 {
-    listen        6969 8080 ;
-    server_name   example.com ;
+    listen        8012 8080 ;
+    server_name   zakaria.com ;
     host            127.0.0.1 ;
     error_pages   /path/to/404.html  500.html ;
-    client_body_size  500000 ;
+    client_body_size  5000000000000 ;
     root    stuff ;
     autoindex   on ;
     location /dir/
