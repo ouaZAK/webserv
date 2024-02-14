@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:06:33 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/11 10:08:27 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/13 12:35:32 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,4 +94,24 @@ Response 	&clientInfo::getRes()
 void	clientInfo::setRes(Response resp)
 {
 	res = resp;
+}
+
+void	clientInfo::setAutoIndx(bool ai)
+{
+	autoIndx = ai;	
+}
+
+bool	clientInfo::getAutoIndx() const
+{
+	return (autoIndx);
+}
+
+void		clientInfo::setDefFile(std::string defF)
+{
+	defFile = defF;	
+}
+
+std::string	clientInfo::getDefFile() const
+{
+	return (defFile);
 }

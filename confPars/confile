@@ -1,10 +1,10 @@
 
 server 
 {
-    listen        8012 8492 5163 ;
+    listen        7777 ;
     server_name   localhost ;
     error_pages   404.html 500.html ;
-    client_body_size  100000 ;
+    client_body_size  10000000 ;
     root    server_3 ;
     autoindex on ;
     location /dr/
@@ -21,13 +21,12 @@ server
         methods GET POST DELETE ;
         cgi_extension   .py ;
         cgi_bin  /usr/bin/python3 ;
-        return 301 /dr/ ;
     }
 }
 
 server
 {
-    listen        6969 8080 ;
+    listen        8080 9999 ;
     server_name   example.com ;
     host            127.0.0.1 ;
     error_pages   /path/to/404.html  500.html ;
@@ -36,8 +35,8 @@ server
     autoindex   on ;
     location /dir/
     {
-        default_file  index1.html ;
-        methods GET  DELETE ;
+        default_file  default.html ;
+        methods GET DELETE ;
         cgi_extension   .py ;
         cgi_bin  /usr/bin/python3 ;
     }
@@ -54,6 +53,7 @@ server
         methods  GET  POST DELETE ;
         cgi_bin  /usr/bin/python4 ;
         cgi_extension  .BRUH ;
+        return 301 /dir/ ;
     }
     location /MAMA/
     {

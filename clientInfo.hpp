@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:05:40 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/11 10:08:27 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/13 12:34:22 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ class clientInfo
 		Request					req;
 		Response				res;
 		size_t					bodySize;
+		std::string				defFile;
+		bool autoIndx;
 	public:
 		clientInfo();
 		~clientInfo();
@@ -46,4 +48,8 @@ class clientInfo
 		void					setBodySize(size_t bodySize);
 		std::vector<Location>	getLoc() const;
 		void					setLoc(std::vector<Location> loc);
+		void					setAutoIndx(bool ai);
+		bool					getAutoIndx() const;
+		void					setDefFile(std::string defF);
+		std::string				getDefFile() const;
 };

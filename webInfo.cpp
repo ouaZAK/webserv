@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:26 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/03 09:17:15 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/14 11:02:11 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ webInfo::webInfo()
 
 webInfo::webInfo(int port, ServerInf &inf) : port(port)
 {
+	this->ai = inf.getAI();
 	locationVec = inf.locs;
 	serverName = inf.getServName();
 	root = inf.getRoot();

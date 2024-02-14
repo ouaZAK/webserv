@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:37 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/03 09:06:06 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/13 10:23:26 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class webInfo
 		int 					port;
 		int 					sock;
 		std::vector<Location>	locationVec;
+		bool ai;
 		// std::vector<std::string> error_pages;
 	public:
 		webInfo();
@@ -38,4 +39,9 @@ class webInfo
 		std::vector<Location>	getLoc() const;
 		struct sockaddr_in		getServerAddress() const;
 		std::string				getRoot()const;
+		
+		bool getAI()
+		{
+			return ai;
+		}
 };

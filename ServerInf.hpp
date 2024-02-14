@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:44:04 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/30 15:46:47 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/13 10:17:42 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,10 @@ public:
 	int			getBodySize();
 	void reset();
 	void	print() const;
+	bool getAI()
+	{
+		return ai;
+	}
 };
 
 std::map<std::string, std::string> populateMimeMap();

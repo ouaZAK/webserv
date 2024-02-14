@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/11 10:32:26 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/13 14:40:43 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,7 @@ void	webserv::acceptSockets(int i)
 		clientMap[newClientSocket].setRoot(serverMap[i].getRoot());
 		clientMap[newClientSocket].setLoc(serverMap[i].getLoc());
 		clientMap[newClientSocket].setBodySize(serverMap[i].getBodySize());
+		clientMap[newClientSocket].setAutoIndx(serverMap[i].getAI());
 		
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 	}
@@ -152,33 +153,36 @@ void	webserv::extractBody(int i)
 	}
 }
 
-bool webserv::check_dir(int i)
+void	webserv::setResStatus(int i, int status)
 {
-	std::string dir = clientMap[i].getReq().get_path();
-	std::cout << "dir: " << dir << '\n';
-	std::cout << OR1 << "Post\n" << OR2 << '\n';
+	clientMap[i].getReq().set_status(status);
+	clientMap[i].setRes(clientMap[i].getReq());
+}
+
+bool webserv::check_dir(int i, std::string dir)
+{
 	std::vector<Location> loc = clientMap[i].getLoc();
 	for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
 	{
-		std::cout << "\nha\n";
 		for (std::vector<std::string>::iterator itV = locIt->path.begin(); itV != locIt->path.end(); itV++)
 		{
-		std::cout << "lo\n";
-			std::cout << "location: <<< " << *itV << " >>> " << dir;
+			std::cout << "location: [" << *itV << "]    dir: [" << dir << "]\n";
 			if (dir == *itV)
 			{
 				for (std::vector<std::string>::iterator itV2 = locIt->methods.begin(); itV2 != locIt->methods.end(); itV2++)
 				{
-					std::cout << clientMap[i].getReq().get_method() << " <- req itV -> " <<  *itV2 << " " << itV2->size() << " | \n";
+					std::cout << clientMap[i].getReq().get_method() << " <- req  |  itV -> " <<  *itV2 << "\n";
 					if (clientMap[i].getReq().get_method() == *itV2)
 					{
-						std::cout << GR1 << "POST good return " << GR2 << "\n";
+						clientMap[i].setDefFile(locIt->default_file); /* get the default file in every directory */
+						std::cout << GR1 << "good return from directory" << GR2 << "\n";
 						return (false);
 					}
 				}
-				clientMap[i].getReq().set_status(405);
-				clientMap[i].setRes(clientMap[i].getReq());
-				std::cout << "POST not allowed return \n\n";
+				setResStatus(i, 405);
+				// clientMap[i].getReq().set_status(405);
+				// clientMap[i].setRes(clientMap[i].getReq());
+				std::cout << "not allowed return from directory\n\n";
 				return (true);
 			}
 		}
@@ -191,14 +195,16 @@ bool	webserv::getRequest(int i)
 	Request req = clientMap[i].getReq();
 	if (req.get_method() == "POST")
 	{
-		if (check_dir(i))
+		std::string dir = clientMap[i].getReq().get_path();
+		if (check_dir(i, dir))
 		{
 			clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
 			clientMap.at(i).clearReqChunk();
 			return false;
 		}
-
+		
 		extractBody(i);
+		
 		if (body.length() < bodyLength)
 			return (true);
 		// std::cout << "clean body size" << cleanBody.size() << " " << "[" << cleanBody << "]" << clientMap[i].getBodySize()<< "\n";
@@ -268,7 +274,7 @@ void	webserv::reading(int i)
 		if (getRequest(i))
 			return ;
 	}
-	else
+	else if (!clientMap.at(i).getReqChunk().empty())
 		return ;
 
 	//print
@@ -297,7 +303,23 @@ std::string	webserv::serveFile(int i)
 	else if (is_dir)
 	{
 		//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
-		htmlFile = readFile("stuff/index.html");
+		std::cout << "def********************************** " << clientMap[i].getDefFile() << '\n';
+		htmlFile = readFile(clientMap[i].getRoot() + "/" + clientMap[i].getDefFile());
+		std::cout << htmlFile << '\n';
+		if (htmlFile.empty() && clientMap[i].getAutoIndx())
+		{
+			std::cout << OR1<< "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
+			htmlFile = readFile(clientMap[i].getRoot() + "/index.html");
+			print(clientMap[i].getRoot() + "index.html", "here");
+		}
+		else if (htmlFile.empty() && !clientMap[i].getAutoIndx())
+		{
+			std::cout << OR1<< "---------------------------- ERROR -------------------" << OR2 << '\n';
+			// respons 500 or 400
+			setResStatus(i, 404);
+			// clientMap[i].getReq().set_status(404);
+			// clientMap[i].setRes(clientMap[i].getReq());
+		}
 	}
 	else
 		htmlFile = readFile("stuff/default.html");
@@ -305,8 +327,9 @@ std::string	webserv::serveFile(int i)
 	int x = access(urlPath.c_str(), F_OK);
 	if (x == -1)
 	{
-		clientMap[i].getReq().set_status(404);
-		clientMap[i].setRes(clientMap[i].getReq());
+		setResStatus(i, 404);
+		// clientMap[i].getReq().set_status(404);
+		// clientMap[i].setRes(clientMap[i].getReq());
 	}
 	if (clientMap[i].getReq().get_status() != 200)
 	{
@@ -353,17 +376,12 @@ void	webserv::checkLocMeth(int i)
 	std::string dir = clientMap[i].getReq().get_path();
 	if (is_dir && !countSlash(dir))
 			dir = dir.append("/");// taygadha ha ki me
-	
-	if (countSlash(dir))
-	{
-		std::cout << "\n ---------- \n there is 2 slash dir is [ " << dir << " ]" << '\n';
-		size_t pos1 = urlPath.find("/", 0);
-		size_t pos2 = urlPath.find("/", pos1 + 1);
-		dir = urlPath.substr(pos1, pos2 - pos1 + 1);
-		std::cout << "last dir {" <<  dir << "}" << '\n';
-		check_dir(i);
-	}
-	std::cout << "\nnot a dir\n";
+	std::cout << "\n ---------- \n there is 2 slash dir is [ " << dir << " ]" << '\n';
+	size_t pos1 = urlPath.find("/", 0);
+	size_t pos2 = urlPath.find("/", pos1 + 1);
+	dir = urlPath.substr(pos1, pos2 - pos1 + 1);
+	std::cout << "last dir {" <<  dir << "}" << '\n';
+	check_dir(i, dir);
 }
 
 void	webserv::writing(int i)
