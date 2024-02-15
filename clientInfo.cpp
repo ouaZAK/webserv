@@ -5,10 +5,11 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/27 09:06:33 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/15 12:55:58 by zouaraqa         ###   ########.fr       */
+/*   Created: Invalid date        by                   #+#    #+#             */
+/*   Updated: 2024/02/15 19:02:29 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #include "clientInfo.hpp"
 
@@ -114,6 +115,16 @@ void		clientInfo::setDefFile(std::string defF)
 std::string	clientInfo::getDefFile() const
 {
 	return (defFile);
+}
+
+void	clientInfo::setErrorPages(std::vector<std::string> erPages)
+{
+	errorPages = erPages;
+}
+
+std::vector<std::string> clientInfo::getErrorPages() const
+{
+	return (errorPages);
 }
 
 void	clientInfo::setErrorPages(std::vector<std::string> erPages)

@@ -5,10 +5,11 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/27 09:05:40 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/15 12:55:42 by zouaraqa         ###   ########.fr       */
+/*   Created: Invalid date        by                   #+#    #+#             */
+/*   Updated: 2024/02/15 19:02:50 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #pragma once
 
@@ -29,6 +30,7 @@ class clientInfo
 		size_t					bodySize;
 		std::string				defFile;
 		std::vector<std::string>	errorPages;
+		std::vector<std::string>	errorPages;
 		bool autoIndx;
 	public:
 		clientInfo();
@@ -48,6 +50,8 @@ class clientInfo
 		size_t	 				getBodySize() const;
 		void					setBodySize(size_t bodySize);
 		std::vector<Location>	getLoc() const;
+		void					setErrorPages(std::vector<std::string> erPages);
+		std::vector<std::string> getErrorPages() const;
 		void					setErrorPages(std::vector<std::string> erPages);
 		std::vector<std::string> getErrorPages() const;
 		void					setLoc(std::vector<Location> loc);
