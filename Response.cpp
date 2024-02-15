@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/29 11:33:34 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/10 12:46:47 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/14 13:01:29 by hcharia          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,16 @@ Response::Response(Request req)
 		responseHead = "501 Not Implemented";
 		error_body = "The server does not support the functionality required to fulfill the request. This is the server's default response for unrecognized requests.";
 	}
+	set_html_err(req);
+	set_head(req, responseHead);
+}
+
+Response::Response(Request req, std::string url)
+{
+	responseHead = "301 Moved Permanently";
+	error_body = "";
+	headers.push_back("Content-Type: text/html");
+	headers.push_back("Location: " + url);
 	set_html_err(req);
 	set_head(req, responseHead);
 }

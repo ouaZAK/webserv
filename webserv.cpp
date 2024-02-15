@@ -3,14 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/13 14:40:43 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/14 15:30:04 by hcharia          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
+
+// TO DO : 
+//Error page
+// /dir/ is a fking url not directory
 
 #define BL1 "\x1b[34m"
 #define BL2 "\x1b[0m"
@@ -161,6 +165,7 @@ void	webserv::setResStatus(int i, int status)
 
 bool webserv::check_dir(int i, std::string dir)
 {
+	/* location vector is loc */
 	std::vector<Location> loc = clientMap[i].getLoc();
 	for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
 	{
@@ -169,6 +174,15 @@ bool webserv::check_dir(int i, std::string dir)
 			std::cout << "location: [" << *itV << "]    dir: [" << dir << "]\n";
 			if (dir == *itV)
 			{
+				std::cout << "ROOOOOOOOOOOOOOOOOOOOOOT : " << locIt->root << '\n';
+				if (locIt->redirect_status == 301)
+				{
+					std::cout << "########### : " << locIt->redirect_to_dir << " " << locIt->redirect_status << '\n';
+					clientMap[i].getReq().set_status(301);
+					Response res(clientMap[i].getReq(), locIt->redirect_to_dir); // then send req to res
+					clientMap[i].setRes(res);
+					return (true);
+				}
 				for (std::vector<std::string>::iterator itV2 = locIt->methods.begin(); itV2 != locIt->methods.end(); itV2++)
 				{
 					std::cout << clientMap[i].getReq().get_method() << " <- req  |  itV -> " <<  *itV2 << "\n";
@@ -193,15 +207,22 @@ bool webserv::check_dir(int i, std::string dir)
 bool	webserv::getRequest(int i)
 {
 	Request req = clientMap[i].getReq();
+	std::string dir = clientMap[i].getReq().get_path();
+	if (check_dir(i, dir))
+	{
+		clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
+		clientMap.at(i).clearReqChunk();
+		return false;
+	}
 	if (req.get_method() == "POST")
 	{
-		std::string dir = clientMap[i].getReq().get_path();
-		if (check_dir(i, dir))
-		{
-			clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
-			clientMap.at(i).clearReqChunk();
-			return false;
-		}
+		// std::string dir = clientMap[i].getReq().get_path();
+		// if (check_dir(i, dir))
+		// {
+		// 	clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
+		// 	clientMap.at(i).clearReqChunk();
+		// 	return false;
+		// }
 		
 		extractBody(i);
 		
@@ -210,7 +231,7 @@ bool	webserv::getRequest(int i)
 		// std::cout << "clean body size" << cleanBody.size() << " " << "[" << cleanBody << "]" << clientMap[i].getBodySize()<< "\n";
 		if (cleanBody.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200/* and 200 range */)
 		{
-			clientMap[i].getReq().set_status(413);// first fill status in req 
+			clientMap[i].getReq().set_status(413); // first fill status in req 
 			Response res(clientMap[i].getReq()); // then send req to res
 			clientMap[i].setRes(res);
 			clientMap.at(i).clearReqChunk();
@@ -300,7 +321,7 @@ std::string	webserv::serveFile(int i)
 		std::cout << "upload html response ***********************************\n";
 		htmlFile = readFile("stuff/example.html");
 	}
-	else if (is_dir)
+	else if (is_dir && clientMap[i].getReq().get_status() != 301)
 	{
 		//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
 		std::cout << "def********************************** " << clientMap[i].getDefFile() << '\n';
@@ -321,20 +342,22 @@ std::string	webserv::serveFile(int i)
 			// clientMap[i].setRes(clientMap[i].getReq());
 		}
 	}
-	else
+	else if (clientMap[i].getReq().get_status() != 301)
 		htmlFile = readFile("stuff/default.html");
 	/* response here  */
 	int x = access(urlPath.c_str(), F_OK);
 	if (x == -1)
 	{
+		std::cout << "not found : " << urlPath << " " <<  clientMap[i].getReq().get_status() << '\n';
 		setResStatus(i, 404);
 		// clientMap[i].getReq().set_status(404);
 		// clientMap[i].setRes(clientMap[i].getReq());
 	}
+	std::cout << "req status : " << clientMap[i].getReq().get_status() << '\n';
 	if (clientMap[i].getReq().get_status() != 200)
 	{
 		htmlFile = clientMap[i].getRes().getHtmlError();
-		print(htmlFile, "BOOOOOM------");
+		print(htmlFile, "BOOOOOM------lalala");
 		fileContent = clientMap[i].getRes().getHead() + "Content-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
 		return (fileContent);
 	}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 10:29:22 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/08 18:54:18 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/14 11:18:10 by hcharia          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ private:
 public:
 	Response();
 	Response(Request);
+	Response(Request req, std::string url);
 	void	set_html_err(Request &r);
 	// void	set_OKheads(Request r);
 	void	set_head(Request &r, std::string);
