@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   clientInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 09:06:33 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/14 12:08:27 by hcharia          ###   ########.fr       */
+/*   Updated: 2024/02/15 12:55:58 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,4 +114,14 @@ void		clientInfo::setDefFile(std::string defF)
 std::string	clientInfo::getDefFile() const
 {
 	return (defFile);
+}
+
+void	clientInfo::setErrorPages(std::vector<std::string> erPages)
+{
+	errorPages = erPages;
+}
+
+std::vector<std::string> clientInfo::getErrorPages() const
+{
+	return (errorPages);
 }

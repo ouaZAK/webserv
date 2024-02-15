@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInf.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:44:04 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/14 11:40:05 by hcharia          ###   ########.fr       */
+/*   Updated: 2024/02/15 16:38:35 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,15 +21,19 @@
 class ServerInf
 {
 private:
-	std::vector<int> ports;
-	std::string server_name;
-	std::vector<std::string> error_pages;
-	int body_size;
+	std::vector<int>			ports;
+	std::string					server_name;
+	std::vector<std::string>	error_pages;
+	int							body_size;
 	std::string root;
 	std::string host;
 	bool		ai;
 
 public:
+	ServerInf()
+	{
+		body_size = -1;
+	}
 	static std::string s;
 	std::vector<Location> locs;
 	std::string filcbs(std::stringstream &ss);
@@ -48,6 +52,11 @@ public:
 	int			getBodySize();
 	void reset();
 	void	print() const;
+	
+	std::vector<std::string> getErrorPages()
+	{
+		return (error_pages);
+	}
 	bool getAI()
 	{
 		return ai;

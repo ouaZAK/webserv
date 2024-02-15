@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:37 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/13 10:23:26 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/15 16:45:24 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,11 @@ class webInfo
 		struct sockaddr_in		serverAddress;
 		std::string 			serverName;
 		std::string 			root;
-		size_t 					bodySize;
+		int 					bodySize;
 		int 					port;
 		int 					sock;
 		std::vector<Location>	locationVec;
+		std::vector<std::string>	errorPages;
 		bool ai;
 		// std::vector<std::string> error_pages;
 	public:
@@ -40,6 +41,10 @@ class webInfo
 		struct sockaddr_in		getServerAddress() const;
 		std::string				getRoot()const;
 		
+		std::vector<std::string> getErrorPages()
+		{
+			return (errorPages);
+		}
 		bool getAI()
 		{
 			return ai;

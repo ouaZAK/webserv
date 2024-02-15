@@ -3,16 +3,15 @@ server
 {
     listen        7777 ;
     server_name   localhost ;
-    error_pages   404.html 500.html ;
+    error_pages   404.html 405.html ;
     client_body_size  10000000 ;
     root    server_3 ;
     autoindex on ;
-    location /kapouet/
+    location /dr/
     {
-		root //tmp/www
         path  ./my-webserv ;
-        default_file  form.html ;
-        methods  GET   DELETE ;
+        default_file  default.html ;
+        methods    GET DELETE ;
         cgi_bin  /usr/bin/python3 ;
         cgi_extension  .ayac ;
     }
@@ -27,10 +26,10 @@ server
 
 server
 {
-    listen        999 9999 ;
+    listen        8080 9999 ;
     server_name   example.com ;
     host            127.0.0.1 ;
-    error_pages   /path/to/404.html  500.html ;
+    error_pages   404.html 405.html ;
     client_body_size  500000 ;
     root    stuff ;
     autoindex   on ;

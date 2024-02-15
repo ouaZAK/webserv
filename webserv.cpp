@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/14 15:30:04 by hcharia          ###   ########.fr       */
+/*   Updated: 2024/02/15 18:47:08 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 
 // TO DO : 
-//Error page
+// ip address instead or addranny
 // /dir/ is a fking url not directory
 
 #define BL1 "\x1b[34m"
@@ -131,6 +131,7 @@ void	webserv::acceptSockets(int i)
 		clientMap[newClientSocket].setLoc(serverMap[i].getLoc());
 		clientMap[newClientSocket].setBodySize(serverMap[i].getBodySize());
 		clientMap[newClientSocket].setAutoIndx(serverMap[i].getAI());
+		clientMap[newClientSocket].setErrorPages(serverMap[i].getErrorPages());
 		
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 	}
@@ -157,8 +158,25 @@ void	webserv::extractBody(int i)
 	}
 }
 
-void	webserv::setResStatus(int i, int status)
+void	webserv::setResStatus(int i, int status, std::string &htmlFile, std::string statusHtml)
 {
+	int x;
+	if (!htmlFile.empty())
+	{
+		for (std::vector<std::string>::iterator it = clientMap[i].getErrorPages().begin(); it != clientMap[i].getErrorPages().end(); ++it)
+		{
+			if (statusHtml == *it)
+			{
+				x = access(("dirOfErrors/" + statusHtml).c_str(), F_OK);
+				if (x != -1)
+				{
+					htmlFile = readFile("dirOfErrors/" + statusHtml);
+					resError = false;
+					break ;
+				}
+			}
+		}
+	}
 	clientMap[i].getReq().set_status(status);
 	clientMap[i].setRes(clientMap[i].getReq());
 }
@@ -193,9 +211,8 @@ bool webserv::check_dir(int i, std::string dir)
 						return (false);
 					}
 				}
-				setResStatus(i, 405);
-				// clientMap[i].getReq().set_status(405);
-				// clientMap[i].setRes(clientMap[i].getReq());
+				htmlFile = "dirOfErrors/405.html";
+				setResStatus(i, 405, htmlFile, "405.html");
 				std::cout << "not allowed return from directory\n\n";
 				return (true);
 			}
@@ -255,6 +272,7 @@ bool	webserv::getRequest(int i)
 
 void	webserv::reading(int i)
 {
+	resError = true;
 	buff = new char[300000];
 	std::cout << YL1 << "READ block " << YL2 << std::endl;
 	// 	std::cout << "i : " << i << std::endl;
@@ -312,7 +330,7 @@ void	webserv::reading(int i)
 
 std::string	webserv::serveFile(int i)
 {
-	std::string htmlFile;
+	// std::string htmlFile;
 	std::string fileContent;
 	
 	//if its dir show default file or show index
@@ -325,40 +343,36 @@ std::string	webserv::serveFile(int i)
 	{
 		//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
 		std::cout << "def********************************** " << clientMap[i].getDefFile() << '\n';
-		htmlFile = readFile(clientMap[i].getRoot() + "/" + clientMap[i].getDefFile());
-		std::cout << htmlFile << '\n';
-		if (htmlFile.empty() && clientMap[i].getAutoIndx())
+		if (resError)
+			htmlFile = readFile(clientMap[i].getRoot() + "/" + clientMap[i].getDefFile());
+		std::cout << "htmlFile [" << htmlFile << "]" << clientMap[i].getAutoIndx() << '\n';
+		if (htmlFile.empty() && clientMap[i].getAutoIndx() && resError)
 		{
 			std::cout << OR1<< "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
-			htmlFile = readFile(clientMap[i].getRoot() + "/index.html");
-			print(clientMap[i].getRoot() + "index.html", "here");
+			if (resError)
+				htmlFile = readFile(clientMap[i].getRoot() + "/index.html");
+			print(clientMap[i].getRoot() + "/index.html", "here");
 		}
-		else if (htmlFile.empty() && !clientMap[i].getAutoIndx())
+		else if (htmlFile.empty() && !clientMap[i].getAutoIndx() && resError)
 		{
-			std::cout << OR1<< "---------------------------- ERROR -------------------" << OR2 << '\n';
+			std::cout << OR1<< "---------------------------- ERROR no defltfile no auto indx -------------------" << OR2 << '\n';
 			// respons 500 or 400
-			setResStatus(i, 404);
-			// clientMap[i].getReq().set_status(404);
-			// clientMap[i].setRes(clientMap[i].getReq());
+			setResStatus(i, 404, empty, "");
 		}
 	}
 	else if (clientMap[i].getReq().get_status() != 301)
-		htmlFile = readFile("stuff/default.html");
+		htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
 	/* response here  */
 	int x = access(urlPath.c_str(), F_OK);
 	if (x == -1)
-	{
-		std::cout << "not found : " << urlPath << " " <<  clientMap[i].getReq().get_status() << '\n';
-		setResStatus(i, 404);
-		// clientMap[i].getReq().set_status(404);
-		// clientMap[i].setRes(clientMap[i].getReq());
-	}
-	std::cout << "req status : " << clientMap[i].getReq().get_status() << '\n';
+		setResStatus(i, 404, htmlFile, "404.html");
 	if (clientMap[i].getReq().get_status() != 200)
 	{
-		htmlFile = clientMap[i].getRes().getHtmlError();
+		if (resError)
+			htmlFile = clientMap[i].getRes().getHtmlError();
 		print(htmlFile, "BOOOOOM------lalala");
 		fileContent = clientMap[i].getRes().getHead() + "Content-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
+		htmlFile.clear();
 		return (fileContent);
 	}
 	fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
@@ -371,10 +385,11 @@ std::string	webserv::serveFile(int i)
 			htmlFile = readFile(urlPath);
 			fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
 		// print(fileContent, "file ctn");
+		htmlFile.clear();
 			return (fileContent);
 		}
 	}
-	//return default page
+	htmlFile.clear();
 	return (fileContent);
 }
 

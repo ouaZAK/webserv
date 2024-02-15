@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/13 14:40:18 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/15 12:59:37 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,8 +82,11 @@ class webserv
 		std::string							urlPath;
 		std::string 						cleanBody;
 		std::string 						body;
+		std::string 						empty;
 		size_t 								bodyLength;
 		size_t 								pos;
+		bool 								resError;
+		std::string htmlFile;
 		
 	public:
 		webserv(){}
@@ -105,7 +108,7 @@ class webserv
 		std::string				serveFile(int i);
 		void					checkLocMeth(int i);
 		bool 					check_dir(int i, std::string dir);
-		void					setResStatus(int i, int status);
+		void					setResStatus(int i, int status, std::string &htmlFile, std::string statusHtml);
 		// void	updateMaxSocket(int i);
 
 		// virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;
