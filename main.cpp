@@ -16,13 +16,13 @@ int main(int ac, char **av)
 {
 	if (ac != 2)
 		return (std::cout << "Error" << std::endl, 1);
-	std::vector<ServerInf> serverInfAymaaaaaaan = confInf(av);
-
-	std::map<std::string, std::string> mimeMap = populateMimeMap();
+	std::map<std::string, std::string> mimeMap;
 	std::vector<webInfo> listWebInfo;
-	std::vector<int> ports;
 	try
 	{
+		std::vector<ServerInf> serverInfAymaaaaaaan = confInf(av);
+		mimeMap = populateMimeMap();
+		std::vector<int> ports;
 		for (std::vector<ServerInf>::iterator infIt = serverInfAymaaaaaaan.begin(); infIt != serverInfAymaaaaaaan.end(); ++infIt)
 		{
 			ports = infIt->getPorts();
@@ -32,15 +32,17 @@ int main(int ac, char **av)
 				listWebInfo.push_back(info);
 			}
 		}
-		// webserv start;
-		// std::cout << listWebInfo[0].getRoot() << '\n';
-		// std::cout << listWebInfo[1].getRoot() << '\n';
-		// std::cout << listWebInfo[2].getRoot() << '\n';
-		webserv start(listWebInfo, mimeMap);
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << "$$$$$$$------------------$$$$$$$$$\n" << e.what() << '\n';
+		return (1);
 	}
+	catch(const char* e)
+	{
+		std::cerr << e << '\n';
+		return (1);
+	}
+	webserv start(listWebInfo, mimeMap);
 	return (0);
 }

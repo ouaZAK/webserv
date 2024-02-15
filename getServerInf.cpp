@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:46:31 by asidqi            #+#    #+#             */
-/*   Updated: 2024/01/31 09:03:00 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/15 18:45:21 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,11 @@ std::vector<ServerInf> confInf(char *av[])
 	std::string el;
 
 	if (inFile.fail())
-		throw "File failed to open";
+	{
+		inFile.open("confPars/defaultConfig");
+		if (inFile.fail())
+			throw "File failed to open";
+	}
 	std::string line;
 	try
 	{

@@ -1,0 +1,25 @@
+
+server 
+{
+    listen        7777 ;
+    server_name   localhost ;
+    error_pages   404.html 405.html ;
+    client_body_size  10000000 ;
+    root    server_3 ;
+    autoindex on ;
+    location /dr/
+    {
+        path  ./my-webserv ;
+        default_file  default.html ;
+        methods    GET DELETE ;
+        cgi_bin  /usr/bin/python3 ;
+        cgi_extension  .ayac ;
+    }
+    location /upload/
+    {
+        default_file  index1.html ;
+        methods GET POST DELETE ;
+        cgi_extension   .py ;
+        cgi_bin  /usr/bin/python3 ;
+    }
+}
