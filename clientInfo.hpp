@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/15 19:02:50 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/15 19:17:14 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ class clientInfo
 		size_t					bodySize;
 		std::string				defFile;
 		std::vector<std::string>	errorPages;
-		std::vector<std::string>	errorPages;
 		bool autoIndx;
 	public:
 		clientInfo();
@@ -50,8 +49,6 @@ class clientInfo
 		size_t	 				getBodySize() const;
 		void					setBodySize(size_t bodySize);
 		std::vector<Location>	getLoc() const;
-		void					setErrorPages(std::vector<std::string> erPages);
-		std::vector<std::string> getErrorPages() const;
 		void					setErrorPages(std::vector<std::string> erPages);
 		std::vector<std::string> getErrorPages() const;
 		void					setLoc(std::vector<Location> loc);

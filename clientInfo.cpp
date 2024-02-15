@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/15 19:02:29 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/15 19:17:32 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,16 +115,6 @@ void		clientInfo::setDefFile(std::string defF)
 std::string	clientInfo::getDefFile() const
 {
 	return (defFile);
-}
-
-void	clientInfo::setErrorPages(std::vector<std::string> erPages)
-{
-	errorPages = erPages;
-}
-
-std::vector<std::string> clientInfo::getErrorPages() const
-{
-	return (errorPages);
 }
 
 void	clientInfo::setErrorPages(std::vector<std::string> erPages)

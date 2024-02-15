@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/15 19:03:03 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/15 19:16:19 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,19 +26,11 @@ private:
 	std::string					server_name;
 	std::vector<std::string>	error_pages;
 	int							body_size;
-	std::vector<int>			ports;
-	std::string					server_name;
-	std::vector<std::string>	error_pages;
-	int							body_size;
 	std::string root;
 	std::string host;
 	bool		ai;
 
 public:
-	ServerInf()
-	{
-		body_size = -1;
-	}
 	ServerInf()
 	{
 		body_size = -1;
@@ -61,11 +53,6 @@ public:
 	int			getBodySize();
 	void reset();
 	void	print() const;
-	
-	std::vector<std::string> getErrorPages()
-	{
-		return (error_pages);
-	}
 	
 	std::vector<std::string> getErrorPages()
 	{
