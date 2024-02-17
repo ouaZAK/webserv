@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInf.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/06 00:29:17 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/16 15:12:10 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,6 +195,19 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 				throw "Missing or incorrect delimiter in root directive";
 			tmp.root = el;
 		}
+		else if ("alias" == el)
+        {
+            ss >> el; // Read the file name
+            if (el.empty())
+                throw "Missing alias in alias directive";
+            else if (!tmp.alias.empty())
+                throw "alias directive repeated!";
+            std::string nextToken;
+            ss >> nextToken; // Attempt to read the next token, which should be the semicolon
+            if (nextToken != ";")
+                throw "Missing or incorrect delimiter in alias directive";
+            tmp.alias = el;
+        }
 		else if ("methods" == el)
 			getMethods(ss, tmp);
 		else if ("cgi_bin" == el)

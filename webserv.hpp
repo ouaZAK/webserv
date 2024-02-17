@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/15 12:59:37 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/17 11:56:37 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 #include "ServerInf.hpp"
 #include "webInfo.hpp"
 #include "clientInfo.hpp"
+#include "autoindex.hpp"
 
 // #define PORT 8080
 #define MAX_CLIENTS 10
@@ -70,6 +71,7 @@ class webserv
 		std::map<int, clientInfo>			clientMap;
 		std::map<int, clientInfo>::iterator	cliMapIt;
 		int									maxSocket;
+		int 								check;
 		std::vector<webInfo>				serverSocket;
 		char								*buff;
 		std::string 						reqContent;

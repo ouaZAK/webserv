@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/15 19:17:14 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/17 11:53:51 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 class clientInfo
 {
 	private:
+		int						port;
 		std::string 			reqFull;
 		std::string 			reqChunk;
 		std::string 			root;
@@ -56,4 +57,8 @@ class clientInfo
 		bool					getAutoIndx() const;
 		void					setDefFile(std::string defF);
 		std::string				getDefFile() const;
+		void	setPort(int p)
+		{
+			port = p;
+		}
 };

@@ -1,21 +1,9 @@
 #include "webserv.hpp"
 #include "ServerInf.hpp"
 
-int	creatSock()
-{
-	int serversock = socket(AF_INET, SOCK_STREAM, 0);
-	if (serversock == -1)
-	{
-		std::cout << "failed to create server socket" << std::endl;
-		exit(1);
-	}
-	return (serversock);
-}
-
 int main(int ac, char **av)
 {
-	if (ac != 2)
-		return (std::cout << "Error" << std::endl, 1);
+	(void)ac;
 	std::map<std::string, std::string> mimeMap;
 	std::vector<webInfo> listWebInfo;
 	try
@@ -35,7 +23,7 @@ int main(int ac, char **av)
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << "$$$$$$$------------------$$$$$$$$$\n" << e.what() << '\n';
+		std::cerr << "$$$$$$$------- Error -----------$$$$$$$$\n" << e.what() << '\n';
 		return (1);
 	}
 	catch(const char* e)
@@ -43,6 +31,19 @@ int main(int ac, char **av)
 		std::cerr << e << '\n';
 		return (1);
 	}
-	webserv start(listWebInfo, mimeMap);
+	try
+	{
+		webserv start(listWebInfo, mimeMap);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << "$$$$$$$------- Error -----------$$$$$$$$\n" << e.what() << '\n';
+		return (1);
+	}
+	catch(const char* e)
+	{
+		std::cerr << e << '\n';
+		return (1);
+	}
 	return (0);
 }

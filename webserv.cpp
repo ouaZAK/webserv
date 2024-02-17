@@ -6,14 +6,14 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/15 18:47:08 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/17 11:59:42 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 
 // TO DO : 
-// ip address instead or addranny
+// remove client when its close
 // /dir/ is a fking url not directory
 
 #define BL1 "\x1b[34m"
@@ -66,8 +66,11 @@ void	webserv::bindSockets()
 	std::vector<struct sockaddr_in>::iterator adrIt = serverAddress.begin();
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
+		std::cout << OR1 << mapIt->first << OR2 << '\n';
 		if (bind(mapIt->first, (struct sockaddr *)&(*adrIt), sizeof(*adrIt)) < 0)
 		{
+			if (serverMap.size() == 1)
+				throw "Error:\nFatal error";
 			std::cout << "failed to bind server socket" << std::endl;
 			return;
 		}
@@ -125,13 +128,13 @@ void	webserv::acceptSockets(int i)
 		if (newClientSocket > maxSocket)
 			maxSocket = newClientSocket;
 		
-		
 		clientMap.insert(std::make_pair(newClientSocket, clientInf));
 		clientMap[newClientSocket].setRoot(serverMap[i].getRoot());
 		clientMap[newClientSocket].setLoc(serverMap[i].getLoc());
 		clientMap[newClientSocket].setBodySize(serverMap[i].getBodySize());
 		clientMap[newClientSocket].setAutoIndx(serverMap[i].getAI());
 		clientMap[newClientSocket].setErrorPages(serverMap[i].getErrorPages());
+		clientMap[newClientSocket].setPort(serverMap[i].getPort());
 		
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 	}
@@ -160,7 +163,7 @@ void	webserv::extractBody(int i)
 
 void	webserv::setResStatus(int i, int status, std::string &htmlFile, std::string statusHtml)
 {
-	int x;
+	int x, y;
 	if (!htmlFile.empty())
 	{
 		for (std::vector<std::string>::iterator it = clientMap[i].getErrorPages().begin(); it != clientMap[i].getErrorPages().end(); ++it)
@@ -168,7 +171,9 @@ void	webserv::setResStatus(int i, int status, std::string &htmlFile, std::string
 			if (statusHtml == *it)
 			{
 				x = access(("dirOfErrors/" + statusHtml).c_str(), F_OK);
-				if (x != -1)
+				y = access(("dirOfErrors/" + statusHtml).c_str(), R_OK);
+				std::cout << "x : " << x << "y: " << y << '\n';
+				if (x != -1 && y != -1)
 				{
 					htmlFile = readFile("dirOfErrors/" + statusHtml);
 					resError = false;
@@ -256,10 +261,10 @@ bool	webserv::getRequest(int i)
 		}
 		req.set_body(body);
 		std::string filename = req.get_file_name();
-		
 		/***** get the proper root if its default one or inside location ******/
 		std::ofstream file(clientMap[i].getRoot() + "/upload/" + filename);		/* get the root path */
 		file << cleanBody;
+		std::cout << OR1 <<  " body lenght --------------- \n"   << OR2 << '\n';
 	}
 	clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
 	clientMap.at(i).clearReqChunk();
@@ -311,10 +316,16 @@ void	webserv::reading(int i)
 		bodyLength = std::strtod(req.get_headers()["Content-Length"].c_str(), NULL);
 		clientMap[i].setReq(req);
 		if (getRequest(i))
+		{
+			delete (buff);
 			return ;
+		}
 	}
 	else if (!clientMap.at(i).getReqChunk().empty())
+	{
+		delete (buff);
 		return ;
+	}
 
 	//print
 	// std::cout << "\nreadin to writin" << std::endl;
@@ -326,6 +337,7 @@ void	webserv::reading(int i)
 	FD_SET(i, &write_set);
 	//clear it from read cuz now it need to be writin on it only
 	FD_CLR(i, &read_set);
+	delete (buff);
 }
 
 std::string	webserv::serveFile(int i)
@@ -339,7 +351,7 @@ std::string	webserv::serveFile(int i)
 		std::cout << "upload html response ***********************************\n";
 		htmlFile = readFile("stuff/example.html");
 	}
-	else if (is_dir && clientMap[i].getReq().get_status() != 301)
+	else if (is_dir && clientMap[i].getReq().get_status() != 301) // redirection check
 	{
 		//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
 		std::cout << "def********************************** " << clientMap[i].getDefFile() << '\n';
@@ -349,9 +361,12 @@ std::string	webserv::serveFile(int i)
 		if (htmlFile.empty() && clientMap[i].getAutoIndx() && resError)
 		{
 			std::cout << OR1<< "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
+			autoindex aiGen("stuff", "127.0.0.1", 8080);
+			
 			if (resError)
-				htmlFile = readFile(clientMap[i].getRoot() + "/index.html");
-			print(clientMap[i].getRoot() + "/index.html", "here");
+				htmlFile = aiGen.pageGen();//readFile(clientMap[i].getRoot() + "/index.html");
+			// print(clientMap[i].getRoot() + "/index.html", "here");
+			
 		}
 		else if (htmlFile.empty() && !clientMap[i].getAutoIndx() && resError)
 		{
@@ -366,6 +381,9 @@ std::string	webserv::serveFile(int i)
 	int x = access(urlPath.c_str(), F_OK);
 	if (x == -1)
 		setResStatus(i, 404, htmlFile, "404.html");
+	x = access(urlPath.c_str(), R_OK);
+	if (x == -1)
+		setResStatus(i, 403, htmlFile, "403.html");
 	if (clientMap[i].getReq().get_status() != 200)
 	{
 		if (resError)
@@ -431,7 +449,7 @@ void	webserv::writing(int i)
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
 	print(urlPath, "url : ");
 	// if (urlPath != (clientMap[i].getRoot() + "/upload/"))
-		
+
 	//check is dir
 	is_dir = false;
 	struct stat fileStat;
@@ -444,7 +462,7 @@ void	webserv::writing(int i)
 
 	// std::cout << "i : " << i << std::endl;
 	// std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getReqFull() << std::endl;
-	
+
 	std::string fileContent = serveFile(i);	
 	long long len = send(i, fileContent.c_str(), fileContent.length(), 0);
 	if (len < 0)
@@ -455,6 +473,7 @@ void	webserv::writing(int i)
 
 	//if you close the next client willtake fd 6 maybe dont close now
 	close(i);
+	clientMap.erase(clientMap.find(i));
 }
 
 webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::string> mime)
@@ -491,7 +510,6 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 	listening();
 	// set servermap to read
 	setFds();
-
 	while(1)
 	{
 		std::cout << OR1 << "\nstart \n----------------" << OR2 << "\n";
@@ -500,7 +518,12 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 		copyWrite = write_set;
 
 		// select
-		int check = select(maxSocket + 1, &copyRead, &copyWrite, NULL, NULL);
+		check = select(maxSocket + 1, &copyRead, &copyWrite, NULL, &timeout);
+		if (check == 0)
+		{
+			// loop on clientMap and check if the connection is keep alive and erase that client map
+			continue ;
+		}
 		if (check < 0)
 			return;
 		std::cout << "after select " << check << '\n';
@@ -515,9 +538,9 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 			else if (FD_ISSET(i, &copyWrite)) // receiv request from clinet
 				writing(i);
 		}
-		// sleep(2);
 	}
-	close(serverMap.begin()->first);
+	serverMap.clear();
+	clientMap.clear();
 }
 
 webserv::~webserv()

@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/15 19:16:19 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/17 12:00:39 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,10 @@ public:
 	std::vector<std::string> getErrorPages()
 	{
 		return (error_pages);
+	}
+	std::string getHost()
+	{
+		return (host);
 	}
 	bool getAI()
 	{

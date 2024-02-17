@@ -9,6 +9,7 @@ SRC =	webserv.cpp \
 		clientInfo.cpp \
 		getServerInf.cpp \
 		ServerInf.cpp \
+		autoindex.cpp \
 		main.cpp
 OBJ = $(SRC:.cpp=.o)
 
