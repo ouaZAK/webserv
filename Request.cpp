@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:28:05 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/10 12:05:40 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/17 13:01:44 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,12 +41,10 @@ Request::Request(std::string input) : status(200), postBody("")
 		if (pos == std::string::npos)
 		{
 			status = BAD_REQUEST;
-			std::cout << "************************** poooooooosss **************************\n";
 			return ;
 		}
 		if (line.find("\r") == std::string::npos || line[line.find("\r") + 1] != 0)
 		{
-			std::cout << "anaaaaaaaa hnaaaa 1\n";
 			status = BAD_REQUEST;
 			return ;
 		}
@@ -129,7 +127,6 @@ void	Request::prl(std::string line) // parse request line
 	if (ss >> result || (method != "POST" && method != "DELETE" && method != "GET") 
 		|| version != "HTTP/1.1")
 	{
-		std::cout << "anaaaaaaaa hnaaaa 3\n";
 		status = BAD_REQUEST;
 		return ;
 	}
@@ -146,7 +143,6 @@ void	Request::prl(std::string line) // parse request line
 		 || path[i] == '\\' ||  (path[i] >= '[' && path[i] <= '^') 
 		 || path[i] == '`' ||  (path[i] >= '{' && path[i] <= '}'))
 		{
-			std::cout << "anaaaaaaaa hnaaaa 4\n";
 			status = BAD_REQUEST;
 			return ;
 		}

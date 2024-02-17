@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/17 11:53:51 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/17 19:56:41 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class clientInfo
 		std::string 			reqFull;
 		std::string 			reqChunk;
 		std::string 			root;
+		std::string 			host;
 		std::vector<Location>	locationVec;
 		Request					req;
 		Response				res;
@@ -60,5 +61,17 @@ class clientInfo
 		void	setPort(int p)
 		{
 			port = p;
+		}
+		int	getPort()
+		{
+			return (port);
+		}
+		void	setHost(std::string hst)
+		{
+			host = hst;
+		}
+		std::string	getHost()
+		{
+			return (host);
 		}
 };

@@ -1,10 +1,10 @@
 server
 {
-    listen        8080 ;
+    listen        8080  ;
     server_name   example.com ;
     host            127.0.0.1 ;
     error_pages   404.html 405.html ;
-    client_body_size  500000 ;
+    client_body_size  5000000 ;
     root    stuff ;
     autoindex   on ;
     location /dir/
@@ -14,6 +14,40 @@ server
         cgi_extension   .py ;
         cgi_bin  /usr/bin/python3 ;
     }
+    location /upload/
+    {
+        default_file  index1.html ;
+        methods GET POST DELETE ;
+        cgi_extension   .py ;
+        cgi_bin  /usr/bin/python3 ;
+    }
+    location /test/
+    {
+        default_file  iNdex2.html ;
+        methods  GET  POST DELETE ;
+        cgi_bin  /usr/bin/python4 ;
+        cgi_extension  .BRUH ;
+        return 301 /dir/ ;
+    }
+    location /kapouet/
+    {
+        alias dirOfErrors ;
+        default_file  inDex3.html ;
+        methods  GET  POST DELETE ;
+        cgi_bin  /usr/bin/python4 ;
+        cgi_extension  .ZOOT ;
+    }
+}
+
+server
+{
+    listen        8080 5050 ;
+    server_name   example.com ;
+    host            10.12.8.6 ;
+    error_pages   404.html 405.html ;
+    client_body_size  5000000 ;
+    root    server_3 ;
+    autoindex   on ;
     location /upload/
     {
         default_file  index1.html ;

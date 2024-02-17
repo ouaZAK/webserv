@@ -6,15 +6,21 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/17 11:59:42 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/17 20:40:22 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 
 // TO DO : 
+// " wasir gad auto index bdak html " go to there variable it3taw
 // remove client when its close
 // /dir/ is a fking url not directory
+// loop 3la client o chof variable dial time 
+// check cgi path if it doesnt have cgi dont fork for it
+// if system calls fails with only one socket exit
+// dont exit with error if 2 servers have the same port and dirferrent hosts
+// 
 
 #define BL1 "\x1b[34m"
 #define BL2 "\x1b[0m"
@@ -117,7 +123,7 @@ void	webserv::acceptSockets(int i)
 		newClientSocket = accept(i, (struct sockaddr *)&clientAddress, &clientAddressLen);
 		if (newClientSocket < 0)
 			std::cout << "failed to accept" << std::endl;
-	
+
 		//nonblocking fds
 		int flags = fcntl(newClientSocket, F_GETFL, 0);
 		fcntl(newClientSocket, F_SETFL, flags | O_NONBLOCK);
@@ -127,7 +133,7 @@ void	webserv::acceptSockets(int i)
 
 		if (newClientSocket > maxSocket)
 			maxSocket = newClientSocket;
-		
+
 		clientMap.insert(std::make_pair(newClientSocket, clientInf));
 		clientMap[newClientSocket].setRoot(serverMap[i].getRoot());
 		clientMap[newClientSocket].setLoc(serverMap[i].getLoc());
@@ -135,7 +141,8 @@ void	webserv::acceptSockets(int i)
 		clientMap[newClientSocket].setAutoIndx(serverMap[i].getAI());
 		clientMap[newClientSocket].setErrorPages(serverMap[i].getErrorPages());
 		clientMap[newClientSocket].setPort(serverMap[i].getPort());
-		
+		clientMap[newClientSocket].setHost(serverMap[i].getHost());
+
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 	}
 }
@@ -247,10 +254,8 @@ bool	webserv::getRequest(int i)
 		// }
 		
 		extractBody(i);
-		
 		if (body.length() < bodyLength)
 			return (true);
-		// std::cout << "clean body size" << cleanBody.size() << " " << "[" << cleanBody << "]" << clientMap[i].getBodySize()<< "\n";
 		if (cleanBody.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200/* and 200 range */)
 		{
 			clientMap[i].getReq().set_status(413); // first fill status in req 
@@ -259,6 +264,7 @@ bool	webserv::getRequest(int i)
 			clientMap.at(i).clearReqChunk();
 			return false;
 		}
+		// std::cout << "clean body size" << cleanBody.size() << " " << "[" << cleanBody << "]" << clientMap[i].getBodySize()<< "\n";
 		req.set_body(body);
 		std::string filename = req.get_file_name();
 		/***** get the proper root if its default one or inside location ******/
@@ -278,15 +284,14 @@ bool	webserv::getRequest(int i)
 void	webserv::reading(int i)
 {
 	resError = true;
-	buff = new char[300000];
+	buff = new char[BUFFERSIZE];
 	std::cout << YL1 << "READ block " << YL2 << std::endl;
 	// 	std::cout << "i : " << i << std::endl;
-	int bytesReaded = recv(i, buff, 300000, 0);
+	int bytesReaded = recv(i, buff, BUFFERSIZE, 0);
 	// std::cout <<  bytesReaded  << std::endl;
 	if (bytesReaded == -1)
 		std::cout <<  "error in reacv"  << std::endl;
 	// {
-		
 	// FD_CLR(i, &read_set);
 	// 	return ;
 	// }
@@ -306,7 +311,7 @@ void	webserv::reading(int i)
 	clientMap.at(i).setReqChunk(tmp);
 
 	//print
-	print(clientMap.at(i).getReqChunk(), "Request\n------------------------------");
+	// print(clientMap.at(i).getReqChunk(), "Request\n------------------------------");
 	// std::cout << "[[[ \n\n" << clientMap.at(i).getReqChunk() << " \n]]]" << std::endl;
 	// std::cout  << " " << clientMap.at(i).getReqChunk().find("\r\n\r\n", 0) << std::endl;
 
@@ -323,7 +328,7 @@ void	webserv::reading(int i)
 	}
 	else if (!clientMap.at(i).getReqChunk().empty())
 	{
-		delete (buff);
+		delete (buff) ;
 		return ;
 	}
 
@@ -361,12 +366,12 @@ std::string	webserv::serveFile(int i)
 		if (htmlFile.empty() && clientMap[i].getAutoIndx() && resError)
 		{
 			std::cout << OR1<< "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
-			autoindex aiGen("stuff", "127.0.0.1", 8080);
+			// autoindex aiGen("stuff", "127.0.0.1", 8080);
+			autoindex aiGen(clientMap[i].getRoot(),  clientMap[i].getHost(), clientMap[i].getPort());
 			
 			if (resError)
 				htmlFile = aiGen.pageGen();//readFile(clientMap[i].getRoot() + "/index.html");
 			// print(clientMap[i].getRoot() + "/index.html", "here");
-			
 		}
 		else if (htmlFile.empty() && !clientMap[i].getAutoIndx() && resError)
 		{
@@ -388,7 +393,7 @@ std::string	webserv::serveFile(int i)
 	{
 		if (resError)
 			htmlFile = clientMap[i].getRes().getHtmlError();
-		print(htmlFile, "BOOOOOM------lalala");
+		// print(htmlFile, "BOOOOOM------lalala");
 		fileContent = clientMap[i].getRes().getHead() + "Content-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
 		htmlFile.clear();
 		return (fileContent);
@@ -449,7 +454,8 @@ void	webserv::writing(int i)
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
 	print(urlPath, "url : ");
 	// if (urlPath != (clientMap[i].getRoot() + "/upload/"))
-
+	
+	print(clientMap[i].getReqFull(), "POST---------");
 	//check is dir
 	is_dir = false;
 	struct stat fileStat;
@@ -463,23 +469,23 @@ void	webserv::writing(int i)
 	// std::cout << "i : " << i << std::endl;
 	// std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getReqFull() << std::endl;
 
-	std::string fileContent = serveFile(i);	
+	std::string fileContent = serveFile(i);
 	long long len = send(i, fileContent.c_str(), fileContent.length(), 0);
 	if (len < 0)
 		std::cout << "error " << std::endl;
-	// std::cout << "send \n";
+	std::cout << "send \n";
 	shutdown(i, SHUT_WR);
 	FD_CLR(i, &write_set);
 
 	//if you close the next client willtake fd 6 maybe dont close now
 	close(i);
-	clientMap.erase(clientMap.find(i));
+	// clientMap.erase(clientMap.find(i));
 }
 
 webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::string> mime)
 {
 	timeval timeout;
-	timeout.tv_sec = 2;
+	timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
 
 	mimeMap = mime;

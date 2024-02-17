@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:37 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/15 16:45:24 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/17 19:58:05 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ class webInfo
 		struct sockaddr_in		serverAddress;
 		std::string 			serverName;
 		std::string 			root;
+		std::string 			host;
 		int 					bodySize;
 		int 					port;
 		int 					sock;
@@ -48,5 +49,13 @@ class webInfo
 		bool getAI()
 		{
 			return ai;
+		}
+		void	setHost(std::string hst)
+		{
+			host = hst;
+		}
+		std::string	getHost()
+		{
+			return (host);
 		}
 };
