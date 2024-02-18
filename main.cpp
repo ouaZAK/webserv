@@ -4,22 +4,29 @@
 int main(int ac, char **av)
 {
 	(void)ac;
-	std::map<std::string, std::string> mimeMap;
-	std::vector<webInfo> listWebInfo;
+	std::map<std::string, std::string>	mimeMap;
+	std::vector<ServerInf>				serverInf ;
+	std::vector<webInfo>				listWebInfo;
+	std::vector<int>					ports;
+	int									oneSock, oneServer;
 	try
 	{
-		std::vector<ServerInf> serverInfAymaaaaaaan = confInf(av);
+		serverInf = confInf(av);
+		oneServer = serverInf.size();
 		mimeMap = populateMimeMap();
-		std::vector<int> ports;
-		for (std::vector<ServerInf>::iterator infIt = serverInfAymaaaaaaan.begin(); infIt != serverInfAymaaaaaaan.end(); ++infIt)
+		for (std::vector<ServerInf>::iterator infIt = serverInf.begin(); infIt != serverInf.end(); ++infIt)
 		{
 			ports = infIt->getPorts();
+			oneSock = ports.size();
 			for (std::vector<int>::iterator itV = ports.begin(); itV != ports.end(); itV++)
 			{
-				webInfo info(*itV, *infIt);
-				listWebInfo.push_back(info);
+				webInfo info(*itV, *infIt, oneSock, oneServer);
+				if (info.getSock() != -1)
+					listWebInfo.push_back(info);
 			}
 		}
+		if (!listWebInfo.size())
+			return (1);
 	}
 	catch(const std::exception& e)
 	{

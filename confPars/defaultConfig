@@ -42,7 +42,7 @@ server
 server
 {
     listen        8080 5050 ;
-    server_name   example.com ;
+    server_name   zoot.com ;
     host            10.12.8.6 ;
     error_pages   404.html 405.html ;
     client_body_size  5000000 ;

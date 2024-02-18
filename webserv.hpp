@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/17 12:50:45 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/18 10:06:35 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,28 +38,10 @@
 // #define PORT 8080
 #define MAX_CLIENTS 10
 #define BUFFERSIZE 300000
-class response
-{
-	private:
-		std::string reqFull;
-	public:
-		void	setReqFull(std::string cnt)
-		{
-			reqFull = cnt;
-		}
-
-		std::string getReqFull() const
-		{
-			return (reqFull);
-		}
-};
 
 class webserv
 {
 	private:
-		std::map<int, response>				respMap;
-		std::map<int, response>::iterator	respMapIt;
-		
 		std::map<std::string, std::string>	mimeMap;
 		clientInfo 							clientInf;
 		std::map<int, webInfo> 				serverMap;
@@ -79,7 +61,6 @@ class webserv
 		fd_set								write_set;
 		fd_set 								copyRead;
 		fd_set 								copyWrite;
-		
 		bool								is_dir;
 		std::string							urlPath;
 		std::string 						cleanBody;
@@ -111,6 +92,8 @@ class webserv
 		void					checkLocMeth(int i);
 		bool 					check_dir(int i, std::string dir);
 		void					setResStatus(int i, int status, std::string &htmlFile, std::string statusHtml);
+		void					redirection(int i);
+		void					updateMaxSocket();
 		// void	updateMaxSocket(int i);
 
 		// virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;

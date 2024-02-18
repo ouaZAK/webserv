@@ -6,21 +6,17 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/17 20:40:22 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/18 11:28:05 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 
-// TO DO : 
-// " wasir gad auto index bdak html " go to there variable it3taw
-// remove client when its close
-// /dir/ is a fking url not directory
+// TO DO :
+// send chunck
+// /dir/ is url not directory
 // loop 3la client o chof variable dial time 
 // check cgi path if it doesnt have cgi dont fork for it
-// if system calls fails with only one socket exit
-// dont exit with error if 2 servers have the same port and dirferrent hosts
-// 
 
 #define BL1 "\x1b[34m"
 #define BL2 "\x1b[0m"
@@ -114,37 +110,42 @@ void	webserv::setFds()
 void	webserv::acceptSockets(int i)
 {
 	//if sock server is in read which is always in read whadaheck
-	if (FD_ISSET(i, &copyRead))
-	{
 	std::cout << YL1 << "server " << i  << " accepted" << YL2 << std::endl;
 
-		// accept new connection
-		clientAddressLen = sizeof(*clientAddress.begin());
-		newClientSocket = accept(i, (struct sockaddr *)&clientAddress, &clientAddressLen);
-		if (newClientSocket < 0)
-			std::cout << "failed to accept" << std::endl;
+	// accept new connection
+	clientAddressLen = sizeof(*clientAddress.begin());
+	newClientSocket = accept(i, (struct sockaddr *)&clientAddress, &clientAddressLen);
+	if (newClientSocket < 0)
+	{
+		std::cout << "failed to accept" << std::endl;
+		return ;
+	}
 
-		//nonblocking fds
-		int flags = fcntl(newClientSocket, F_GETFL, 0);
-		fcntl(newClientSocket, F_SETFL, flags | O_NONBLOCK);
+	//nonblocking fds
+	int flags = fcntl(newClientSocket, F_GETFL, 0);
+	if (fcntl(newClientSocket, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		std::cout << "failed to set non blocking\n";
+		close(newClientSocket);
+		return ;
+	}
 
-		//set newclient to copyRead
-		FD_SET(newClientSocket, &read_set);
+	//set newclient to copyRead
+	FD_SET(newClientSocket, &read_set);
 
-		if (newClientSocket > maxSocket)
-			maxSocket = newClientSocket;
+	if (newClientSocket > maxSocket)
+		maxSocket = newClientSocket;
 
-		clientMap.insert(std::make_pair(newClientSocket, clientInf));
-		clientMap[newClientSocket].setRoot(serverMap[i].getRoot());
-		clientMap[newClientSocket].setLoc(serverMap[i].getLoc());
-		clientMap[newClientSocket].setBodySize(serverMap[i].getBodySize());
-		clientMap[newClientSocket].setAutoIndx(serverMap[i].getAI());
-		clientMap[newClientSocket].setErrorPages(serverMap[i].getErrorPages());
-		clientMap[newClientSocket].setPort(serverMap[i].getPort());
-		clientMap[newClientSocket].setHost(serverMap[i].getHost());
+	clientMap.insert(std::make_pair(newClientSocket, clientInf));
+	clientMap[newClientSocket].setRoot(serverMap[i].getRoot());
+	clientMap[newClientSocket].setLoc(serverMap[i].getLoc());
+	clientMap[newClientSocket].setBodySize(serverMap[i].getBodySize());
+	clientMap[newClientSocket].setAutoIndx(serverMap[i].getAI());
+	clientMap[newClientSocket].setErrorPages(serverMap[i].getErrorPages());
+	clientMap[newClientSocket].setPort(serverMap[i].getPort());
+	clientMap[newClientSocket].setHost(serverMap[i].getHost());
 
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
-	}
 }
 
 void	webserv::extractBody(int i)
@@ -245,14 +246,6 @@ bool	webserv::getRequest(int i)
 	}
 	if (req.get_method() == "POST")
 	{
-		// std::string dir = clientMap[i].getReq().get_path();
-		// if (check_dir(i, dir))
-		// {
-		// 	clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
-		// 	clientMap.at(i).clearReqChunk();
-		// 	return false;
-		// }
-		
 		extractBody(i);
 		if (body.length() < bodyLength)
 			return (true);
@@ -290,23 +283,22 @@ void	webserv::reading(int i)
 	int bytesReaded = recv(i, buff, BUFFERSIZE, 0);
 	// std::cout <<  bytesReaded  << std::endl;
 	if (bytesReaded == -1)
+	{
 		std::cout <<  "error in reacv"  << std::endl;
-	// {
-	// FD_CLR(i, &read_set);
-	// 	return ;
-	// }
+		FD_CLR(i, &read_set);
+		close(i);
+		clientMap.erase(clientMap.find(i));
+		updateMaxSocket();
+		return ;
+	}
 	if (bytesReaded < 0)
 		// std::cout << "failed to recv" << std::endl;
 	if (bytesReaded == 0)
 		// std::cout << "the connectuion is done " << std::endl;
-	// else
-	// 	std::cout << "\nlen recv is < " << bytesReaded << " >\n" << std::endl;
 	buff[bytesReaded] = '\0';
 	std::string bufTmp;
 	std::string tmp = clientMap[i].getReqChunk();
-// std::cout << "-------------------------------------\n";
 	bufTmp = std::string(buff, bytesReaded);
-// std::cout << "############@@@@@@@@@@@@*************\n";
 	tmp.append(bufTmp);
 	clientMap.at(i).setReqChunk(tmp);
 
@@ -326,7 +318,7 @@ void	webserv::reading(int i)
 			return ;
 		}
 	}
-	else if (!clientMap.at(i).getReqChunk().empty())
+	else if (!clientMap.at(i).getReqChunk().empty()) // if not empty return to read after
 	{
 		delete (buff) ;
 		return ;
@@ -345,51 +337,53 @@ void	webserv::reading(int i)
 	delete (buff);
 }
 
+void	webserv::redirection(int i)
+{
+	//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
+	std::cout << "default ********************************** " << clientMap[i].getDefFile() << '\n';
+	if (resError)
+		htmlFile = readFile(clientMap[i].getRoot() + "/" + clientMap[i].getDefFile()); // read default file
+	std::cout << "htmlFile [" << htmlFile << "]" << clientMap[i].getAutoIndx() << '\n';
+	if (htmlFile.empty() && clientMap[i].getAutoIndx() && resError) // if no default file and auIndx on list AIndx
+	{
+		std::cout << OR1<< "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
+		// autoindex aiGen("stuff", "127.0.0.1", 8080);
+		autoindex aiGen(clientMap[i].getRoot(),  clientMap[i].getHost(), clientMap[i].getPort());
+		std::cout << "root: " << clientMap[i].getRoot() << "\nhost: " << clientMap[i].getHost() << "\nport: " << clientMap[i].getPort() << '\n';
+		if (resError)
+			htmlFile = aiGen.pageGen();//readFile(clientMap[i].getRoot() + "/index.html");
+		// print(clientMap[i].getRoot() + "/index.html", "here");
+	}
+	else if (htmlFile.empty() && !clientMap[i].getAutoIndx() && resError) // no def no AIndx error 404
+	{
+		std::cout << OR1<< "---------------------------- ERROR no defltfile no auto indx -------------------" << OR2 << '\n';
+		// respons 500 or 400
+		setResStatus(i, 404, empty, "");
+	}
+}
+
 std::string	webserv::serveFile(int i)
 {
-	// std::string htmlFile;
 	std::string fileContent;
-	
+	int 		x;
+
 	//if its dir show default file or show index
 	if (is_dir && clientMap[i].getReq().get_path() == "/upload/" && clientMap[i].getReq().get_method() == "POST") /* if we upload we should show DONE or the same example.html page */
 	{
 		std::cout << "upload html response ***********************************\n";
 		htmlFile = readFile("stuff/example.html");
 	}
-	else if (is_dir && clientMap[i].getReq().get_status() != 301) // redirection check
-	{
-		//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
-		std::cout << "def********************************** " << clientMap[i].getDefFile() << '\n';
-		if (resError)
-			htmlFile = readFile(clientMap[i].getRoot() + "/" + clientMap[i].getDefFile());
-		std::cout << "htmlFile [" << htmlFile << "]" << clientMap[i].getAutoIndx() << '\n';
-		if (htmlFile.empty() && clientMap[i].getAutoIndx() && resError)
-		{
-			std::cout << OR1<< "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
-			// autoindex aiGen("stuff", "127.0.0.1", 8080);
-			autoindex aiGen(clientMap[i].getRoot(),  clientMap[i].getHost(), clientMap[i].getPort());
-			
-			if (resError)
-				htmlFile = aiGen.pageGen();//readFile(clientMap[i].getRoot() + "/index.html");
-			// print(clientMap[i].getRoot() + "/index.html", "here");
-		}
-		else if (htmlFile.empty() && !clientMap[i].getAutoIndx() && resError)
-		{
-			std::cout << OR1<< "---------------------------- ERROR no defltfile no auto indx -------------------" << OR2 << '\n';
-			// respons 500 or 400
-			setResStatus(i, 404, empty, "");
-		}
-	}
-	else if (clientMap[i].getReq().get_status() != 301)
+	else if (is_dir && clientMap[i].getReq().get_status() != 301)
+		redirection(i);
+	else if (clientMap[i].getReq().get_status() != 301) // if not redirection get default file
 		htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
-	/* response here  */
-	int x = access(urlPath.c_str(), F_OK);
+	x = access(urlPath.c_str(), F_OK); // if file path exist
 	if (x == -1)
 		setResStatus(i, 404, htmlFile, "404.html");
-	x = access(urlPath.c_str(), R_OK);
+	x = access(urlPath.c_str(), R_OK); // if file has permission to read
 	if (x == -1)
 		setResStatus(i, 403, htmlFile, "403.html");
-	if (clientMap[i].getReq().get_status() != 200)
+	if (clientMap[i].getReq().get_status() != 200) // if status != 200 means there is an error or redirection
 	{
 		if (resError)
 			htmlFile = clientMap[i].getRes().getHtmlError();
@@ -398,17 +392,17 @@ std::string	webserv::serveFile(int i)
 		htmlFile.clear();
 		return (fileContent);
 	}
+	// if its not error then ok 200
 	fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
-	
-
+	//search for the mime type of the url ( example."mimeType" )
 	for (std::map<std::string, std::string>::iterator typeIt = mimeMap.begin(); typeIt != mimeMap.end(); ++typeIt)
 	{
-		if (clientMap.at(i).getReqFull().substr(0, 30).find("." + typeIt->first) != std::string::npos)
+		if (urlPath.find("." + typeIt->first) != std::string::npos)
 		{
 			htmlFile = readFile(urlPath);
 			fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
 		// print(fileContent, "file ctn");
-		htmlFile.clear();
+			htmlFile.clear();
 			return (fileContent);
 		}
 	}
@@ -419,7 +413,6 @@ std::string	webserv::serveFile(int i)
 bool	countSlash(std::string dir)
 {
 	int count = 0;
-		// std::cout << " \n dir is [ " << dir << " ]" << '\n';
 	for (std::string::iterator it = dir.begin(); it != dir.end(); ++it)
 	{
 		if (*it == '/')
@@ -445,6 +438,20 @@ void	webserv::checkLocMeth(int i)
 	check_dir(i, dir);
 }
 
+void	webserv::updateMaxSocket()
+{
+	for (int i = maxSocket; i > 3;)
+	{
+		if (!FD_ISSET(i, &write_set) && !FD_ISSET(i, &read_set))
+			--i;
+		else
+		{
+			maxSocket = i;
+			break;
+		}
+	}
+}
+
 void	webserv::writing(int i)
 {
 	std::cout << YL1 <<  "WRITE block " << YL2 << std::endl;
@@ -454,7 +461,7 @@ void	webserv::writing(int i)
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
 	print(urlPath, "url : ");
 	// if (urlPath != (clientMap[i].getRoot() + "/upload/"))
-	
+
 	print(clientMap[i].getReqFull(), "POST---------");
 	//check is dir
 	is_dir = false;
@@ -472,14 +479,18 @@ void	webserv::writing(int i)
 	std::string fileContent = serveFile(i);
 	long long len = send(i, fileContent.c_str(), fileContent.length(), 0);
 	if (len < 0)
-		std::cout << "error " << std::endl;
-	std::cout << "send \n";
+		std::cout << "error in send" << std::endl;
+	
+	std::cout << "SENDING : " << len << '\n';
+	
 	shutdown(i, SHUT_WR);
 	FD_CLR(i, &write_set);
 
-	//if you close the next client willtake fd 6 maybe dont close now
+	//update maxClient
 	close(i);
-	// clientMap.erase(clientMap.find(i));
+	clientMap.erase(clientMap.find(i)); // rmove client
+	updateMaxSocket();
+	std::cout << "MAXSOCKET : >>>>>>>>>>> " << maxSocket << '\n';
 }
 
 webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::string> mime)
@@ -489,7 +500,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 	timeout.tv_usec = 0;
 
 	mimeMap = mime;
-	
+
 	// create server socket in a map
 	for (std::vector<webInfo>::iterator it = serverList.begin(); it != serverList.end(); ++it)
 		serverMap.insert(std::make_pair(it->getSock(), *it));
@@ -538,7 +549,10 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 		{
 			std::cout << i << '\n';
 			if (serverMap.count(i)) // if its server socket we have to accept it not read it
-				acceptSockets(i);
+			{
+				if (FD_ISSET(i, &copyRead))
+					acceptSockets(i);
+			}
 			else if (FD_ISSET(i, &copyRead))
 				reading(i);
 			else if (FD_ISSET(i, &copyWrite)) // receiv request from clinet

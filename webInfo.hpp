@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:37 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/17 19:58:05 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/18 10:56:07 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,42 +20,31 @@
 class webInfo
 {
 	private:
-		struct sockaddr_in		serverAddress;
-		std::string 			serverName;
-		std::string 			root;
-		std::string 			host;
-		int 					bodySize;
-		int 					port;
-		int 					sock;
-		std::vector<Location>	locationVec;
+		struct sockaddr_in			serverAddress;
+		std::string 				serverName;
+		std::string 				root;
+		std::string 				host;
+		int 						bodySize;
+		int 						port;
+		int 						sock;
+		bool 						ai;
+		std::vector<Location>		locationVec;
 		std::vector<std::string>	errorPages;
-		bool ai;
-		// std::vector<std::string> error_pages;
+		int							oneSock;
+		int							oneServer;
 	public:
 		webInfo();
-		webInfo(int port, ServerInf &inf);
+		webInfo(int port, ServerInf &inf, int oneS, int oneServer);
 		
-		int						getPort() const;
-		int						getSock() const;
-		size_t 					getBodySize() const;
-		std::vector<Location>	getLoc() const;
-		struct sockaddr_in		getServerAddress() const;
-		std::string				getRoot()const;
-		
-		std::vector<std::string> getErrorPages()
-		{
-			return (errorPages);
-		}
-		bool getAI()
-		{
-			return ai;
-		}
-		void	setHost(std::string hst)
-		{
-			host = hst;
-		}
-		std::string	getHost()
-		{
-			return (host);
-		}
+		int							getPort() const;
+		int							getSock() const;
+		int							getOneSock() const;
+		int							getOneServer() const;
+		size_t 						getBodySize() const;
+		std::vector<Location>		getLoc() const;
+		struct sockaddr_in			getServerAddress() const;
+		std::string					getRoot()const;
+		std::vector<std::string>	getErrorPages() const;
+		bool						getAI() const;
+		std::string					getHost() const;
 };
