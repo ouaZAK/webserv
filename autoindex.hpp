@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 22:52:25 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/17 12:08:58 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/18 19:19:19 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,13 +29,14 @@ class autoindex
 {
 private:
 	std::string server_root;
+	std::string urlPath;
 	std::string host_name;
 	int port;
-	std::string linkGen(std::string root, std::string host, int p);
+	std::string linkGen(std::string root, std::string host, int p, std::string urlPath);
 	autoindex();
 
 public:
-	autoindex(std::string root, std::string host, int p);
+	autoindex(std::string root, std::string urlPath, std::string host, int p);
 	~autoindex();
 	autoindex &operator=(const autoindex &other);
 	std::string pageGen();

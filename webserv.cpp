@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/18 11:28:05 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/19 09:24:39 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,10 +202,9 @@ bool webserv::check_dir(int i, std::string dir)
 	{
 		for (std::vector<std::string>::iterator itV = locIt->path.begin(); itV != locIt->path.end(); itV++)
 		{
-			std::cout << "location: [" << *itV << "]    dir: [" << dir << "]\n";
+			std::cout << "location: [" << *itV << "]  |  dir: [" << dir << "]\n";
 			if (dir == *itV)
 			{
-				std::cout << "ROOOOOOOOOOOOOOOOOOOOOOT : " << locIt->root << '\n';
 				if (locIt->redirect_status == 301)
 				{
 					std::cout << "########### : " << locIt->redirect_to_dir << " " << locIt->redirect_status << '\n';
@@ -348,7 +347,7 @@ void	webserv::redirection(int i)
 	{
 		std::cout << OR1<< "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
 		// autoindex aiGen("stuff", "127.0.0.1", 8080);
-		autoindex aiGen(clientMap[i].getRoot(),  clientMap[i].getHost(), clientMap[i].getPort());
+		autoindex aiGen(clientMap[i].getRoot(), clientMap[i].getReq().get_path(), clientMap[i].getHost(), clientMap[i].getPort());
 		std::cout << "root: " << clientMap[i].getRoot() << "\nhost: " << clientMap[i].getHost() << "\nport: " << clientMap[i].getPort() << '\n';
 		if (resError)
 			htmlFile = aiGen.pageGen();//readFile(clientMap[i].getRoot() + "/index.html");
@@ -379,10 +378,17 @@ std::string	webserv::serveFile(int i)
 		htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
 	x = access(urlPath.c_str(), F_OK); // if file path exist
 	if (x == -1)
+	{
 		setResStatus(i, 404, htmlFile, "404.html");
+		std::cout << BL1 << " NO file to read\n" << OR2 << '\n';
+
+	}
 	x = access(urlPath.c_str(), R_OK); // if file has permission to read
 	if (x == -1)
+	{
+		std::cout << BL1 << " NO PERMISSION TO READ\n" << OR2 << '\n';
 		setResStatus(i, 403, htmlFile, "403.html");
+	}
 	if (clientMap[i].getReq().get_status() != 200) // if status != 200 means there is an error or redirection
 	{
 		if (resError)
@@ -459,8 +465,7 @@ void	webserv::writing(int i)
 
 	// join url with path
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
-	print(urlPath, "url : ");
-	// if (urlPath != (clientMap[i].getRoot() + "/upload/"))
+	std::cout << OR1 <<  "url : " << urlPath << OR2 << '\n';
 
 	print(clientMap[i].getReqFull(), "POST---------");
 	//check is dir
