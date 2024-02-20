@@ -3,7 +3,7 @@ server
     listen        8080  ;
     server_name   example.com ;
     host            127.0.0.1 ;
-    error_pages   404.html 405.html ;
+    error_pages   404.html 405.html 403.html ;
     client_body_size  5000000 ;
     root    stuff ;
     autoindex   on ;

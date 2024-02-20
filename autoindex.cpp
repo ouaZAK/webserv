@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/16 19:50:28 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/18 19:46:41 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/20 17:15:23 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ std::string autoindex::pageGen()
 					 "<body>\n"
 					 "\t<header>\n"
 					 "\t\t<h1>" +
-					 server_root + "</h1>\n"
+					 urlPath + "</h1>\n"
 								   "\t</header>\n"
 								   "\t<section>\n"
 								   "\t\t<ul>";
