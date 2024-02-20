@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/20 17:17:15 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/20 21:24:37 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,7 +204,7 @@ bool webserv::check_dir(int i, std::string dir)
 	std::vector<Location> loc = clientMap[i].getLoc();
 	for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
 	{
-		for (std::vector<std::string>::iterator itV = locIt->path.begin(); itV != locIt->path.end(); itV++)
+		for (std::vector<std::string>::iterator itV = locIt->locDirName.begin(); itV != locIt->locDirName.end(); itV++)
 		{
 			std::cout << "location: [" << *itV << "]  |  dir: [" << dir << "]\n";
 			if (dir == *itV)

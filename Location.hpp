@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/07 11:14:16 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/16 15:12:42 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/20 21:22:56 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 class Location
 {
 public:
-	std::vector<std::string>	path;
+	std::vector<std::string>	locDirName;
 	std::vector<std::string>	methods;
 	std::string					default_file;
 	std::string					root;

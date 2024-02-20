@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInf.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/16 15:12:10 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/20 21:57:26 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,8 @@ std::string ServerInf::filroot(std::stringstream &ss)
 	std::string el;
 	if (!(ss >> el))
 		throw "Failed to read root directive";
+	if (el[0] == '/' || el.back() == '/')
+		throw "Fix ya d*mn root.";
 	while (el != ";" && !el.empty())
 	{
 		root = el;
@@ -305,6 +307,17 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 			if (el != ";")
         		throw "Server_name directive's syntax error";
 		}
+		else if (el == "default_file")
+		{
+			if (!globDefFile.empty())
+				throw "globDefFile directive repeated!";
+			el.clear();
+			ss >> el;
+			globDefFile = el;
+			ss >> el;
+			if (el != ";")
+        		throw "globDefFile directive's syntax error";
+		}
 		else if (el == "host")
 		{
 			if (!host.empty())
@@ -357,7 +370,9 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 			ss >> el >> ell;
 			if (el.empty() || !ell.empty())
 				throw "Location context related error.";
-			ltmp.path.push_back(el);
+			if (el[0] != '/' || el.back() != '/')
+				throw "Fix ya d*mn location path.";
+			ltmp.locDirName.push_back(el);
 			std::getline(inFile, line);
 			if (chekFilld(ss, s))
 			{
@@ -374,7 +389,7 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 			break;
 		else if (!el.empty())//needs checking
 			throw "Unknown element";
-		if (el != ";" && el != locs.back().path.back())
+		if (el != ";" && el != locs.back().locDirName.back())
 		{
 			throw "Missing ;";
 		}
@@ -405,12 +420,12 @@ void	ServerInf::print() const
 	for (std::vector<Location>::const_iterator it = locs.begin(); it != locs.end(); ++it)
 	{
 		std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" <<"\n";
-		std::cout << "Path: " << *(*it).path.begin() << "\n";
+		std::cout << "Path: " << *(*it).locDirName.begin() << "\n";
 		std::cout << "methods:	" << *(*it).methods.begin() << "\n";
 		std::cout << "Default_file:	" << (*it).default_file << "\n";
 		std::cout << "cgi_bin:	" << *(*it).cgi_bin.begin() << "\n";
 		std::cout << "cgi_extension:	" << *(*it).cgi_extension.begin() << "\n";
-		std::cout << "BACK Path: " << (*it).path.back() << "\n";
+		std::cout << "BACK Path: " << (*it).locDirName.back() << "\n";
 		std::cout << "BACK methods:	" << (*it).methods.back() << "\n";
 		std::cout << "BACK Default_file:	" << (*it).default_file << "\n";
 		std::cout << "BACK cgi_bin:	" << (*it).cgi_bin.back() << "\n";

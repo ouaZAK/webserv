@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInf.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/17 12:00:39 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/20 21:37:13 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class ServerInf
 private:
 	std::vector<int>			ports;
 	std::string					server_name;
+	std::string					globDefFile;
 	std::vector<std::string>	error_pages;
 	int							body_size;
 	std::string root;
