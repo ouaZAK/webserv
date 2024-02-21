@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/20 11:32:22 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/21 11:33:29 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ class webserv
 		std::string 						cleanBody;
 		std::string 						body;
 		std::string 						empty;
+		std::string							transfer;
 		size_t 								bodyLength;
 		size_t 								pos;
 		bool 								resError;
@@ -92,8 +93,9 @@ class webserv
 		void					checkLocMeth(int i);
 		bool 					check_dir(int i, std::string dir);
 		void					setResStatus(int i, int status, std::string &htmlFile, std::string statusHtml);
-		void					redirection(int i);
+		void					redirOrAutoIndx(int i);
 		void					updateMaxSocket();
+		void	parseChunk(int i);
 		// void	updateMaxSocket(int i);
 
 		// virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;

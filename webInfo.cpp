@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:26 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/18 11:00:59 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/21 09:23:32 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ webInfo::webInfo(int port, ServerInf &inf, int oneS, int oneSrv) : port(port), o
 	locationVec = inf.locs;
 	errorPages = inf.getErrorPages();
 	bodySize = inf.getBodySize();
+	globDefFile = inf.getGlobDefFile();
 	if (bodySize == -1)
 		bodySize = 1000000;
 	std::cout << "\nserv name is : " << serverName << '\n' << "port nbr : " << port << '\n';
@@ -120,4 +121,8 @@ int	webInfo::getOneSock() const
 int	webInfo::getOneServer() const
 {
 	return (oneServer);
+}
+std::string	webInfo::getGlobDefFile() const
+{
+	return (globDefFile);
 }

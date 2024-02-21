@@ -23,9 +23,6 @@ int main(int ac, char **av)
 	if (!fd)
 	{
 		char buff[3000];
-		close(fd1);
-		close(fd2);
-		close(fd3);
 
 		close(PtoC[1]);
 		close(CtoP[0]);

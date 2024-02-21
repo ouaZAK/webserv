@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/17 19:56:41 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/21 09:31:54 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ class clientInfo
 		Response				res;
 		size_t					bodySize;
 		std::string				defFile;
+		std::string				globDefFile;
 		std::vector<std::string>	errorPages;
 		bool autoIndx;
 	public:
@@ -58,20 +59,11 @@ class clientInfo
 		bool					getAutoIndx() const;
 		void					setDefFile(std::string defF);
 		std::string				getDefFile() const;
-		void	setPort(int p)
-		{
-			port = p;
-		}
-		int	getPort()
-		{
-			return (port);
-		}
-		void	setHost(std::string hst)
-		{
-			host = hst;
-		}
-		std::string	getHost()
-		{
-			return (host);
-		}
+		void					setGlobDefFile(std::string defF);
+		std::string				getGlobDefFile() const;
+		void					setPort(int p);
+		int						getPort();
+		void					setHost(std::string hst);
+		std::string				getHost();
+		
 };

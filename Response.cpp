@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/29 11:33:34 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/14 13:01:29 by hcharia          ###   ########.fr       */
+/*   Updated: 2024/02/21 14:57:19 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ Response::Response(Request req)
 	{
 		responseHead = "400 Bad Request";
 		error_body = "Your request could not be processed due to malformed syntax. Please check the request format and try again.";
-		
+		std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@@@\n";
 	}
 	else if (req.get_status() == FORBIDDEN)
 	{

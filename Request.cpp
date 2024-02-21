@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:28:05 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/17 13:01:44 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/21 13:19:42 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,8 +108,6 @@ void	Request::prl(std::string line) // parse request line
 	ss << line;
 	if (line.find("\r") == std::string::npos || line[line.find("\r") + 1] != 0)
 	{
-			std::cout << "anaaaaaaaa hnaaaa 2\n";
-
 		status = BAD_REQUEST;
 		return ;
 	}
@@ -127,6 +125,7 @@ void	Request::prl(std::string line) // parse request line
 	if (ss >> result || (method != "POST" && method != "DELETE" && method != "GET") 
 		|| version != "HTTP/1.1")
 	{
+		std::cout << "lalalalala*********************\n***************\n********************\n";
 		status = BAD_REQUEST;
 		return ;
 	}

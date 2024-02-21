@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:37 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/18 10:56:07 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/21 09:17:56 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class webInfo
 		std::string 				serverName;
 		std::string 				root;
 		std::string 				host;
+		std::string					globDefFile;
 		int 						bodySize;
 		int 						port;
 		int 						sock;
@@ -47,4 +48,5 @@ class webInfo
 		std::vector<std::string>	getErrorPages() const;
 		bool						getAI() const;
 		std::string					getHost() const;
+		std::string					getGlobDefFile() const;
 };

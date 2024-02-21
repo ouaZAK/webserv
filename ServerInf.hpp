@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInf.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/20 21:37:13 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/21 09:21:18 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,9 @@ private:
 	std::string					globDefFile;
 	std::vector<std::string>	error_pages;
 	int							body_size;
-	std::string root;
-	std::string host;
-	bool		ai;
+	std::string 				root;
+	std::string 				host;
+	bool						ai;
 
 public:
 	ServerInf()
@@ -66,6 +66,10 @@ public:
 	bool getAI()
 	{
 		return ai;
+	}
+	std::string	getGlobDefFile() const
+	{
+		return (globDefFile);
 	}
 };
 

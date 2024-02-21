@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/15 19:17:32 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/21 09:33:30 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,4 +125,34 @@ void	clientInfo::setErrorPages(std::vector<std::string> erPages)
 std::vector<std::string> clientInfo::getErrorPages() const
 {
 	return (errorPages);
+}
+
+void	clientInfo::setPort(int p)
+{
+	port = p;
+}
+
+int	clientInfo::getPort()
+{
+	return (port);
+}
+
+void	clientInfo::setHost(std::string hst)
+{
+	host = hst;
+}
+
+std::string	clientInfo::getHost()
+{
+	return (host);
+}
+
+void	clientInfo::setGlobDefFile(std::string defF)
+{
+	globDefFile = defF;
+}
+
+std::string	clientInfo::getGlobDefFile() const
+{
+	return (globDefFile);
 }

@@ -3,18 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/20 21:24:37 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/21 15:44:21 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 
 // TO DO :
-// autoindex stuff need to be updated to stuff/dir when we enter /dir
-// 8080/ doesnt have default file it only auto indx ask them
+// look for "// HERE" if no def file exist in the dir show AI
+// /dir/ show indx of loc not root
 // send chunck
 // /dir/ is url not directory
 // loop 3la client o chof variable dial time 
@@ -146,6 +146,7 @@ void	webserv::acceptSockets(int i)
 	clientMap[newClientSocket].setErrorPages(serverMap[i].getErrorPages());
 	clientMap[newClientSocket].setPort(serverMap[i].getPort());
 	clientMap[newClientSocket].setHost(serverMap[i].getHost());
+	clientMap[newClientSocket].setGlobDefFile(serverMap[i].getGlobDefFile());
 
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 }
@@ -186,7 +187,6 @@ void	webserv::setResStatus(int i, int status, std::string &htmlFile, std::string
 				std::cout << "x : " << x << "y: " << y << '\n';
 				if (x != -1 && y != -1)
 				{
-					std::cout << "____________________-----------______________-----------_________------_______\n";
 					htmlFile = readFile("dirOfErrors/" + statusHtml);
 					resError = false;
 					break ;
@@ -237,6 +237,19 @@ bool webserv::check_dir(int i, std::string dir)
 	return (true);
 }
 
+void	webserv::parseChunk(int i)
+{
+	std::string str  = clientMap[i].getReqChunk();
+	size_t pos1 = str.find("\r\n\r\n", 0);
+	size_t pos2 = str.find("0\r\n\r\n");
+	pos1 += 4;
+	pos2 += 4;
+	std::string sub = str.substr(pos1, pos2 - pos1);
+	std::cout << sub.size() << '\n';
+	print(sub, "POST---------");
+	
+}
+
 bool	webserv::getRequest(int i)
 {
 	Request req = clientMap[i].getReq();
@@ -247,8 +260,12 @@ bool	webserv::getRequest(int i)
 		clientMap.at(i).clearReqChunk();
 		return false;
 	}
+	std::cout << "["<< transfer << "]" << '\n';
 	if (req.get_method() == "POST")
 	{
+		if (transfer == "chunked")
+			parseChunk(i);
+		// else
 		extractBody(i);
 		if (body.length() < bodyLength)
 			return (true);
@@ -262,6 +279,7 @@ bool	webserv::getRequest(int i)
 		}
 		// std::cout << "clean body size" << cleanBody.size() << " " << "[" << cleanBody << "]" << clientMap[i].getBodySize()<< "\n";
 		req.set_body(body);
+		// std::cout << "body" << body << '\n';
 		std::string filename = req.get_file_name();
 		/***** get the proper root if its default one or inside location ******/
 		std::ofstream file(clientMap[i].getRoot() + "/upload/" + filename);		/* get the root path */
@@ -312,7 +330,18 @@ void	webserv::reading(int i)
 
 	// std::string 
 	Request req(clientMap[i].getReqChunk());
-	std::string transfer = req.get_headers()["Transfer-Encoding"].c_str();
+	if (req.get_status() != 200)
+	{
+		clientMap[i].getReq().set_status(400);
+		Response res(clientMap[i].getReq());
+		clientMap[i].setRes(res);
+		clientMap.at(i).clearReqChunk();
+		FD_SET(i, &write_set);
+		FD_CLR(i, &read_set);
+		delete (buff);
+		return ;
+	}
+	transfer = req.get_headers()["Transfer-Encoding"].c_str();
 	if (clientMap[i].getReqChunk().find("\r\n\r\n", 0) != std::string::npos)
 	{
 		clientMap[i].setReq(req);
@@ -323,11 +352,11 @@ void	webserv::reading(int i)
 			std::string rqst = clientMap[i].getReqChunk();
 			if (rqst.find("0\r\n\r\n", 0) != std::string::npos)
 			{
-			std::cout << "found 0 \n";
-				if (rqst.compare(rqst.size() - 5, 5, "0\r\n\r\n"))
+				clientMap[i].setReq(req);
+				std::cout << "found 0 \n";
+				if (!rqst.compare(rqst.size() - 5, 5, "0\r\n\r\n"))
 				{
-			std::cout << "compared 0 true \n";
-					
+					std::cout << "compared 0 true \n";
 					if (getRequest(i))
 					{
 						delete (buff);
@@ -337,7 +366,6 @@ void	webserv::reading(int i)
 			}
 			else if (!clientMap.at(i).getReqChunk().empty()) // if not empty return to read after
 			{
-					std::cout << "returned \n";
 				delete (buff) ;
 				return ;
 			}
@@ -369,13 +397,16 @@ void	webserv::reading(int i)
 	delete (buff);
 }
 
-void	webserv::redirection(int i)
+void	webserv::redirOrAutoIndx(int i)
 {
 	//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
-	std::cout << "default FILE " << clientMap[i].getDefFile() << '\n';
 	if (resError)
+	{
+		// HERE
 		htmlFile = readFile(clientMap[i].getRoot() + "/" + clientMap[i].getDefFile()); // read default file
-	// std::cout << "htmlFile [" << htmlFile << "]" << clientMap[i].getAutoIndx() << '\n';
+		if (htmlFile.empty())
+			htmlFile = readFile(clientMap[i].getRoot() + "/" + clientMap[i].getGlobDefFile()); // read global default file
+	}
 	if (htmlFile.empty() && clientMap[i].getAutoIndx() && resError) // if no default file and auIndx on list AIndx
 	{
 		std::cout << OR1<< "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
@@ -406,7 +437,7 @@ std::string	webserv::serveFile(int i)
 		htmlFile = readFile("stuff/example.html");
 	}
 	else if (is_dir && clientMap[i].getReq().get_status() != 301)
-		redirection(i);
+		redirOrAutoIndx(i);
 	else if (clientMap[i].getReq().get_status() != 301) // if not redirection get default file
 		htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
 	x = access(urlPath.c_str(), F_OK); // if file path exist
@@ -509,8 +540,6 @@ void	webserv::writing(int i)
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
 	std::cout << OR1 <<  "url : " << urlPath << OR2 << '\n';
 
-	// print(resError, "POST---------");
-	
 	//check is dir
 	is_dir = false;
 	struct stat fileStat;
