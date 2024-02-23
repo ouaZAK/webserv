@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/21 11:33:29 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/22 16:04:59 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@
 #include <map>
 #include <vector>
 #include <sys/stat.h>
-
 
 #include "Response.hpp"
 #include "Request.hpp"
@@ -96,6 +95,7 @@ class webserv
 		void					redirOrAutoIndx(int i);
 		void					updateMaxSocket();
 		void	parseChunk(int i);
+		bool	is_alias(int i, std::string &dir);
 		// void	updateMaxSocket(int i);
 
 		// virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;

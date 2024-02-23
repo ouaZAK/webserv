@@ -6,18 +6,18 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/21 15:44:21 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/23 10:32:09 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
+#include <cstdio>
 
 // TO DO :
-// look for "// HERE" if no def file exist in the dir show AI
-// /dir/ show indx of loc not root
+// casting
 // send chunck
 // /dir/ is url not directory
-// loop 3la client o chof variable dial time 
+// loop 3la client o chof variable dial time
 // check cgi path if it doesnt have cgi dont fork for it
 
 #define BL1 "\x1b[34m"
@@ -198,9 +198,24 @@ void	webserv::setResStatus(int i, int status, std::string &htmlFile, std::string
 	clientMap[i].setRes(clientMap[i].getReq());
 }
 
+bool	countSlash(std::string &dir)
+{
+	int count = 0;
+	for (std::string::iterator it = dir.begin(); it != dir.end(); ++it)
+	{
+		if (*it == '/')
+			++count;
+		if (count >= 2)
+			return (true);
+	}
+	dir.append("/");
+	return (false);
+}
+
 bool webserv::check_dir(int i, std::string dir)
 {
 	/* location vector is loc */
+	// countSlash(dir);
 	std::vector<Location> loc = clientMap[i].getLoc();
 	for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
 	{
@@ -256,12 +271,19 @@ bool	webserv::getRequest(int i)
 	std::string dir = clientMap[i].getReq().get_path();
 	if (check_dir(i, dir))
 	{
+	std::cout << YL1 << "DEEEEEEEEEEEE" << YL2 << '\n';
 		clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
 		clientMap.at(i).clearReqChunk();
 		return false;
 	}
 	std::cout << "["<< transfer << "]" << '\n';
-	if (req.get_method() == "POST")
+	if (req.get_method() == "DELETE")
+	{
+		std::cout << "DELETE: " << (clientMap[i].getRoot() + "/" + req.get_path()) << '\n';
+		if (std::remove((clientMap[i].getRoot() + "/" + req.get_path()).c_str()) == 0)
+			std::cout << "lala\n";
+	}
+	else if (req.get_method() == "POST")
 	{
 		if (transfer == "chunked")
 			parseChunk(i);
@@ -324,12 +346,13 @@ void	webserv::reading(int i)
 	clientMap.at(i).setReqChunk(tmp);
 
 	//print
-	// print(clientMap.at(i).getReqChunk(), "Request\n------------------------------");
+	print(clientMap.at(i).getReqChunk(), "Request\n------------------------------");
 	// std::cout << "[[[ \n\n" << clientMap.at(i).getReqChunk() << " \n]]]" << std::endl;
 	// std::cout  << " " << clientMap.at(i).getReqChunk().find("\r\n\r\n", 0) << std::endl;
 
 	// std::string 
 	Request req(clientMap[i].getReqChunk());
+	std::cout << "status : " << req.get_status() << '\n';
 	if (req.get_status() != 200)
 	{
 		clientMap[i].getReq().set_status(400);
@@ -400,23 +423,27 @@ void	webserv::reading(int i)
 void	webserv::redirOrAutoIndx(int i)
 {
 	//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
+	bool AutoIndx = clientMap[i].getAutoIndx();
+	std::string root = clientMap[i].getRoot();
+std::cout << "AUTO INDEX FUNCTION" << '\n';
 	if (resError)
 	{
 		// HERE
-		htmlFile = readFile(clientMap[i].getRoot() + "/" + clientMap[i].getDefFile()); // read default file
-		if (htmlFile.empty())
-			htmlFile = readFile(clientMap[i].getRoot() + "/" + clientMap[i].getGlobDefFile()); // read global default file
+		std::cout << urlPath << '\n';
+		htmlFile = readFile(root + "/" + clientMap[i].getDefFile()); // read default file
+		if (htmlFile.empty() && clientMap[i].getReq().get_path() == "/")
+			htmlFile = readFile(root + "/" + clientMap[i].getGlobDefFile()); // read global default file
 	}
-	if (htmlFile.empty() && clientMap[i].getAutoIndx() && resError) // if no default file and auIndx on list AIndx
+	if (htmlFile.empty() && AutoIndx && resError) // if no default file and auIndx on list AIndx
 	{
 		std::cout << OR1<< "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
-		autoindex aiGen(clientMap[i].getRoot(), clientMap[i].getReq().get_path(), clientMap[i].getHost(), clientMap[i].getPort());
-		std::cout << "root: " << clientMap[i].getRoot() << "\nhost: " << clientMap[i].getHost() << "\nport: " << clientMap[i].getPort() << '\n';
+		autoindex aiGen(root, clientMap[i].getReq().get_path(), clientMap[i].getHost(), clientMap[i].getPort());
+		std::cout << "root: " << root << "\nhost: " << clientMap[i].getHost() << "\nport: " << clientMap[i].getPort() << '\n';
 		if (resError)
 			htmlFile = aiGen.pageGen();
 		// print(clientMap[i].getRoot() + "/index.html", "here");
 	}
-	else if (htmlFile.empty() && !clientMap[i].getAutoIndx() && resError) // no def no AIndx error 404
+	else if (htmlFile.empty() && !AutoIndx && resError) // no def no AIndx error 404
 	{
 		std::cout << OR1<< "---------------------------- ERROR no defltfile no auto indx -------------------" << OR2 << '\n';
 		// respons 500 or 400
@@ -439,7 +466,10 @@ std::string	webserv::serveFile(int i)
 	else if (is_dir && clientMap[i].getReq().get_status() != 301)
 		redirOrAutoIndx(i);
 	else if (clientMap[i].getReq().get_status() != 301) // if not redirection get default file
+	{
+		std::cout << "DEF FILE NO RED NO INDX\n";
 		htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
+	}
 	x = access(urlPath.c_str(), F_OK); // if file path exist
 	if (x == -1)
 	{
@@ -490,15 +520,38 @@ std::string	webserv::serveFile(int i)
 	return (fileContent);
 }
 
-bool	countSlash(std::string dir)
+bool	webserv::is_alias(int i, std::string &dir)
 {
-	int count = 0;
-	for (std::string::iterator it = dir.begin(); it != dir.end(); ++it)
+	countSlash(dir);
+	std::vector<Location> loc = clientMap[i].getLoc();
+	for (std::vector<Location>::iterator locIt = loc.begin(); locIt != loc.end(); ++locIt)
 	{
-		if (*it == '/')
-			++count;
-		if (count >= 2)
-			return (true);
+		for (std::vector<std::string>::iterator itV = locIt->locDirName.begin(); itV != locIt->locDirName.end(); itV++)
+		{
+			std::cout << "location: [" << *itV << "]  |  dir: [" << dir << "]\n";
+			if (dir == *itV)
+			{
+				dir = ("/" + locIt->alias);
+				std::cout << "it is\n dir now is " << dir << '\n';
+				struct stat fileStat;
+				if (stat((clientMap[i].getRoot() + dir).c_str(), &fileStat) == 0)
+				{
+					if (S_ISDIR(fileStat.st_mode))
+					{
+						is_dir = true;
+						dir += "/";
+						return (true);
+					}
+					else
+					{
+					std::cout << "not dir no '/' \n";	
+						return (true);
+						// dir += "/";
+					}
+				}
+				return (true);
+			}
+		}
 	}
 	return (false);
 }
@@ -507,10 +560,10 @@ void	webserv::checkLocMeth(int i)
 {
 	/* ######### test 8080/dir/lala.html in ngnix ########### */
 	std::string dir = clientMap[i].getReq().get_path();
+	if (is_alias(i, dir) || (is_dir && !countSlash(dir)))
+		urlPath = clientMap[i].getRoot() + dir ;// taygadha ha ki me
 	std::cout << "is dir : -> " << is_dir << dir << '\n';
-	if (is_dir && !countSlash(dir))
-		urlPath.append("/");// taygadha ha ki me
-	std::cout << "\n ---------- \n there is 2 slash dir is [ " << dir << " ]" << '\n';
+	std::cout << "\n ---------- \n there is 2 slash dir is [" << dir << "] " << urlPath << '\n';
 	size_t pos1 = urlPath.find("/", 0);
 	size_t pos2 = urlPath.find("/", pos1 + 1);
 	dir = urlPath.substr(pos1, (pos2 + 1) - pos1);
@@ -554,6 +607,7 @@ void	webserv::writing(int i)
 	// std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getReqFull() << std::endl;
 
 	std::string fileContent = serveFile(i);
+	print(fileContent, "------------------------------------------------------------------------------------------------\n");
 	long long len = send(i, fileContent.c_str(), fileContent.length(), 0);
 	if (len < 0)
 		std::cout << "error in send" << std::endl;
@@ -650,3 +704,6 @@ std::map<int, webInfo>  webserv::getmap() const
 	//create vector of characters from buffer 
 	// creat a file and put the buffer in it append the rest
 	// or put the buffer in  a stream then put it back in a std string
+
+
+//elmakawi was here

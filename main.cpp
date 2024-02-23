@@ -5,7 +5,7 @@ int main(int ac, char **av)
 {
 	(void)ac;
 	std::map<std::string, std::string>	mimeMap;
-	std::vector<ServerInf>				serverInf ;
+	std::vector<ServerInf>				serverInf;
 	std::vector<webInfo>				listWebInfo;
 	std::vector<int>					ports;
 	int									oneSock, oneServer;
