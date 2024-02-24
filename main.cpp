@@ -1,5 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/24 11:30:21 by zouaraqa          #+#    #+#             */
+/*   Updated: 2024/02/24 11:39:09 by zouaraqa         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "webserv.hpp"
-#include "ServerInf.hpp"
 
 int main(int ac, char **av)
 {
@@ -38,6 +49,7 @@ int main(int ac, char **av)
 		std::cerr << e << '\n';
 		return (1);
 	}
+	
 	try
 	{
 		webserv start(listWebInfo, mimeMap);

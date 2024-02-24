@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 10:29:22 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/14 11:18:10 by hcharia          ###   ########.fr       */
+/*   Updated: 2024/02/24 12:42:43 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,5 +31,6 @@ public:
 	void	set_head(Request &r, std::string);
 	std::string	getHead() const;
 	std::string	getHtmlError() const;
+	std::string	delhtml();
 	~Response();
 };

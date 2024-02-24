@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/29 11:33:34 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/22 12:11:21 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/24 12:45:27 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,11 @@ Response::Response(Request req, std::string url)
 	set_head(req, responseHead);
 }
 
+std::string Response::delhtml()
+{
+	return "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Error page</title>\n</head>\n<body>\n<h1>Deleted</h1>\n<p>the file or directory requested has been deleted</p>\n</body>\n</html>\n";
+}
+
 std::string	Response::getHead() const
 {
 	return responseHead;
@@ -121,7 +126,6 @@ std::string	Response::getHtmlError() const
 
 Response::Response()
 {
-	
 }
 
 Response::~Response()

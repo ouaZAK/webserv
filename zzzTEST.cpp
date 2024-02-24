@@ -46,7 +46,6 @@ int main(int ac, char **av, char **env)
 		if (execve(buff, argv, env) == -1)
 			std::cout << "error exec\n";
 		close(CtoP[1]);
-		exit(0);
 	}
 	// std::cout << "par file is : \n" << fullstr << '\n';
 	std::cout << "send from parent " << '\n';

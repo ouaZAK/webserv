@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/23 10:32:09 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/24 13:08:18 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,8 @@
 #include <cstdio>
 
 // TO DO :
+// look at globDefFile directive repeated!
 // casting
-// send chunck
-// /dir/ is url not directory
-// loop 3la client o chof variable dial time
 // check cgi path if it doesnt have cgi dont fork for it
 
 #define BL1 "\x1b[34m"
@@ -55,7 +53,9 @@ void	webserv::setNoBlocking()
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
 		int flags = fcntl(mapIt->first, F_GETFL, 0);
-		fcntl(mapIt->first, F_SETFL, flags | O_NONBLOCK);
+		if (fcntl(mapIt->first, F_SETFL, flags | O_NONBLOCK) == -1)
+			if (serverMap.size() == 1)
+				throw "Error:\nFatal error";
 	}
 }
 
@@ -67,17 +67,26 @@ void	webserv::creatAddresses()
 
 void	webserv::bindSockets()
 {
+	int i = 0;
 	std::vector<struct sockaddr_in>::iterator adrIt = serverAddress.begin();
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
 		std::cout << OR1 << mapIt->first << OR2 << '\n';
-		if (bind(mapIt->first, (struct sockaddr *)&(*adrIt), sizeof(*adrIt)) < 0)
+		// if (i == 1)
+		// {
+		// 	if (serverMap.size() == 1)
+		// 		throw "Error:\nFatal error";
+		// 	std::cout << "failed to bind server socket" << std::endl;
+		// 	return;
+		// }
+		if (bind(mapIt->first, reinterpret_cast<struct sockaddr *>(&(*adrIt)), sizeof(*adrIt)) < 0)
 		{
 			if (serverMap.size() == 1)
 				throw "Error:\nFatal error";
 			std::cout << "failed to bind server socket" << std::endl;
 			return;
 		}
+		++i;
 		++adrIt;
 	}
 }
@@ -116,7 +125,7 @@ void	webserv::acceptSockets(int i)
 
 	// accept new connection
 	clientAddressLen = sizeof(*clientAddress.begin());
-	newClientSocket = accept(i, (struct sockaddr *)&clientAddress, &clientAddressLen);
+	newClientSocket = accept(i, reinterpret_cast<struct sockaddr *>(&clientAddress), &clientAddressLen);
 	if (newClientSocket < 0)
 	{
 		std::cout << "failed to accept" << std::endl;
@@ -249,7 +258,7 @@ bool webserv::check_dir(int i, std::string dir)
 			}
 		}
 	}
-	return (true);
+	return (false);
 }
 
 void	webserv::parseChunk(int i)
@@ -271,17 +280,17 @@ bool	webserv::getRequest(int i)
 	std::string dir = clientMap[i].getReq().get_path();
 	if (check_dir(i, dir))
 	{
-	std::cout << YL1 << "DEEEEEEEEEEEE" << YL2 << '\n';
-		clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
-		clientMap.at(i).clearReqChunk();
+	std::cout << YL1 << "its a directory so check method" << YL2 << '\n';
+		clientMap[i].setReqFull(clientMap[i].getReqChunk());
+		clientMap[i].clearReqChunk();
 		return false;
 	}
 	std::cout << "["<< transfer << "]" << '\n';
 	if (req.get_method() == "DELETE")
 	{
-		std::cout << "DELETE: " << (clientMap[i].getRoot() + "/" + req.get_path()) << '\n';
-		if (std::remove((clientMap[i].getRoot() + "/" + req.get_path()).c_str()) == 0)
-			std::cout << "lala\n";
+		clientMap[i].setReqFull(clientMap[i].getReqChunk());
+		clientMap[i].clearReqChunk();
+		return (false);
 	}
 	else if (req.get_method() == "POST")
 	{
@@ -296,7 +305,7 @@ bool	webserv::getRequest(int i)
 			clientMap[i].getReq().set_status(413); // first fill status in req 
 			Response res(clientMap[i].getReq()); // then send req to res
 			clientMap[i].setRes(res);
-			clientMap.at(i).clearReqChunk();
+			clientMap[i].clearReqChunk();
 			return false;
 		}
 		// std::cout << "clean body size" << cleanBody.size() << " " << "[" << cleanBody << "]" << clientMap[i].getBodySize()<< "\n";
@@ -308,23 +317,34 @@ bool	webserv::getRequest(int i)
 		file << cleanBody;
 		std::cout << OR1 <<  " body lenght --------------- \n"   << OR2 << '\n';
 	}
-	clientMap[i].setReqFull(clientMap.at(i).getReqChunk());
-	clientMap.at(i).clearReqChunk();
+	clientMap[i].setReqFull(clientMap[i].getReqChunk());
+	clientMap[i].clearReqChunk();
 
 	//print
-	// std::cout << "\n@@@@@@@@@@ end of req\ni : " << i << " \n" << clientMap.at(i).getReqFull() << '\n'
+	// std::cout << "\n@@@@@@@@@@ end of req\ni : " << i << " \n" << clientMap[i].getReqFull() << '\n'
 	// 		<< body.length() << " " << bodyLength << std::endl;
 	return (false);
 }
 
 void	webserv::reading(int i)
 {
-	resError = true;
-	buff = new char[BUFFERSIZE];
 	std::cout << YL1 << "READ block " << YL2 << std::endl;
+	resError = true;
+	try
+	{
+		buff = new char[BUFFERSIZE];
+	}
+	catch (std::exception &e)
+	{
+		std::cout <<  "error bad alloc"  << std::endl;
+		FD_CLR(i, &read_set);
+		close(i);
+		clientMap.erase(clientMap.find(i));
+		updateMaxSocket();
+		return ;
+	}
 	// 	std::cout << "i : " << i << std::endl;
 	int bytesReaded = recv(i, buff, BUFFERSIZE, 0);
-	// std::cout <<  bytesReaded  << std::endl;
 	if (bytesReaded == -1)
 	{
 		std::cout <<  "error in reacv"  << std::endl;
@@ -334,21 +354,25 @@ void	webserv::reading(int i)
 		updateMaxSocket();
 		return ;
 	}
-	if (bytesReaded < 0)
-		// std::cout << "failed to recv" << std::endl;
 	if (bytesReaded == 0)
-		// std::cout << "the connectuion is done " << std::endl;
+	{
+		std::cout << "the connectuion is done" << std::endl;
+		FD_SET(i, &write_set);
+		FD_CLR(i, &read_set);
+		delete (buff);
+		return;
+	}
 	buff[bytesReaded] = '\0';
 	std::string bufTmp;
 	std::string tmp = clientMap[i].getReqChunk();
 	bufTmp = std::string(buff, bytesReaded);
 	tmp.append(bufTmp);
-	clientMap.at(i).setReqChunk(tmp);
+	clientMap[i].setReqChunk(tmp);
 
 	//print
-	print(clientMap.at(i).getReqChunk(), "Request\n------------------------------");
-	// std::cout << "[[[ \n\n" << clientMap.at(i).getReqChunk() << " \n]]]" << std::endl;
-	// std::cout  << " " << clientMap.at(i).getReqChunk().find("\r\n\r\n", 0) << std::endl;
+	// print(clientMap[i].getReqChunk(), "Request\n------------------------------");
+	// std::cout << "[[[ \n\n" << clientMap[i].getReqChunk() << " \n]]]" << std::endl;
+	// std::cout  << " " << clientMap[i].getReqChunk().find("\r\n\r\n", 0) << std::endl;
 
 	// std::string 
 	Request req(clientMap[i].getReqChunk());
@@ -358,7 +382,7 @@ void	webserv::reading(int i)
 		clientMap[i].getReq().set_status(400);
 		Response res(clientMap[i].getReq());
 		clientMap[i].setRes(res);
-		clientMap.at(i).clearReqChunk();
+		clientMap[i].clearReqChunk();
 		FD_SET(i, &write_set);
 		FD_CLR(i, &read_set);
 		delete (buff);
@@ -387,7 +411,7 @@ void	webserv::reading(int i)
 					}
 				}
 			}
-			else if (!clientMap.at(i).getReqChunk().empty()) // if not empty return to read after
+			else if (!clientMap[i].getReqChunk().empty()) // if not empty return to read after
 			{
 				delete (buff) ;
 				return ;
@@ -399,7 +423,7 @@ void	webserv::reading(int i)
 			return ;
 		}
 	}
-	else if (!clientMap.at(i).getReqChunk().empty()) // if not empty return to read after
+	else if (!clientMap[i].getReqChunk().empty()) // if not empty return to read after
 	{
 		delete (buff) ;
 		return ;
@@ -428,7 +452,7 @@ void	webserv::redirOrAutoIndx(int i)
 std::cout << "AUTO INDEX FUNCTION" << '\n';
 	if (resError)
 	{
-		// HERE
+		// HERE def file or global def file
 		std::cout << urlPath << '\n';
 		htmlFile = readFile(root + "/" + clientMap[i].getDefFile()); // read default file
 		if (htmlFile.empty() && clientMap[i].getReq().get_path() == "/")
@@ -458,18 +482,18 @@ std::string	webserv::serveFile(int i)
 	int 		x;
 
 	//if its dir show default file or show index
-	if (is_dir && clientMap[i].getReq().get_path() == "/upload/" && clientMap[i].getReq().get_method() == "POST") /* if we upload we should show DONE or the same example.html page */
+	if (is_dir && clientMap[i].getReq().get_method() == "POST")// thank you hakime
 	{
 		std::cout << "upload html response ***********************************\n";
-		htmlFile = readFile("stuff/example.html");
+		htmlFile = readFile(clientMap[i].getRoot() + "/upload/Done.html");
 	}
 	else if (is_dir && clientMap[i].getReq().get_status() != 301)
 		redirOrAutoIndx(i);
-	else if (clientMap[i].getReq().get_status() != 301) // if not redirection get default file
-	{
-		std::cout << "DEF FILE NO RED NO INDX\n";
-		htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
-	}
+	// else if (clientMap[i].getReq().get_status() != 301) // if not redirection get default file
+	// {
+	// 	std::cout << "DEF FILE NO RED NO INDX\n";
+	// 	htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
+	// }
 	x = access(urlPath.c_str(), F_OK); // if file path exist
 	if (x == -1)
 	{
@@ -478,19 +502,19 @@ std::string	webserv::serveFile(int i)
 		std::cout << BL1 << " NO file to read\n" << OR2 << '\n';
 	}
 	if (x != -1)
-	{
+	{	
 		x = access(urlPath.c_str(), R_OK); // if file has permission to read
-		if (x == -1)
+		if (x == -1 || (is_dir && access(urlPath.c_str(), X_OK) == -1))
 		{
 			std::cout << BL1 << " NO PERMISSION TO READ\n" << OR2 << '\n';
 			htmlFile = "dirOfErrors/403.html";
 			setResStatus(i, 403, htmlFile, "403.html");
 		}
 	}
-	if (clientMap[i].getReq().get_status() != 200) // if status != 200 means there is an error or redirection
+	if (clientMap[i].getReq().get_status() != 200) // if status != 200 means there is an error or redirection HAKIME RESPONSE CREATED HERE
 	{
 		std::cout << BL1 << resError << " STATUS ERROR : " << clientMap[i].getReq().get_status() << OR2 << '\n';
-		if (resError)
+		if (resError) // if resEroor is true ofc
 			htmlFile = clientMap[i].getRes().getHtmlError();
 		print(htmlFile, "BOOOOOM------lalala");
 		fileContent = clientMap[i].getRes().getHead() + "Content-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
@@ -504,6 +528,13 @@ std::string	webserv::serveFile(int i)
 	if (!is_dir)
 	{
 		htmlFile = readFile(urlPath);
+		if (clientMap[i].getReq().get_method() == "DELETE")
+		{
+			std::cout << "DEEELEEEETEEEE\n";
+			htmlFile = clientMap[i].getRes().delhtml();
+			if (std::remove((clientMap[i].getRoot() + clientMap[i].getReq().get_path()).c_str()) != 0)
+				std::cout << "not deleted\n";
+		}
 		for (std::map<std::string, std::string>::iterator typeIt = mimeMap.begin(); typeIt != mimeMap.end(); ++typeIt)
 		{
 			if (urlPath.find("." + typeIt->first) != std::string::npos)
@@ -597,8 +628,15 @@ void	webserv::writing(int i)
 	is_dir = false;
 	struct stat fileStat;
 	if (stat(urlPath.c_str(), &fileStat) == 0)
+	{
 		if (S_ISDIR(fileStat.st_mode))
 			is_dir = true;
+	}
+	else
+	{
+		htmlFile = "dirOfErrors/500.html";
+		setResStatus(i, 500, htmlFile, "500.html");
+	}
 
 	//check method if its allowed
 	checkLocMeth(i);
@@ -614,20 +652,22 @@ void	webserv::writing(int i)
 
 	std::cout << "SENDING : " << len << '\n';
 	
-	shutdown(i, SHUT_WR);
 	FD_CLR(i, &write_set);
+	shutdown(i, SHUT_WR);
+	if (clientMap[i].getReq().get_headers()["Connection"] == "keep-alive")
+		return ;
 
 	//update maxClient
+	updateMaxSocket();
 	close(i);
 	clientMap.erase(clientMap.find(i)); // rmove client
-	updateMaxSocket();
 	std::cout << "MAXSOCKET : >>>>>>>>>>> " << maxSocket << '\n';
 }
 
 webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::string> mime)
 {
 	timeval timeout;
-	timeout.tv_sec = 5;
+	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
 
 	mimeMap = mime;
@@ -667,13 +707,21 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 
 		// select
 		check = select(maxSocket + 1, &copyRead, &copyWrite, NULL, &timeout);
+		if (check < 0)
+			throw ("internal error 500 or something");
 		if (check == 0)
 		{
 			// loop on clientMap and check if the connection is keep alive and erase that client map
+			for (std::map<int, clientInfo>::iterator it = clientMap.begin(); it != clientMap.end(); ++it)
+			{
+				std::cout << it->first << '\n';
+				close(it->first);
+			}
+			clientMap.clear();
+			std::cout << clientMap.size() << '\n';
+			updateMaxSocket();
 			continue ;
 		}
-		if (check < 0)
-			return;
 		std::cout << "after select " << check << '\n';
 		// accept connection
 		for (int i = 3; i <= maxSocket; ++i)
