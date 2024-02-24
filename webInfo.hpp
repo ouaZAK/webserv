@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webInfo.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:37 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/21 09:17:56 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/24 15:11:33 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,4 +49,6 @@ class webInfo
 		bool						getAI() const;
 		std::string					getHost() const;
 		std::string					getGlobDefFile() const;
+		std::string					getServnam() const;
+		
 };

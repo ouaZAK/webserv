@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/24 13:08:18 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/24 15:18:57 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <cstdio>
 
 // TO DO :
+// check cgi in reaing so we dont post anything send it to cgi only
 // look at globDefFile directive repeated!
 // casting
 // check cgi path if it doesnt have cgi dont fork for it
@@ -27,8 +28,8 @@
 #define YL1 "\x1b[33m"
 #define YL2 "\x1b[0m"
 
-template<typename T>
-void	print(T str, std::string s)
+template <typename T>
+void print(T str, std::string s)
 {
 	std::cout << BL1 << s << BL2 << '\n';
 	std::cout << GR1 << "[" << str << "]" << GR2 << '\n';
@@ -48,7 +49,7 @@ std::string readFile(const std::string &str)
 	return (inStr.str());
 }
 
-void	webserv::setNoBlocking()
+void webserv::setNoBlocking()
 {
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
@@ -59,13 +60,13 @@ void	webserv::setNoBlocking()
 	}
 }
 
-void	webserv::creatAddresses()
+void webserv::creatAddresses()
 {
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 		serverAddress.push_back(mapIt->second.getServerAddress());
 }
 
-void	webserv::bindSockets()
+void webserv::bindSockets()
 {
 	int i = 0;
 	std::vector<struct sockaddr_in>::iterator adrIt = serverAddress.begin();
@@ -91,7 +92,7 @@ void	webserv::bindSockets()
 	}
 }
 
-void	webserv::listening()
+void webserv::listening()
 {
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
@@ -103,7 +104,7 @@ void	webserv::listening()
 	}
 }
 
-void	webserv::setFds()
+void webserv::setFds()
 {
 	FD_ZERO(&read_set);
 	FD_ZERO(&write_set);
@@ -118,10 +119,10 @@ void	webserv::setFds()
 	}
 }
 
-void	webserv::acceptSockets(int i)
+void webserv::acceptSockets(int i)
 {
-	//if sock server is in read which is always in read whadaheck
-	std::cout << YL1 << "server " << i  << " accepted" << YL2 << std::endl;
+	// if sock server is in read which is always in read whadaheck
+	std::cout << YL1 << "server " << i << " accepted" << YL2 << std::endl;
 
 	// accept new connection
 	clientAddressLen = sizeof(*clientAddress.begin());
@@ -129,19 +130,19 @@ void	webserv::acceptSockets(int i)
 	if (newClientSocket < 0)
 	{
 		std::cout << "failed to accept" << std::endl;
-		return ;
+		return;
 	}
 
-	//nonblocking fds
+	// nonblocking fds
 	int flags = fcntl(newClientSocket, F_GETFL, 0);
 	if (fcntl(newClientSocket, F_SETFL, flags | O_NONBLOCK) < 0)
 	{
 		std::cout << "failed to set non blocking\n";
 		close(newClientSocket);
-		return ;
+		return;
 	}
 
-	//set newclient to copyRead
+	// set newclient to copyRead
 	FD_SET(newClientSocket, &read_set);
 
 	if (newClientSocket > maxSocket)
@@ -160,28 +161,28 @@ void	webserv::acceptSockets(int i)
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 }
 
-void	webserv::extractBody(int i)
+void webserv::extractBody(int i)
 {
 	try
 	{
-		std::string	tmpBody;
-		size_t 		posNwl;
+		std::string tmpBody;
+		size_t posNwl;
 
 		tmpBody = clientMap[i].getReqChunk();
 		pos = tmpBody.find("\r\n\r\n", 0);
 		body = tmpBody.substr(pos + 4, tmpBody.length() - (pos + 4));
 		posNwl = body.find("\r\n", 0); // to know length of first line
 		pos = body.find("\r\n\r\n", 0);
-		cleanBody = body.substr(pos + 4, body.length() - (pos + 4) - (posNwl + 7));/* 4 for "-" and 3 for '\n' */
-		// print(cleanBody, "cleanBody: " );
+		cleanBody = body.substr(pos + 4, body.length() - (pos + 4) - (posNwl + 7)); /* 4 for "-" and 3 for '\n' */
+																					// print(cleanBody, "cleanBody: " );
 	}
-	catch(const std::exception& e)
+	catch (const std::exception &e)
 	{
 		std::cerr << e.what() << "$$$$$$$$$$$$$$$$$________________$$$$$$$$$$$$$$$$$" << '\n';
 	}
 }
 
-void	webserv::setResStatus(int i, int status, std::string &htmlFile, std::string statusHtml)
+void webserv::setResStatus(int i, int status, std::string &htmlFile, std::string statusHtml)
 {
 	int x, y;
 	if (!htmlFile.empty())
@@ -198,7 +199,7 @@ void	webserv::setResStatus(int i, int status, std::string &htmlFile, std::string
 				{
 					htmlFile = readFile("dirOfErrors/" + statusHtml);
 					resError = false;
-					break ;
+					break;
 				}
 			}
 		}
@@ -207,7 +208,7 @@ void	webserv::setResStatus(int i, int status, std::string &htmlFile, std::string
 	clientMap[i].setRes(clientMap[i].getReq());
 }
 
-bool	countSlash(std::string &dir)
+bool countSlash(std::string &dir)
 {
 	int count = 0;
 	for (std::string::iterator it = dir.begin(); it != dir.end(); ++it)
@@ -243,7 +244,7 @@ bool webserv::check_dir(int i, std::string dir)
 				}
 				for (std::vector<std::string>::iterator itV2 = locIt->methods.begin(); itV2 != locIt->methods.end(); itV2++)
 				{
-					std::cout << clientMap[i].getReq().get_method() << " <- req  |  itV -> " <<  *itV2 << "\n";
+					std::cout << clientMap[i].getReq().get_method() << " <- req  |  itV -> " << *itV2 << "\n";
 					if (clientMap[i].getReq().get_method() == *itV2)
 					{
 						clientMap[i].setDefFile(locIt->default_file); /* get the default file in every directory */
@@ -261,9 +262,9 @@ bool webserv::check_dir(int i, std::string dir)
 	return (false);
 }
 
-void	webserv::parseChunk(int i)
+void webserv::parseChunk(int i)
 {
-	std::string str  = clientMap[i].getReqChunk();
+	std::string str = clientMap[i].getReqChunk();
 	size_t pos1 = str.find("\r\n\r\n", 0);
 	size_t pos2 = str.find("0\r\n\r\n");
 	pos1 += 4;
@@ -271,21 +272,20 @@ void	webserv::parseChunk(int i)
 	std::string sub = str.substr(pos1, pos2 - pos1);
 	std::cout << sub.size() << '\n';
 	print(sub, "POST---------");
-	
 }
 
-bool	webserv::getRequest(int i)
+bool webserv::getRequest(int i)
 {
 	Request req = clientMap[i].getReq();
 	std::string dir = clientMap[i].getReq().get_path();
 	if (check_dir(i, dir))
 	{
-	std::cout << YL1 << "its a directory so check method" << YL2 << '\n';
+		std::cout << YL1 << "its a directory so check method" << YL2 << '\n';
 		clientMap[i].setReqFull(clientMap[i].getReqChunk());
 		clientMap[i].clearReqChunk();
 		return false;
 	}
-	std::cout << "["<< transfer << "]" << '\n';
+	std::cout << "[" << transfer << "]" << '\n';
 	if (req.get_method() == "DELETE")
 	{
 		clientMap[i].setReqFull(clientMap[i].getReqChunk());
@@ -300,10 +300,10 @@ bool	webserv::getRequest(int i)
 		extractBody(i);
 		if (body.length() < bodyLength)
 			return (true);
-		if (cleanBody.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200/* and 200 range */)
+		if (cleanBody.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200 /* and 200 range */)
 		{
-			clientMap[i].getReq().set_status(413); // first fill status in req 
-			Response res(clientMap[i].getReq()); // then send req to res
+			clientMap[i].getReq().set_status(413); // first fill status in req
+			Response res(clientMap[i].getReq());   // then send req to res
 			clientMap[i].setRes(res);
 			clientMap[i].clearReqChunk();
 			return false;
@@ -313,20 +313,30 @@ bool	webserv::getRequest(int i)
 		// std::cout << "body" << body << '\n';
 		std::string filename = req.get_file_name();
 		/***** get the proper root if its default one or inside location ******/
-		std::ofstream file(clientMap[i].getRoot() + "/upload/" + filename);		/* get the root path */
+		std::ofstream file(clientMap[i].getRoot() + "/upload/" + filename); /* get the root path */
 		file << cleanBody;
-		std::cout << OR1 <<  " body lenght --------------- \n"   << OR2 << '\n';
+		std::cout << OR1 << " body lenght --------------- \n"
+				  << OR2 << '\n';
 	}
 	clientMap[i].setReqFull(clientMap[i].getReqChunk());
 	clientMap[i].clearReqChunk();
 
-	//print
-	// std::cout << "\n@@@@@@@@@@ end of req\ni : " << i << " \n" << clientMap[i].getReqFull() << '\n'
-	// 		<< body.length() << " " << bodyLength << std::endl;
+	// print
+	//  std::cout << "\n@@@@@@@@@@ end of req\ni : " << i << " \n" << clientMap[i].getReqFull() << '\n'
+	//  		<< body.length() << " " << bodyLength << std::endl;
 	return (false);
 }
 
-void	webserv::reading(int i)
+bool isCgi(std::string path, std::string prefix, std::string extension)
+{
+	if (path.compare(0, prefix.length(), prefix) == 0 &&
+		path.length() >= extension.length() &&
+		path.compare(path.length() - extension.length(), extension.length(), extension) == 0)
+		return true;
+	return false;
+}
+
+void webserv::reading(int i)
 {
 	std::cout << YL1 << "READ block " << YL2 << std::endl;
 	resError = true;
@@ -336,23 +346,23 @@ void	webserv::reading(int i)
 	}
 	catch (std::exception &e)
 	{
-		std::cout <<  "error bad alloc"  << std::endl;
+		std::cout << "error bad alloc" << std::endl;
 		FD_CLR(i, &read_set);
 		close(i);
 		clientMap.erase(clientMap.find(i));
 		updateMaxSocket();
-		return ;
+		return;
 	}
 	// 	std::cout << "i : " << i << std::endl;
 	int bytesReaded = recv(i, buff, BUFFERSIZE, 0);
 	if (bytesReaded == -1)
 	{
-		std::cout <<  "error in reacv"  << std::endl;
+		std::cout << "error in reacv" << std::endl;
 		FD_CLR(i, &read_set);
 		close(i);
 		clientMap.erase(clientMap.find(i));
 		updateMaxSocket();
-		return ;
+		return;
 	}
 	if (bytesReaded == 0)
 	{
@@ -369,12 +379,12 @@ void	webserv::reading(int i)
 	tmp.append(bufTmp);
 	clientMap[i].setReqChunk(tmp);
 
-	//print
-	// print(clientMap[i].getReqChunk(), "Request\n------------------------------");
-	// std::cout << "[[[ \n\n" << clientMap[i].getReqChunk() << " \n]]]" << std::endl;
-	// std::cout  << " " << clientMap[i].getReqChunk().find("\r\n\r\n", 0) << std::endl;
+	// print
+	//  print(clientMap[i].getReqChunk(), "Request\n------------------------------");
+	//  std::cout << "[[[ \n\n" << clientMap[i].getReqChunk() << " \n]]]" << std::endl;
+	//  std::cout  << " " << clientMap[i].getReqChunk().find("\r\n\r\n", 0) << std::endl;
 
-	// std::string 
+	// std::string
 	Request req(clientMap[i].getReqChunk());
 	std::cout << "status : " << req.get_status() << '\n';
 	if (req.get_status() != 200)
@@ -386,7 +396,7 @@ void	webserv::reading(int i)
 		FD_SET(i, &write_set);
 		FD_CLR(i, &read_set);
 		delete (buff);
-		return ;
+		return;
 	}
 	transfer = req.get_headers()["Transfer-Encoding"].c_str();
 	if (clientMap[i].getReqChunk().find("\r\n\r\n", 0) != std::string::npos)
@@ -407,49 +417,51 @@ void	webserv::reading(int i)
 					if (getRequest(i))
 					{
 						delete (buff);
-						return ;
+						return;
 					}
 				}
 			}
 			else if (!clientMap[i].getReqChunk().empty()) // if not empty return to read after
 			{
-				delete (buff) ;
-				return ;
+				delete (buff);
+				return;
 			}
 		}
 		else if (getRequest(i))
 		{
 			delete (buff);
-			return ;
+			return;
 		}
 	}
 	else if (!clientMap[i].getReqChunk().empty()) // if not empty return to read after
 	{
-		delete (buff) ;
-		return ;
+		delete (buff);
+		return;
 	}
 
-	//print
+	// print
 	std::cout << "\nreadin to writin" << std::endl;
 	// std::cout << "\n//--- begin req ---//\n" << std::endl;
 	// std::cout << clientMap.find(i)->second.getReqFull() << std::endl;
 	// std::cout << "//--- end req ---//\n\n" << "the request size : -> " << clientMap.find(i)->second.getReqFull().length() << '\n';
-	
+
 	std::ofstream fil("zlala.txt");
 	fil << clientMap[i].getReqChunk();
-	//set to write on the client socket
+
+	aCgi = isCgi(req.get_path(), "/cgi/", ".py") ? aCgi = true : aCgi = false;
+	// set to write on the client socket
 	FD_SET(i, &write_set);
-	//clear it from read cuz now it need to be writin on it only
+	// clear it from read cuz now it need to be writin on it only
 	FD_CLR(i, &read_set);
 	delete (buff);
 }
 
-void	webserv::redirOrAutoIndx(int i)
+void webserv::redirOrAutoIndx(int i)
 {
-	//if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
+	// if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
 	bool AutoIndx = clientMap[i].getAutoIndx();
 	std::string root = clientMap[i].getRoot();
-std::cout << "AUTO INDEX FUNCTION" << '\n';
+	std::cout << "AUTO INDEX FUNCTION" << '\n';
 	if (resError)
 	{
 		// HERE def file or global def file
@@ -460,7 +472,7 @@ std::cout << "AUTO INDEX FUNCTION" << '\n';
 	}
 	if (htmlFile.empty() && AutoIndx && resError) // if no default file and auIndx on list AIndx
 	{
-		std::cout << OR1<< "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
+		std::cout << OR1 << "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
 		autoindex aiGen(root, clientMap[i].getReq().get_path(), clientMap[i].getHost(), clientMap[i].getPort());
 		std::cout << "root: " << root << "\nhost: " << clientMap[i].getHost() << "\nport: " << clientMap[i].getPort() << '\n';
 		if (resError)
@@ -469,44 +481,47 @@ std::cout << "AUTO INDEX FUNCTION" << '\n';
 	}
 	else if (htmlFile.empty() && !AutoIndx && resError) // no def no AIndx error 404
 	{
-		std::cout << OR1<< "---------------------------- ERROR no defltfile no auto indx -------------------" << OR2 << '\n';
+		std::cout << OR1 << "---------------------------- ERROR no defltfile no auto indx -------------------" << OR2 << '\n';
 		// respons 500 or 400
 		htmlFile = "dirOfErrors/404.html";
 		setResStatus(i, 404, htmlFile, "404.html");
 	}
 }
 
-std::string	webserv::serveFile(int i)
+std::string webserv::serveFile(int i)
 {
 	std::string fileContent;
-	int 		x;
+	int x;
 
-	//if its dir show default file or show index
-	if (is_dir && clientMap[i].getReq().get_method() == "POST")// thank you hakime
+	// if its dir show default file or show index
+	if (is_dir && clientMap[i].getReq().get_method() == "POST") // thank you hakime
 	{
 		std::cout << "upload html response ***********************************\n";
 		htmlFile = readFile(clientMap[i].getRoot() + "/upload/Done.html");
 	}
 	else if (is_dir && clientMap[i].getReq().get_status() != 301)
 		redirOrAutoIndx(i);
-	// else if (clientMap[i].getReq().get_status() != 301) // if not redirection get default file
-	// {
-	// 	std::cout << "DEF FILE NO RED NO INDX\n";
-	// 	htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
-	// }
+	else if (clientMap[i].getReq().get_status() != 301) // if not redirection get default file
+	{
+		std::cout << "DEF FILE NO RED NO INDX\n";
+		if (!aCgi)
+			htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
+	}
 	x = access(urlPath.c_str(), F_OK); // if file path exist
 	if (x == -1)
 	{
 		htmlFile = "dirOfErrors/404.html";
 		setResStatus(i, 404, htmlFile, "404.html");
-		std::cout << BL1 << " NO file to read\n" << OR2 << '\n';
+		std::cout << BL1 << " NO file to read\n"
+				  << OR2 << '\n';
 	}
 	if (x != -1)
-	{	
+	{
 		x = access(urlPath.c_str(), R_OK); // if file has permission to read
 		if (x == -1 || (is_dir && access(urlPath.c_str(), X_OK) == -1))
 		{
-			std::cout << BL1 << " NO PERMISSION TO READ\n" << OR2 << '\n';
+			std::cout << BL1 << " NO PERMISSION TO READ\n"
+					  << OR2 << '\n';
 			htmlFile = "dirOfErrors/403.html";
 			setResStatus(i, 403, htmlFile, "403.html");
 		}
@@ -524,10 +539,11 @@ std::string	webserv::serveFile(int i)
 	// if its not error then ok 200
 	fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
 
-	//search for the mime type of the url ( example."mimeType" )
+	// search for the mime type of the url ( example."mimeType" )
 	if (!is_dir)
 	{
-		htmlFile = readFile(urlPath);
+		if (!aCgi)
+			htmlFile = readFile(urlPath);
 		if (clientMap[i].getReq().get_method() == "DELETE")
 		{
 			std::cout << "DEEELEEEETEEEE\n";
@@ -539,7 +555,10 @@ std::string	webserv::serveFile(int i)
 		{
 			if (urlPath.find("." + typeIt->first) != std::string::npos)
 			{
-				fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
+				if (!aCgi)
+					fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
+				else
+					fileContent = "HTTP/1.1 200 OK\n" + htmlFile;
 				htmlFile.clear();
 				return (fileContent);
 			}
@@ -551,7 +570,7 @@ std::string	webserv::serveFile(int i)
 	return (fileContent);
 }
 
-bool	webserv::is_alias(int i, std::string &dir)
+bool webserv::is_alias(int i, std::string &dir)
 {
 	countSlash(dir);
 	std::vector<Location> loc = clientMap[i].getLoc();
@@ -575,7 +594,7 @@ bool	webserv::is_alias(int i, std::string &dir)
 					}
 					else
 					{
-					std::cout << "not dir no '/' \n";	
+						std::cout << "not dir no '/' \n";
 						return (true);
 						// dir += "/";
 					}
@@ -587,22 +606,22 @@ bool	webserv::is_alias(int i, std::string &dir)
 	return (false);
 }
 
-void	webserv::checkLocMeth(int i)
+void webserv::checkLocMeth(int i)
 {
 	/* ######### test 8080/dir/lala.html in ngnix ########### */
 	std::string dir = clientMap[i].getReq().get_path();
 	if (is_alias(i, dir) || (is_dir && !countSlash(dir)))
-		urlPath = clientMap[i].getRoot() + dir ;// taygadha ha ki me
+		urlPath = clientMap[i].getRoot() + dir; // taygadha ha ki me
 	std::cout << "is dir : -> " << is_dir << dir << '\n';
 	std::cout << "\n ---------- \n there is 2 slash dir is [" << dir << "] " << urlPath << '\n';
 	size_t pos1 = urlPath.find("/", 0);
 	size_t pos2 = urlPath.find("/", pos1 + 1);
 	dir = urlPath.substr(pos1, (pos2 + 1) - pos1);
-	std::cout << "last dir {" <<  dir << "} " << (pos2 ) << " " << (pos1) << '\n';
+	std::cout << "last dir {" << dir << "} " << (pos2) << " " << (pos1) << '\n';
 	check_dir(i, dir);
 }
 
-void	webserv::updateMaxSocket()
+void webserv::updateMaxSocket()
 {
 	for (int i = maxSocket; i > 3;)
 	{
@@ -616,15 +635,15 @@ void	webserv::updateMaxSocket()
 	}
 }
 
-void	webserv::writing(int i)
+void webserv::writing(int i)
 {
-	std::cout << YL1 <<  "WRITE block " << YL2 << std::endl;
+	std::cout << YL1 << "WRITE block " << YL2 << std::endl;
 
 	// join url with path
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
-	std::cout << OR1 <<  "url : " << urlPath << OR2 << '\n';
+	std::cout << OR1 << "url : " << urlPath << OR2 << '\n';
 
-	//check is dir
+	// check is dir
 	is_dir = false;
 	struct stat fileStat;
 	if (stat(urlPath.c_str(), &fileStat) == 0)
@@ -638,7 +657,7 @@ void	webserv::writing(int i)
 		setResStatus(i, 500, htmlFile, "500.html");
 	}
 
-	//check method if its allowed
+	// check method if its allowed
 	checkLocMeth(i);
 
 	// std::cout << "i : " << i << std::endl;
@@ -651,13 +670,13 @@ void	webserv::writing(int i)
 		std::cout << "error in send" << std::endl;
 
 	std::cout << "SENDING : " << len << '\n';
-	
+
 	FD_CLR(i, &write_set);
 	shutdown(i, SHUT_WR);
 	if (clientMap[i].getReq().get_headers()["Connection"] == "keep-alive")
-		return ;
+		return;
 
-	//update maxClient
+	// update maxClient
 	updateMaxSocket();
 	close(i);
 	clientMap.erase(clientMap.find(i)); // rmove client
@@ -676,7 +695,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 	for (std::vector<webInfo>::iterator it = serverList.begin(); it != serverList.end(); ++it)
 		serverMap.insert(std::make_pair(it->getSock(), *it));
 
-	//set to non blocking
+	// set to non blocking
 	setNoBlocking();
 
 	// to close the socket after program ends
@@ -684,10 +703,10 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 		setsockopt(mapIt->first, SOL_SOCKET, SO_REUSEADDR, &nbr, sizeof(nbr));
 
-	//print
+	// print
 	std::cout << "serversokt are : ";
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
-		 std::cout << "[" << mapIt->first << "] ";
+		std::cout << "[" << mapIt->first << "] ";
 	std::cout << std::endl;
 
 	// create server address
@@ -698,7 +717,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 	listening();
 	// set servermap to read
 	setFds();
-	while(1)
+	while (1)
 	{
 		std::cout << OR1 << "\nstart \n----------------" << OR2 << "\n";
 
@@ -708,7 +727,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 		// select
 		check = select(maxSocket + 1, &copyRead, &copyWrite, NULL, &timeout);
 		if (check < 0)
-			throw ("internal error 500 or something");
+			throw("internal error 500 or something");
 		if (check == 0)
 		{
 			// loop on clientMap and check if the connection is keep alive and erase that client map
@@ -720,7 +739,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 			clientMap.clear();
 			std::cout << clientMap.size() << '\n';
 			updateMaxSocket();
-			continue ;
+			continue;
 		}
 		std::cout << "after select " << check << '\n';
 		// accept connection
@@ -735,7 +754,15 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 			else if (FD_ISSET(i, &copyRead))
 				reading(i);
 			else if (FD_ISSET(i, &copyWrite)) // receiv request from clinet
+			{
+				if (aCgi)
+				{
+					std::cout << "CGI\n";
+					slowCgi cgiScr(clientMap[i]);
+					htmlFile = cgiScr.slowCgiExecute(clientMap[i]);
+				}
 				writing(i);
+			}
 		}
 	}
 	serverMap.clear();
@@ -745,13 +772,12 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 webserv::~webserv()
 {
 }
-std::map<int, webInfo>  webserv::getmap() const
+std::map<int, webInfo> webserv::getmap() const
 {
 	return (serverMap);
 }
-	//create vector of characters from buffer 
-	// creat a file and put the buffer in it append the rest
-	// or put the buffer in  a stream then put it back in a std string
+// create vector of characters from buffer
+//  creat a file and put the buffer in it append the rest
+//  or put the buffer in  a stream then put it back in a std string
 
-
-//elmakawi was here
+// elmakawi was here

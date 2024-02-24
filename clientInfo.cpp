@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   clientInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/21 09:33:30 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/24 14:32:04 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,4 +155,14 @@ void	clientInfo::setGlobDefFile(std::string defF)
 std::string	clientInfo::getGlobDefFile() const
 {
 	return (globDefFile);
+}
+
+std::string	clientInfo::getServerNam() const
+{
+	return(servNam);
+}
+
+void		clientInfo::setServerNam(std::string other)
+{
+	servNam = other;
 }

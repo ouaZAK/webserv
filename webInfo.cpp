@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webInfo.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:26 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/21 09:23:32 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/24 14:33:51 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,4 +125,9 @@ int	webInfo::getOneServer() const
 std::string	webInfo::getGlobDefFile() const
 {
 	return (globDefFile);
+}
+
+std::string		webInfo::getServnam() const
+{
+	return (serverName);
 }

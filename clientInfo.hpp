@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   clientInfo.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/21 09:31:54 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/24 14:32:34 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ class clientInfo
 	private:
 		int						port;
 		std::string 			reqFull;
+		std::string 			servNam;
 		std::string 			reqChunk;
 		std::string 			root;
 		std::string 			host;
@@ -65,5 +66,6 @@ class clientInfo
 		int						getPort();
 		void					setHost(std::string hst);
 		std::string				getHost();
-		
+		std::string				getServerNam() const;
+		void				setServerNam(std::string);
 };

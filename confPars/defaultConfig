@@ -1,6 +1,6 @@
 server
 {
-    listen        8080 ;
+    listen        8080  ;
     server_name   example.com ;
     host            127.0.0.1 ;
     error_pages   404.html 405.html 403.html ;
@@ -10,59 +10,66 @@ server
     autoindex   on ;
     location /dir/
     {
-        default_file  default.html ;
+        default_file  defaul.html ;
         methods GET DELETE ;
         cgi_extension   .py ;
-        cgi_bin  /usr/bin/python3 ;
+        cgi_bin  /usr/local/bin/python3 ;
     }
     location /upload/
     {
         default_file  index1.html ;
         methods GET POST DELETE ;
         cgi_extension   .py ;
-        cgi_bin  /usr/bin/python3 ;
+        cgi_bin  /cgi ;
     }
     location /test/
     {
         default_file  iNdex2.html ;
         methods  GET  POST DELETE ;
-        cgi_bin  /usr/bin/python4 ;
+        cgi_bin  /usr/local/bin/python3 ;
         cgi_extension  .BRUH ;
         return 301 /dir/ ;
     }
-    location /kkk/
+    location /kapouet/
     {
-        alias dir/lala.html ;
-        default_file  inDex3.html ;
-        methods  GET  POST DELETE ;
-        cgi_bin  /usr/bin/python4 ;
-        cgi_extension  .ZOOT ;
+        alias           dirOfErrors ;
+        default_file    inDex3.html ;
+        methods         GET  POST DELETE ;
+        cgi_bin         /usr/local/bin/python3 ;
+        cgi_extension   .ZOOT ;
     }
 }
 
 server
 {
-    listen        7070 ;
-    server_name   example.com ;
-    host            127.0.0.1 ;
-    error_pages   404.html 405.html 403.html ;
+    listen        5050 ;
+    server_name   zoot.com ;
+    host            10.12.8.6 ;
+    error_pages   404.html 405.html ;
     client_body_size  5000000 ;
-    default_file    inde.html ;
-    root    stuf ;
+    root    server_3 ;
     autoindex   on ;
-    location /dr/
-    {
-        default_file  default.html ;
-        methods GET DELETE ;
-        cgi_extension   .py ;
-        cgi_bin  /usr/bin/python3 ;
-    }
     location /upload/
     {
         default_file  index1.html ;
         methods GET POST DELETE ;
         cgi_extension   .py ;
-        cgi_bin  /usr/bin/python3 ;
+        cgi_bin  /cgi ;
     }
+    location /test/
+    {
+        default_file  iNdex2.html ;
+        methods  GET  POST DELETE ;
+        cgi_bin  /cgi ;
+        cgi_extension  .BRUH ;
+        return 301 /dir/ ;
+    }
+    location /kapouet/
+    {
+        alias dirOfErrors ;
+        default_file  inDex3.html ;
+        methods  GET  POST DELETE ;
+        cgi_bin  /cgi ;
+        cgi_extension  .ZOOT ;
     }
 }

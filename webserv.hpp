@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/22 16:04:59 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/24 15:11:55 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 #include "webInfo.hpp"
 #include "clientInfo.hpp"
 #include "autoindex.hpp"
+#include "cgi.hpp"
 
 // #define PORT 8080
 #define MAX_CLIENTS 10
@@ -70,6 +71,11 @@ class webserv
 		size_t 								pos;
 		bool 								resError;
 		std::string htmlFile;
+
+		
+		//ayman 
+		bool								aCgi;
+
 		
 	public:
 		webserv(){}
