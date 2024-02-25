@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/24 15:18:57 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/25 10:52:06 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,6 @@
 // TO DO :
 // check cgi in reaing so we dont post anything send it to cgi only
 // look at globDefFile directive repeated!
-// casting
-// check cgi path if it doesnt have cgi dont fork for it
 
 #define BL1 "\x1b[34m"
 #define BL2 "\x1b[0m"
@@ -445,10 +443,12 @@ void webserv::reading(int i)
 	// std::cout << clientMap.find(i)->second.getReqFull() << std::endl;
 	// std::cout << "//--- end req ---//\n\n" << "the request size : -> " << clientMap.find(i)->second.getReqFull().length() << '\n';
 
-	std::ofstream fil("zlala.txt");
-	fil << clientMap[i].getReqChunk();
+	// std::ofstream fil("zlala.txt");
+	// fil << clientMap[i].getReqChunk();
 
+	// if cgi path is good or not
 	aCgi = isCgi(req.get_path(), "/cgi/", ".py") ? aCgi = true : aCgi = false;
+	
 	// set to write on the client socket
 	FD_SET(i, &write_set);
 	// clear it from read cuz now it need to be writin on it only
@@ -735,6 +735,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 			{
 				std::cout << it->first << '\n';
 				close(it->first);
+				FD_CLR(it->first, &read_set);
 			}
 			clientMap.clear();
 			std::cout << clientMap.size() << '\n';

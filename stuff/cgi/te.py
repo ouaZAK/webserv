@@ -1,26 +1,38 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import os
-from PIL import Image, ImageDraw
+# Importing necessary modules
+import cgi
 
-# Set content type to image/png
-print("Content-Type: image/png")
-print()
+# Define the content type as HTML
+print("Content-Type: text/html\n")
 
-# Create a new image
-image = Image.new("RGB", (200, 200), "white")
-draw = ImageDraw.Draw(image)
+# HTML content
+html_content = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGI Generated Page</title>
+</head>
+<body>
+    <h1>CGI Generated Page</h1>
+    <p>This is a dynamically generated HTML page using Python CGI.</p>
+    <p>Below is a list of query parameters passed to this script:</p>
+    <ul>
+"""
 
-# Draw a blue circle on the image
-draw.ellipse([50, 50, 150, 150], fill="blue")
+# Get query parameters
+form = cgi.FieldStorage()
+for key in form.keys():
+    html_content += f"<li><strong>{key}:</strong> {form[key].value}</li>"
 
-# Save the image to a temporary file
-temp_file = "/Users/asidqi/Desktop/tet/generated_image.png"
-image.save(temp_file, format="PNG")
+# Closing HTML content
+html_content += """
+    </ul>
+</body>
+</html>
+"""
 
-# Read the temporary file and output its contents
-with open(temp_file, "rb") as f:
-    png_data = f.read()
-
-# Print the PNG data to the standard output
-print(png_data)
+# Print the HTML content
+print(html_content)

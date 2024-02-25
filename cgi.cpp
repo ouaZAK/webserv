@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 17:03:16 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/23 19:14:25 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/25 10:00:23 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,9 @@
 #include <fstream>
 #include "Request.hpp"
 #include <sys/wait.h>
+
+#include"webserv.hpp"
+
 // cgiElem["REMOTE_ADDR"] = "";
 // cgiElem["REMOTE_USER"] = "";
 // cgiElem["HTTP_USER_AGENT"] = "";
@@ -77,6 +80,7 @@ std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
         args[1] = strdup(const_cast<char *>((clientMap.getRoot() + clientMap.getReq().get_path()).c_str()));
         args[2] = NULL;
         close(CtoP[0]);
+        std::cout << "from child : " << args[1] << '\n';
         dup2(CtoP[1], 1);
         if (execve(args[0], args, envp) == -1)
         {
@@ -94,14 +98,29 @@ std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
     // std::cout << "par file is : \n" << fullstr << '\n';
     std::cout << "send from parent " << '\n';
     close(CtoP[1]);
-    char buffer[3000];
-    int xd = read(CtoP[0], buffer, 3000);
-    buffer[xd] = '\0';
+    // do a while here to read 1024 little by little if bytereaded == 1024 put '\0' if byte readed > 0 join the readed untill the bytereaded == 0 then return response which is buffer in that case 
+    char buffer[1024];
+    if (fcntl(CtoP[0], F_SETFL, O_NONBLOCK) == -1)
+        std::cout << "er\n";
+    int byteReaded = 1;
+    std::string joined;
+    while (byteReaded)
+    {
+        byteReaded = read(CtoP[0], buffer, 1024);
+        if (byteReaded == -1)
+        {
+            std::cout << "read failed\n";
+            return ("");
+        }
+        else if (byteReaded == 1024)
+            buffer[byteReaded] = '\0';
+        if (byteReaded > 0)
+            joined.append(buffer);
+    }
     close(CtoP[0]);
     std::cout << "response from child: \n"
               << buffer << " " << strlen(buffer) << '\n';
-
-    return (buffer);
+    return (joined);
 }
 
 slowCgi::slowCgi(clientInfo &ci)
