@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 17:03:16 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/25 10:00:23 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/25 19:15:28 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,79 +52,89 @@ char **slowCgi::mapToChars(std::map<std::string, std::string> inputMap)
 
 std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
 {
-    char **envp;
-    int CtoP[2];
-    pipe(CtoP);
-    
-    if (pipe(CtoP) < 0)
-    {
-        clientMap.getReq().set_status(500);
-        Response res(clientMap.getReq());
-        clientMap.setRes(res);
-    }
-    envp = mapToChars(cgiElem);
+    char **envp = NULL;
+    FILE* tempFile = std::tmpfile();
+    int fileFD = fileno(tempFile);
+    FILE* tempBody = std::tmpfile();
+    int tmpBodyFD = fileno(tempBody);
 
-    pid_t fd = fork();
-    if (fd == -1)
+    if (write(fileFD, clientMap.getReq().get_body().c_str(), clientMap.getReq().get_body().size()) == -1)
     {
         clientMap.getReq().set_status(500);
         Response res(clientMap.getReq());
         clientMap.setRes(res);
     }
-    else if (fd == 0)
+    if (lseek(fileFD, 0, SEEK_SET) == -1)
     {
-        char **args;
-        args = new char *[3];
-        
-        args[0] = strdup("/usr/local/bin/python3");
-        args[1] = strdup(const_cast<char *>((clientMap.getRoot() + clientMap.getReq().get_path()).c_str()));
-        args[2] = NULL;
-        close(CtoP[0]);
-        std::cout << "from child : " << args[1] << '\n';
-        dup2(CtoP[1], 1);
-        if (execve(args[0], args, envp) == -1)
+        clientMap.getReq().set_status(500);
+        Response res(clientMap.getReq());
+        clientMap.setRes(res);
+    }
+    pid_t pid = fork();
+    if (pid == -1)
+    {
+        clientMap.getReq().set_status(500);
+        Response res(clientMap.getReq());
+        clientMap.setRes(res);
+    }
+    else if (pid == 0)
+    {
+        envp = mapToChars(cgiElem);
+        std::cout << "**************---------------************ :" << clientMap.getReq().get_body() << '\n';
+        std::cout << "./" + clientMap.getRoot() + clientMap.getReq().get_path() << std::endl;
+        dup2(fileFD, 0);
+        dup2(tmpBodyFD, 1);
+        // dup2(CtoP[1], 1);
+        if (execve(("./" + clientMap.getRoot() + clientMap.getReq().get_path()).c_str(), NULL, envp) == -1)
         {
-            std::cout << "EXECVE ERROR\n";
             clientMap.getReq().set_status(500);
             Response res(clientMap.getReq());
             clientMap.setRes(res);
         }
-        close(CtoP[1]);
     }
-    close(CtoP[1]);
     // Wait for the child process to finish
     int status;
-    waitpid(fd, &status, 0);
-    // std::cout << "par file is : \n" << fullstr << '\n';
+    if (waitpid(pid, &status, 0) == -1)
+    {
+        clientMap.getReq().set_status(500);
+        Response res(clientMap.getReq());
+        clientMap.setRes(res);
+    }
+    // int exstatus = WIFEXITED(status);
+    if (lseek(tmpBodyFD, 0, SEEK_SET) == -1)
+    {
+        clientMap.getReq().set_status(500);
+        Response res(clientMap.getReq());
+        clientMap.setRes(res);
+    }
+    
     std::cout << "send from parent " << '\n';
-    close(CtoP[1]);
     // do a while here to read 1024 little by little if bytereaded == 1024 put '\0' if byte readed > 0 join the readed untill the bytereaded == 0 then return response which is buffer in that case 
     char buffer[1024];
-    if (fcntl(CtoP[0], F_SETFL, O_NONBLOCK) == -1)
-        std::cout << "er\n";
+
     int byteReaded = 1;
     std::string joined;
     while (byteReaded)
     {
-        byteReaded = read(CtoP[0], buffer, 1024);
+        memset(buffer, 0, 1024);
+        byteReaded = read(tmpBodyFD, buffer, 1024);
         if (byteReaded == -1)
         {
             std::cout << "read failed\n";
             return ("");
         }
-        else if (byteReaded == 1024)
-            buffer[byteReaded] = '\0';
         if (byteReaded > 0)
             joined.append(buffer);
     }
-    close(CtoP[0]);
     std::cout << "response from child: \n"
-              << buffer << " " << strlen(buffer) << '\n';
+              << joined << " " << joined.size() << '\n';
     return (joined);
 }
 
 slowCgi::slowCgi(clientInfo &ci)
 {
+    // cgiElem["HTTP_TRANSFER_ENCODING"] = ci.getReq().get_headers()["Transfer-Encoding"];
+    
     cgiElem["CONTENT_LENGTH"] = ci.getReq().get_headers()["Content-Length"];
     cgiElem["CONTENT_TYPE"] = ci.getReq().get_headers()["Content-Type"];
     cgiElem["REQUEST_METHOD"] = ci.getReq().get_method();
@@ -151,3 +161,5 @@ slowCgi::slowCgi(slowCgi const &other)
 slowCgi::~slowCgi()
 {
 }
+
+

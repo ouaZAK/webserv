@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/25 10:52:06 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/25 18:48:45 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,6 +173,7 @@ void webserv::extractBody(int i)
 		pos = body.find("\r\n\r\n", 0);
 		cleanBody = body.substr(pos + 4, body.length() - (pos + 4) - (posNwl + 7)); /* 4 for "-" and 3 for '\n' */
 																					// print(cleanBody, "cleanBody: " );
+		clientMap[i].getReq().set_body(cleanBody);
 	}
 	catch (const std::exception &e)
 	{
@@ -378,7 +379,7 @@ void webserv::reading(int i)
 	clientMap[i].setReqChunk(tmp);
 
 	// print
-	//  print(clientMap[i].getReqChunk(), "Request\n------------------------------");
+	 print(clientMap[i].getReqChunk(), "Request\n------------------------------");
 	//  std::cout << "[[[ \n\n" << clientMap[i].getReqChunk() << " \n]]]" << std::endl;
 	//  std::cout  << " " << clientMap[i].getReqChunk().find("\r\n\r\n", 0) << std::endl;
 
@@ -494,7 +495,7 @@ std::string webserv::serveFile(int i)
 	int x;
 
 	// if its dir show default file or show index
-	if (is_dir && clientMap[i].getReq().get_method() == "POST") // thank you hakime
+	if (!aCgi && clientMap[i].getReq().get_method() == "POST") // thank you hakime
 	{
 		std::cout << "upload html response ***********************************\n";
 		htmlFile = readFile(clientMap[i].getRoot() + "/upload/Done.html");
@@ -642,7 +643,7 @@ void webserv::writing(int i)
 	// join url with path
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
 	std::cout << OR1 << "url : " << urlPath << OR2 << '\n';
-
+		
 	// check is dir
 	is_dir = false;
 	struct stat fileStat;
@@ -664,7 +665,7 @@ void webserv::writing(int i)
 	// std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getReqFull() << std::endl;
 
 	std::string fileContent = serveFile(i);
-	print(fileContent, "------------------------------------------------------------------------------------------------\n");
+	// print(fileContent, "------------------------------------------------------------------------------------------------\n");
 	long long len = send(i, fileContent.c_str(), fileContent.length(), 0);
 	if (len < 0)
 		std::cout << "error in send" << std::endl;
@@ -686,7 +687,7 @@ void webserv::writing(int i)
 webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::string> mime)
 {
 	timeval timeout;
-	timeout.tv_sec = 1;
+	timeout.tv_sec = 10000;
 	timeout.tv_usec = 0;
 
 	mimeMap = mime;
