@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/26 12:54:22 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/26 16:36:20 by hcharia          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -710,7 +710,7 @@ void	webserv::checkKeepAlive()
 webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::string> mime)
 {
 	timeval timeout;
-	timeout.tv_sec = 5;
+	timeout.tv_sec = 20;
 	timeout.tv_usec = 0;
 
 	mimeMap = mime;

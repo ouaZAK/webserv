@@ -1,11 +1,11 @@
 server
 {
-    listen        8080  ;
+    listen        8080 7070 ;
     server_name   example.com ;
     host            127.0.0.1 ;
     error_pages   404.html 405.html 403.html ;
     client_body_size  100 ;
-    default_file    index.html ;
+    default_file    inde.html ;
     root    stuff ;
     autoindex   on ;
     location /
@@ -42,28 +42,27 @@ server
 server
 {
     listen        8080  ;
-    server_name   example.com ;
+    server_name   bruh.com ;
     host            127.0.0.1 ;
     error_pages   404.html 405.html 403.html ;
-    client_body_size  5000000 ;
+    client_body_size  100 ;
     default_file    index.html ;
     root    stuff ;
-    autoindex   on ;
-    location /dir/
+    location /
     {
         default_file  defaul.html ;
-        methods GET DELETE ;
+        methods GET ;
         cgi_extension   .py ;
         cgi_bin  /usr/local/bin/python3 ;
     }
-    location /upload/
+    location /put_test/
     {
         default_file  index1.html ;
-        methods GET POST DELETE ;
-        cgi_extension   .py ;
+        methods POST ;
+        cgi_extension   .bla ;
         cgi_bin  /cgi ;
     }
-    location /test/
+    location /directory/
     {
         default_file  iNdex2.html ;
         methods  GET  POST DELETE ;

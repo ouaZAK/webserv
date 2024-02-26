@@ -8,6 +8,7 @@ print("<head>")
 print("<title>Appended Text</title>")
 print("</head>")
 print("<body>")
+
 print("<h2>im CGI:</h2>")
 print("<h1>Done</h1>")
 print("<a href=\"javascript:history.back()\">Go Back</a>")

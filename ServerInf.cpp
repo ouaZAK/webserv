@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInf.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/20 21:57:26 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/26 16:43:11 by hcharia          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,6 +271,7 @@ void ServerInf::reset()
 	ports.clear();
 	server_name.clear();
 	host.clear();
+	globDefFile.clear();
 	ai = false;
 	error_pages.clear();
 	body_size = 0;
@@ -309,8 +310,8 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 		}
 		else if (el == "default_file")
 		{
-			if (!globDefFile.empty())
-				throw "globDefFile directive repeated!";
+			// if (!globDefFile.empty())
+			// 	throw "globDefFile directive repeated!";
 			el.clear();
 			ss >> el;
 			globDefFile = el;
@@ -331,8 +332,8 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 		}
 		else if (el == "autoindex")
 		{
-			if (ai)
-				throw "Auto_index directive repeated!";
+			// if (ai)
+			// 	throw "Auto_index directive repeated!";
 			el.clear();
 			ss >> el;
 			ai = (el == "on") ? true : ((el != "off") ? (throw "Unknown element", false) : false);
