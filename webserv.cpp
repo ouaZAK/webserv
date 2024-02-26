@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/26 16:36:20 by hcharia          ###   ########.fr       */
+/*   Updated: 2024/02/26 19:22:38 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -310,7 +310,7 @@ bool webserv::getRequest(int i)
 		// std::cout << "body" << body << '\n';
 		std::string filename = req.get_file_name();
 		/***** get the proper root if its default one or inside location ******/
-		std::ofstream file(clientMap[i].getRoot() + "/upload/" + filename); /* get the root path */
+		std::ofstream file(clientMap[i].getRoot() + clientMap[i].getReq().get_path() + filename); /* get the root path */
 		file << cleanBody;
 		std::cout << OR1 << " body lenght --------------- \n"
 				  << OR2 << '\n';

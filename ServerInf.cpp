@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInf.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hcharia < hcharia@student.1337.ma>         +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/26 16:43:11 by hcharia          ###   ########.fr       */
+/*   Updated: 2024/02/26 23:17:25 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ std::string ServerInf::filcbs(std::stringstream &ss)
 {
     std::string el;
     if (!(ss >> el))
-        throw "Failed to read body size directive";
+        throw std::runtime_error("Failed to read body size directive");
     while (el != ";" && !el.empty())
     {
         body_size = atoi(el.c_str());
@@ -46,14 +46,14 @@ std::string ServerInf::filcbs(std::stringstream &ss)
             break;
     }
     if (el != ";")
-        throw "Body size directive's syntax error";
+        throw std::runtime_error("Body size directive's syntax error");
     return el;
 }
 std::string ServerInf::ferrp(std::stringstream &ss)
 {
     std::string el;
     if (!(ss >> el))
-        throw "Failed to read error page directive";
+        throw std::runtime_error("Failed to read error page directive");
 
     while (el != ";" && !el.empty())
     {
@@ -62,7 +62,7 @@ std::string ServerInf::ferrp(std::stringstream &ss)
             break;
     }
     if (el != ";")
-        throw "Error page directive's syntax error";
+        throw std::runtime_error("Error page directive's syntax error");
     return el;
 }
 
@@ -70,9 +70,9 @@ std::string ServerInf::filroot(std::stringstream &ss)
 {
 	std::string el;
 	if (!(ss >> el))
-		throw "Failed to read root directive";
+		throw std::runtime_error ("Failed to read root directive");
 	if (el[0] == '/' || el.back() == '/')
-		throw "Fix ya d*mn root.";
+		throw std::runtime_error ("Fix ya d*mn root.");
 	while (el != ";" && !el.empty())
 	{
 		root = el;
@@ -80,7 +80,7 @@ std::string ServerInf::filroot(std::stringstream &ss)
 			break;
 	}
 	if (el != ";")
-		throw "Root directive's syntax error";
+		throw std::runtime_error ("Root directive's syntax error");
 	return (el);
 }
 
@@ -90,14 +90,14 @@ static void isNumWell(std::string el)
 	char *s;
 	double n = strtod(el.c_str(), &s);
 	if (n < 0 || n > 65535 || *s != '\0')
-		throw "Ports Are no buenos";
+		throw std::runtime_error ("Ports Are no buenos");
 }
 
 std::string ServerInf::fillports(std::stringstream &ss)
 {
     std::string el;
     if (!(ss >> el))
-        throw "Failed to read ports directive";
+        throw std::runtime_error ("Failed to read ports directive");
     while (el != ";" && !el.empty())
     {
         // check number if its goochie
@@ -107,7 +107,7 @@ std::string ServerInf::fillports(std::stringstream &ss)
             break;
     }
     if (el != ";")
-        throw "Ports directive's syntax error";
+        throw std::runtime_error ("Ports directive's syntax error");
     return el;
 }
 
@@ -116,7 +116,7 @@ bool ServerInf::isbrac(std::string line, char c)
 {
 	for (int i = 0; line[i]; i++)
 		if (!std::isspace(line[i]) && line[i] != c)
-			throw "Check brackets";
+			throw std::runtime_error ("Check brackets");
 	return (true);
 }
 bool ServerInf::chekFilld(std::stringstream &ss, std::string line)
@@ -126,7 +126,7 @@ bool ServerInf::chekFilld(std::stringstream &ss, std::string line)
 	while (!el.empty())
 	{
 		if (el.compare(line))
-			throw "Unknown token";
+			throw std::runtime_error ("Unknown token");
 		ss >> el;
 	}
 	return (true);
@@ -149,15 +149,15 @@ void ServerInf::getMethods(std::stringstream &ss, Location &tmp)
 		}
 		else
 		{
-			throw "Unsupported method"; // Unsupported method encountered
+			throw std::runtime_error ("Unsupported method"); // Unsupported method encountered
 		}
 		if (!(ss >> el))
 		{
-			throw "Missing ; on methods"; // End of stream reached without finding ';'
+			throw std::runtime_error ("Missing ; on methods"); // End of stream reached without finding ';'
 		}
 	}
 	if (tmp.methods.empty())
-		throw "Missing methods"; // Throw if no methods were specified
+		throw std::runtime_error ("Missing methods"); // Throw std::runtime_error (if no methods were specified
 }
 
 std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
@@ -175,39 +175,39 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 		{
 			ss >> el; // Read the file name
 			if (el.empty())
-				throw "Missing file name in default_file directive";
+				throw std::runtime_error ("Missing file name in default_file directive");
 			else if (!tmp.default_file.empty())
-				throw "default_file directive repeated!";
+				throw std::runtime_error ("default_file directive repeated!");
 			std::string nextToken;
 			ss >> nextToken; // Attempt to read the next token, which should be the semicolon
 			if (nextToken != ";")
-				throw "Missing or incorrect delimiter in default_file directive";
+				throw std::runtime_error ("Missing or incorrect delimiter in default_file directive");
 			tmp.default_file = el;
 		}
 		else if ("root" == el)
 		{
 			ss >> el; // Read the file name
 			if (el.empty())
-				throw "Missing root in root directive";
+				throw std::runtime_error ("Missing root in root directive");
 			else if (!tmp.root.empty())
-				throw "Root directive repeated!";
+				throw std::runtime_error ("Root directive repeated!");
 			std::string nextToken;
 			ss >> nextToken; // Attempt to read the next token, which should be the semicolon
 			if (nextToken != ";")
-				throw "Missing or incorrect delimiter in root directive";
+				throw std::runtime_error ("Missing or incorrect delimiter in root directive");
 			tmp.root = el;
 		}
 		else if ("alias" == el)
         {
             ss >> el; // Read the file name
             if (el.empty())
-                throw "Missing alias in alias directive";
+                throw std::runtime_error ("Missing alias in alias directive");
             else if (!tmp.alias.empty())
-                throw "alias directive repeated!";
+                throw std::runtime_error ("alias directive repeated!");
             std::string nextToken;
             ss >> nextToken; // Attempt to read the next token, which should be the semicolon
             if (nextToken != ";")
-                throw "Missing or incorrect delimiter in alias directive";
+                throw std::runtime_error ("Missing or incorrect delimiter in alias directive");
             tmp.alias = el;
         }
 		else if ("methods" == el)
@@ -216,11 +216,11 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 		{
 			ss >> el >> ell;
  			if (!tmp.cgi_bin.empty())
-				throw "CGI_bin directive repeated!";
+				throw std::runtime_error ("CGI_bin directive repeated!");
 			if (el.empty() || !chekFilld(ss, s))
-				throw "Missing element or extra elements in cgi_bin directive";
+				throw std::runtime_error ("Missing element or extra elements in cgi_bin directive");
 			if (ell != ";")
-				throw "Missing or incorrect delimiter";
+				throw std::runtime_error ("Missing or incorrect delimiter");
 			// locs.back().cgi_bin.push_back(el);
 			tmp.cgi_bin.push_back(el);
 		}
@@ -229,11 +229,11 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 			std::string	elll;
 			ss >> el >> ell >> elll;
 			if (!tmp.redirect_to_dir.empty())
-				throw "redirect_to_dir directive repeated!";
+				throw std::runtime_error ("redirect_to_dir directive repeated!");
 			if (el.empty() || ell.empty() || elll.empty() || !chekFilld(ss, s))
-				throw "Missing element or extra elements in redirection directive";
+				throw std::runtime_error ("Missing element or extra elements in redirection directive");
 			if (elll != ";")
-				throw "Missing or incorrect delimiter";
+				throw std::runtime_error ("Missing or incorrect delimiter");
 			tmp.redirect_status = atoi(el.c_str());
 			tmp.redirect_to_dir = ell;
 		}
@@ -241,11 +241,11 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 		{
 			ss >> el >> ell;
  			if (!tmp.cgi_extension.empty())
-				throw "CGI_extension directive repeated!";
+				throw std::runtime_error ("CGI_extension directive repeated!");
 			if (el.empty() || !chekFilld(ss, s))
-				throw "Missing element or extra elements in cgi_extension directive";
+				throw std::runtime_error ("Missing element or extra elements in cgi_extension directive");
 			if (ell != ";")
-				throw "Missing or incorrect delimiter";
+				throw std::runtime_error ("Missing or incorrect delimiter");
 			tmp.cgi_extension.push_back(el);
 		}
 		else if ("autoindex" == el)
@@ -253,12 +253,12 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 			el.clear();
 			ss >> el;
 			if (tmp.lai)
-				throw "Auto_index directive inside location is repeated!";
-			tmp.lai = (el == "on") ? true : ((el != "off") ? (throw "Unknown element", false) : false);
+				throw std::runtime_error ("Auto_index directive inside location is repeated!");
+			tmp.lai = (el == "on") ? true : ((el != "off") ? (throw std::runtime_error ("Unknown element"), false) : false);
 			// std::cout << tmp.lai << "CHECK\n";
 			ss >> el;
 			if (el != ";")
-        		throw "Autoindex directive's syntax error";
+        		throw std::runtime_error ("Autoindex directive's syntax error");
 		}
 		else if ("}" == el)
 			break;
@@ -293,54 +293,54 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 		if (el == "listen")
 		{
 			if (!ports.empty())
-				throw "Ports directive repeated!";
+				throw std::runtime_error ("Ports directive repeated!");
 			el.clear();
 			el = fillports(ss);
 		}
 		else if (el == "server_name")
 		{
 			if (!server_name.empty())
-				throw "Server_name directive repeated!";
+				throw std::runtime_error ("Server_name directive repeated!");
 			el.clear();
 			ss >> el;
 			server_name = el;
 			ss >> el;
 			if (el != ";")
-        		throw "Server_name directive's syntax error";
+        		throw std::runtime_error ("Server_name directive's syntax error");
 		}
 		else if (el == "default_file")
 		{
 			// if (!globDefFile.empty())
-			// 	throw "globDefFile directive repeated!";
+			// 	throw std::runtime_error ("globDefFile directive repeated!";
 			el.clear();
 			ss >> el;
 			globDefFile = el;
 			ss >> el;
 			if (el != ";")
-        		throw "globDefFile directive's syntax error";
+        		throw std::runtime_error ("globDefFile directive's syntax error");
 		}
 		else if (el == "host")
 		{
 			if (!host.empty())
-				throw "Host directive repeated!";
+				throw std::runtime_error ("Host directive repeated!");
 			el.clear();
 			ss >> el;
 			host = el;
 			ss >> el;
 			if (el != ";")
-        		throw "Host directive's syntax error";
+        		throw std::runtime_error ("Host directive's syntax error");
 		}
 		else if (el == "autoindex")
 		{
 			// if (ai)
-			// 	throw "Auto_index directive repeated!";
+			// 	throw std::runtime_error ("Auto_index directive repeated!";
 			el.clear();
 			ss >> el;
-			ai = (el == "on") ? true : ((el != "off") ? (throw "Unknown element", false) : false);
+			ai = (el == "on") ? true : ((el != "off") ? (throw std::runtime_error ("Unknown element"), false) : false);
 
 			ss >> el;
 			if (el != ";")
-        		throw "Autoindex directive's syntax error";
+        		throw std::runtime_error ("Autoindex directive's syntax error");
 		}
 		else if (el == "error_pages")
 		{

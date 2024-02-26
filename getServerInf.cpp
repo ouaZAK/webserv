@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   getServerInf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:46:31 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/15 18:45:21 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/27 00:38:16 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,9 +55,9 @@ std::vector<ServerInf> confInf(char *av[])
 		}
 		inFile.close();
 	}
-	catch (char const *e)
+	catch (const std::exception& e)
 	{
-		std::cout << "\033[31m" << e << "\033[0m" << '\n';
+		std::cout << "\033[31m" << e.what() << "\033[0m" << '\n';
 	}
 	// std::cout << "====================== " << std::endl;
 	// for (std::vector<ServerInf>::iterator it = sInf.begin(); it != sInf.end(); ++it)

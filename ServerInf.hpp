@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInf.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/21 09:21:18 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/26 18:00:47 by asidqi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,14 @@ private:
 public:
 	ServerInf()
 	{
+		ports.clear();
+		root.clear();
+		host.clear();
+		globDefFile.clear();
+		server_name.clear();
+		error_pages.clear();
 		body_size = -1;
+		ai = false;
 	}
 	static std::string s;
 	std::vector<Location> locs;
