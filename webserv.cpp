@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/25 18:48:45 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/02/26 12:54:22 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,6 @@
 #include <cstdio>
 
 // TO DO :
-// check cgi in reaing so we dont post anything send it to cgi only
-// look at globDefFile directive repeated!
 
 #define BL1 "\x1b[34m"
 #define BL2 "\x1b[0m"
@@ -155,7 +153,7 @@ void webserv::acceptSockets(int i)
 	clientMap[newClientSocket].setPort(serverMap[i].getPort());
 	clientMap[newClientSocket].setHost(serverMap[i].getHost());
 	clientMap[newClientSocket].setGlobDefFile(serverMap[i].getGlobDefFile());
-
+	clientMap[newClientSocket].last = time(NULL);
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 }
 
@@ -371,6 +369,8 @@ void webserv::reading(int i)
 		delete (buff);
 		return;
 	}
+	clientMap[i].last = time(NULL);
+	std::cout << "client: " << clientMap[i].last << '\n'; 
 	buff[bytesReaded] = '\0';
 	std::string bufTmp;
 	std::string tmp = clientMap[i].getReqChunk();
@@ -624,7 +624,7 @@ void webserv::checkLocMeth(int i)
 
 void webserv::updateMaxSocket()
 {
-	for (int i = maxSocket; i > 3;)
+	for (int i = maxSocket; i >= 3;)
 	{
 		if (!FD_ISSET(i, &write_set) && !FD_ISSET(i, &read_set))
 			--i;
@@ -670,6 +670,9 @@ void webserv::writing(int i)
 	if (len < 0)
 		std::cout << "error in send" << std::endl;
 
+	// last time client did something
+	clientMap[i].last = time(NULL);
+	
 	std::cout << "SENDING : " << len << '\n';
 
 	FD_CLR(i, &write_set);
@@ -684,10 +687,30 @@ void webserv::writing(int i)
 	std::cout << "MAXSOCKET : >>>>>>>>>>> " << maxSocket << '\n';
 }
 
+void	webserv::checkKeepAlive()
+{
+	time_t now = time(NULL);
+	// loop on clientMap and check if the connection is keep alive and erase that client map
+	for (std::map<int, clientInfo>::iterator it = clientMap.begin(); it != clientMap.end();)
+	{
+		if (now - it->second.last > 3)
+		{
+			std::cout << "erased: " <<  it->first << '\n';
+			FD_CLR(it->first, &read_set);
+			FD_CLR(it->first, &write_set);
+			updateMaxSocket();
+			close(it->first);
+			clientMap.erase(it++);
+		}
+		else
+			it++;
+	}
+}
+
 webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::string> mime)
 {
 	timeval timeout;
-	timeout.tv_sec = 10000;
+	timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
 
 	mimeMap = mime;
@@ -720,8 +743,10 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 	setFds();
 	while (1)
 	{
+		checkKeepAlive();
+		
 		std::cout << OR1 << "\nstart \n----------------" << OR2 << "\n";
-
+		
 		copyRead = read_set;
 		copyWrite = write_set;
 
@@ -729,22 +754,8 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 		check = select(maxSocket + 1, &copyRead, &copyWrite, NULL, &timeout);
 		if (check < 0)
 			throw("internal error 500 or something");
-		if (check == 0)
-		{
-			// loop on clientMap and check if the connection is keep alive and erase that client map
-			for (std::map<int, clientInfo>::iterator it = clientMap.begin(); it != clientMap.end(); ++it)
-			{
-				std::cout << it->first << '\n';
-				close(it->first);
-				FD_CLR(it->first, &read_set);
-			}
-			clientMap.clear();
-			std::cout << clientMap.size() << '\n';
-			updateMaxSocket();
-			continue;
-		}
+			
 		std::cout << "after select " << check << '\n';
-		// accept connection
 		for (int i = 3; i <= maxSocket; ++i)
 		{
 			std::cout << i << '\n';

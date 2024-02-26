@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   clientInfo.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/24 14:32:34 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/26 10:50:47 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ class clientInfo
 		std::vector<std::string>	errorPages;
 		bool autoIndx;
 	public:
+		time_t	last;
 		clientInfo();
 		~clientInfo();
 		

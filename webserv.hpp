@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/24 15:11:55 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/26 10:45:01 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,7 @@ class webserv
 		void					updateMaxSocket();
 		void	parseChunk(int i);
 		bool	is_alias(int i, std::string &dir);
+		void	checkKeepAlive();
 		// void	updateMaxSocket(int i);
 
 		// virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;
