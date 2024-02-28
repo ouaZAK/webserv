@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/26 19:22:38 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/28 11:52:02 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,26 +64,17 @@ void webserv::creatAddresses()
 
 void webserv::bindSockets()
 {
-	int i = 0;
 	std::vector<struct sockaddr_in>::iterator adrIt = serverAddress.begin();
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
 		std::cout << OR1 << mapIt->first << OR2 << '\n';
-		// if (i == 1)
-		// {
-		// 	if (serverMap.size() == 1)
-		// 		throw "Error:\nFatal error";
-		// 	std::cout << "failed to bind server socket" << std::endl;
-		// 	return;
-		// }
 		if (bind(mapIt->first, reinterpret_cast<struct sockaddr *>(&(*adrIt)), sizeof(*adrIt)) < 0)
 		{
+			std::cout << "failed to bind server socket" << std::endl;
 			if (serverMap.size() == 1)
 				throw "Error:\nFatal error";
-			std::cout << "failed to bind server socket" << std::endl;
 			return;
 		}
-		++i;
 		++adrIt;
 	}
 }
@@ -249,9 +240,9 @@ bool webserv::check_dir(int i, std::string dir)
 						return (false);
 					}
 				}
+				std::cout << "not allowed return from directory\n\n";
 				htmlFile = "dirOfErrors/405.html";
 				setResStatus(i, 405, htmlFile, "405.html");
-				std::cout << "not allowed return from directory\n\n";
 				return (true);
 			}
 		}
@@ -282,7 +273,6 @@ bool webserv::getRequest(int i)
 		clientMap[i].clearReqChunk();
 		return false;
 	}
-	std::cout << "[" << transfer << "]" << '\n';
 	if (req.get_method() == "DELETE")
 	{
 		clientMap[i].setReqFull(clientMap[i].getReqChunk());
@@ -293,15 +283,14 @@ bool webserv::getRequest(int i)
 	{
 		if (transfer == "chunked")
 			parseChunk(i);
-		// else
 		extractBody(i);
 		if (body.length() < bodyLength)
 			return (true);
 		if (cleanBody.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200 /* and 200 range */)
 		{
-			clientMap[i].getReq().set_status(413); // first fill status in req
-			Response res(clientMap[i].getReq());   // then send req to res
-			clientMap[i].setRes(res);
+			// Response res(clientMap[i].getReq());   // then send req to res
+			htmlFile = "dirOfErrors/413.html";
+			setResStatus(i, 413, htmlFile, "413.html");
 			clientMap[i].clearReqChunk();
 			return false;
 		}
@@ -388,9 +377,8 @@ void webserv::reading(int i)
 	std::cout << "status : " << req.get_status() << '\n';
 	if (req.get_status() != 200)
 	{
-		clientMap[i].getReq().set_status(400);
-		Response res(clientMap[i].getReq());
-		clientMap[i].setRes(res);
+		htmlFile = "dirOfErrors/400.html";
+		setResStatus(i, 400, htmlFile, "400.html");
 		clientMap[i].clearReqChunk();
 		FD_SET(i, &write_set);
 		FD_CLR(i, &read_set);
@@ -462,16 +450,15 @@ void webserv::redirOrAutoIndx(int i)
 	// if (clientMap[i].serverInf.getIndex()) check if index is on on the configue file
 	bool AutoIndx = clientMap[i].getAutoIndx();
 	std::string root = clientMap[i].getRoot();
+	
 	std::cout << "AUTO INDEX FUNCTION" << '\n';
-	if (resError)
-	{
-		// HERE def file or global def file
-		std::cout << urlPath << '\n';
-		htmlFile = readFile(root + "/" + clientMap[i].getDefFile()); // read default file
-		if (htmlFile.empty() && clientMap[i].getReq().get_path() == "/")
-			htmlFile = readFile(root + "/" + clientMap[i].getGlobDefFile()); // read global default file
-	}
-	if (htmlFile.empty() && AutoIndx && resError) // if no default file and auIndx on list AIndx
+	
+	// HERE def file or global def file
+	std::cout << urlPath << '\n';
+	htmlFile = readFile(root + "/" + clientMap[i].getDefFile()); // read default file
+	if (htmlFile.empty() && clientMap[i].getReq().get_path() == "/")
+		htmlFile = readFile(root + "/" + clientMap[i].getGlobDefFile()); // read global default file
+	if (htmlFile.empty() && AutoIndx) // if no default file and auIndx on list AIndx
 	{
 		std::cout << OR1 << "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
 		autoindex aiGen(root, clientMap[i].getReq().get_path(), clientMap[i].getHost(), clientMap[i].getPort());
@@ -480,12 +467,11 @@ void webserv::redirOrAutoIndx(int i)
 			htmlFile = aiGen.pageGen();
 		// print(clientMap[i].getRoot() + "/index.html", "here");
 	}
-	else if (htmlFile.empty() && !AutoIndx && resError) // no def no AIndx error 404
+	else if (htmlFile.empty() && !AutoIndx) // no def no AIndx error 404
 	{
 		std::cout << OR1 << "---------------------------- ERROR no defltfile no auto indx -------------------" << OR2 << '\n';
-		// respons 500 or 400
-		htmlFile = "dirOfErrors/404.html";
-		setResStatus(i, 404, htmlFile, "404.html");
+		htmlFile = "dirOfErrors/403.html";
+		setResStatus(i, 403, htmlFile, "403.html");
 	}
 }
 
@@ -495,34 +481,35 @@ std::string webserv::serveFile(int i)
 	int x;
 
 	// if its dir show default file or show index
-	if (!aCgi && clientMap[i].getReq().get_method() == "POST") // thank you hakime
+	if (resError)
 	{
-		std::cout << "upload html response ***********************************\n";
-		htmlFile = readFile(clientMap[i].getRoot() + "/upload/Done.html");
-	}
-	else if (is_dir && clientMap[i].getReq().get_status() != 301)
-		redirOrAutoIndx(i);
-	else if (clientMap[i].getReq().get_status() != 301) // if not redirection get default file
-	{
-		std::cout << "DEF FILE NO RED NO INDX\n";
-		if (!aCgi)
-			htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
+		if (!aCgi && clientMap[i].getReq().get_method() == "POST") // thank you hakime
+		{
+			std::cout << "upload html response ***********************************\n";
+			htmlFile = readFile(clientMap[i].getRoot() + "/upload/Done.html");
+		}
+		else if (is_dir && clientMap[i].getReq().get_status() != 301)
+			redirOrAutoIndx(i);
+		else if (clientMap[i].getReq().get_status() != 301) // if not redirection get default file
+		{
+			std::cout << "DEF FILE NO RED NO INDX\n";
+			if (!aCgi)
+				htmlFile = readFile(clientMap[i].getRoot() + "/default.html");
+		}
 	}
 	x = access(urlPath.c_str(), F_OK); // if file path exist
 	if (x == -1)
 	{
 		htmlFile = "dirOfErrors/404.html";
 		setResStatus(i, 404, htmlFile, "404.html");
-		std::cout << BL1 << " NO file to read\n"
-				  << OR2 << '\n';
+		std::cout << BL1 << " NO file to read\n" << OR2 << '\n';
 	}
 	if (x != -1)
 	{
 		x = access(urlPath.c_str(), R_OK); // if file has permission to read
 		if (x == -1 || (is_dir && access(urlPath.c_str(), X_OK) == -1))
 		{
-			std::cout << BL1 << " NO PERMISSION TO READ\n"
-					  << OR2 << '\n';
+			std::cout << BL1 << " NO PERMISSION TO READ\n" << OR2 << '\n';
 			htmlFile = "dirOfErrors/403.html";
 			setResStatus(i, 403, htmlFile, "403.html");
 		}
@@ -580,7 +567,7 @@ bool webserv::is_alias(int i, std::string &dir)
 		for (std::vector<std::string>::iterator itV = locIt->locDirName.begin(); itV != locIt->locDirName.end(); itV++)
 		{
 			std::cout << "location: [" << *itV << "]  |  dir: [" << dir << "]\n";
-			if (dir == *itV)
+			if (dir == *itV && !locIt->alias.empty())
 			{
 				dir = ("/" + locIt->alias);
 				std::cout << "it is\n dir now is " << dir << '\n';
@@ -611,7 +598,24 @@ void webserv::checkLocMeth(int i)
 {
 	/* ######### test 8080/dir/lala.html in ngnix ########### */
 	std::string dir = clientMap[i].getReq().get_path();
-	if (is_alias(i, dir) || (is_dir && !countSlash(dir)))
+	if (is_alias(i, dir))
+		urlPath = clientMap[i].getRoot() + dir; // taygadha ha ki me
+	
+	// check is dir
+	is_dir = false;
+	struct stat fileStat;
+	if (stat(urlPath.c_str(), &fileStat) == 0)
+	{
+		if (S_ISDIR(fileStat.st_mode))
+			is_dir = true;
+	}
+	else // check if stat fails
+	{
+		htmlFile = "dirOfErrors/500.html";
+		setResStatus(i, 500, htmlFile, "500.html");
+	}
+	
+	if ((is_dir && !countSlash(dir)))
 		urlPath = clientMap[i].getRoot() + dir; // taygadha ha ki me
 	std::cout << "is dir : -> " << is_dir << dir << '\n';
 	std::cout << "\n ---------- \n there is 2 slash dir is [" << dir << "] " << urlPath << '\n';
@@ -644,28 +648,27 @@ void webserv::writing(int i)
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
 	std::cout << OR1 << "url : " << urlPath << OR2 << '\n';
 		
-	// check is dir
-	is_dir = false;
-	struct stat fileStat;
-	if (stat(urlPath.c_str(), &fileStat) == 0)
-	{
-		if (S_ISDIR(fileStat.st_mode))
-			is_dir = true;
-	}
-	else
-	{
-		htmlFile = "dirOfErrors/500.html";
-		setResStatus(i, 500, htmlFile, "500.html");
-	}
+	// // check is dir
+	// is_dir = false;
+	// struct stat fileStat;
+	// if (stat(urlPath.c_str(), &fileStat) == 0)
+	// {
+	// 	if (S_ISDIR(fileStat.st_mode))
+	// 		is_dir = true;
+	// }
+	// else
+	// {
+	// 	htmlFile = "dirOfErrors/500.html";
+	// 	setResStatus(i, 500, htmlFile, "500.html");
+	// }
 
 	// check method if its allowed
 	checkLocMeth(i);
 
-	// std::cout << "i : " << i << std::endl;
-	// std::cout << "\n############### the request is : \n" << clientMap.find(i)->second.getReqFull() << std::endl;
-
 	std::string fileContent = serveFile(i);
-	// print(fileContent, "------------------------------------------------------------------------------------------------\n");
+	
+	print(fileContent, "------------------------------------------------------------------------------------------------\n");
+	
 	long long len = send(i, fileContent.c_str(), fileContent.length(), 0);
 	if (len < 0)
 		std::cout << "error in send" << std::endl;

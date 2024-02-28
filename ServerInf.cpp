@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInf.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/26 23:17:25 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/27 16:13:55 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,16 +34,25 @@ int ServerInf::getBodySize()
 
 std::string ServerInf::s = "{";
 
+static void isNumPos(std::string el)
+{
+	char *s;
+	double n = strtod(el.c_str(), &s);
+	if (n < 0)
+		throw std::runtime_error ("Client body is neg... (ಠ_ಠ)");
+}
+
 std::string ServerInf::filcbs(std::stringstream &ss)
 {
     std::string el;
     if (!(ss >> el))
         throw std::runtime_error("Failed to read body size directive");
+	isNumPos(el);
     while (el != ";" && !el.empty())
     {
         body_size = atoi(el.c_str());
         if (!(ss >> el))
-            break;
+            break ;
     }
     if (el != ";")
         throw std::runtime_error("Body size directive's syntax error");
