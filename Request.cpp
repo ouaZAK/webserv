@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:28:05 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/21 13:19:42 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/03/04 10:00:58 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void	Request::set_status(int s)
 }
 
 
-Request::Request(std::string input) : status(200), postBody("")
+Request::Request(std::string input) : status(200), postBody(""), query("")
 {
 	std::stringstream ss;
 	std::string line;
@@ -61,6 +61,8 @@ Request::Request(std::string input) : status(200), postBody("")
 		while (std::getline(ss, line))
 			postBody += line + '\n';
 	}
+	std::cout << "we are heeeeeeeeeerereerererererer\n";
+	set_query();
 }
 
 Request::~Request()
@@ -91,7 +93,10 @@ std::string	Request::get_version()
 	return version;
 }
 
-
+std::string Request::getCleanBody()
+{
+	return postBody;
+}
 
 std::map<std::string, std::string>	Request::get_headers()
 {
@@ -125,7 +130,7 @@ void	Request::prl(std::string line) // parse request line
 	if (ss >> result || (method != "POST" && method != "DELETE" && method != "GET") 
 		|| version != "HTTP/1.1")
 	{
-		std::cout << "lalalalala*********************\n***************\n********************\n";
+		// std::cout << "lalalalala*********************\n***************\n********************\n";
 		status = BAD_REQUEST;
 		return ;
 	}
@@ -148,7 +153,7 @@ void	Request::prl(std::string line) // parse request line
 	}
 }
 
-std::string							Request::get_file_name()
+std::string		Request::get_file_name()
 {
 	 std::string str;
 	size_t pos = postBody.find("filename");
@@ -168,7 +173,75 @@ std::string							Request::get_file_name()
 	return (str);
 }
 
-std::string							Request::get_body()
+std::string		Request::get_body()
 {
 	return (postBody);
 }
+
+void		Request::set_query()
+{
+	std::string new_path;
+	// std::stringstream	ss;
+	std::string			result;
+	
+	//std::cout << "we are heeheheheehehehehehe 2\n";
+	if (method != "GET")
+		return ;
+	//std::cout << "we are heeheheheehehehehehe 3\n";
+	if (path.find("?") != std::string::npos)
+	{
+		//std::cout << "we are heeheheheehehehehehe 4\n";
+		query = path.substr(path.find("?") + 1);
+		//std::cout << "this is queryyyyyy : " + query << std::endl;
+		new_path = path.substr(0, path.find("?"));
+		//std::cout << "this is dummyyyyyy : " + dummy << std::endl;
+		orig_query = query;
+		std::replace(query.begin(), query.end(), '&', ' ');
+		// ss << query;
+		// while (ss >> result)
+		// {
+		// 	query_vec.push_back(result);
+		// }
+		path = new_path;
+		// vecToChars();
+	}
+}
+
+std::string		Request::get_query()
+{
+	return (query);
+}
+
+std::string		Request::get_oquery()
+{
+	return (orig_query);
+}
+
+// char	**Request::get_qvv() const
+// {
+// 	return (qvv);
+// }
+
+
+// void	Request::vecToChars()
+// {
+//     try
+//     {
+//         qvv = new char *[query_vec.size() + 1];
+//         int i = 0;
+//         std::string entry;
+//         for (std::vector<std::string>::iterator it = query_vec.begin(); it != query_vec.end(); ++it)
+//         {
+//             entry.clear();
+//             entry = *(it);
+//             qvv[i] = new char[entry.length() + 1];
+//             std::strcpy(qvv[i], entry.c_str());
+//             i++;
+//         }
+//         qvv[i] = NULL;
+//     }
+//     catch (const std::exception &e)
+//     {
+//         std::cout << e.what() << '\n';
+//     }
+// }

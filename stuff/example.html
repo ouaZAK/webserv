@@ -8,28 +8,40 @@
 </head>
 <body>
 
-    <header>
-        <h1>Sample Website</h1>
-    </header>
+<header>
+    <h1>Sample Website</h1>
+</header>
 
-    <section>
-        <h2>Welcome to our website!</h2>
-        <p>This is a simple example of an HTML page with embedded CSS and JavaScript.</p>
-        <button onclick="showMessage()">Click me</button>
-        <p id="message"></p>
+<section>
+    <h2>Welcome to our website!</h2>
+    <p>This is a simple example of an HTML page with embedded CSS and JavaScript.</p>
+    <button onclick="showMessage()">Click me</button>
+    <p id="message"></p>
 
-        <!-- Form for File Upload -->
-        <form action="/cgi/te.py" method="post" enctype="multipart/form-data">
-            <label for="fileInput">Choose a file:</label>
-            <input type="file" id="fileInput" name="fileInput" accept=".jpg, .jpeg, .png, .gif, .txt">
-            <input type="submit" value="Upload">
-        </form>
+    <!-- Form for File Upload -->
+    <form action="/cgi/te.py" method="post" enctype="multipart/form-data">
+        <label for="fileInput">Choose a file:</label>
+        <input type="file" id="fileInput" name="fileInput">
+        <input type="submit" id="uploadButton" value="Upload" disabled>
+    </form>
+    
 
-        <!-- Add any other content as needed -->
+    <!-- Add any other content as needed -->
 
-    </section>
+</section>
 
-    <script src="script.js"></script>
+<script src="script.js"></script>
+<script>
+    // Enable/disable upload button based on file selection
+    document.getElementById("fileInput").addEventListener("change", function() {
+        var uploadButton = document.getElementById("uploadButton");
+        if (this.files.length > 0) {
+            uploadButton.disabled = false;
+        } else {
+            uploadButton.disabled = true;
+        }
+    });
+</script>
 
 </body>
 </html>

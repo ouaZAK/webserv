@@ -111,7 +111,7 @@ int main() {
 					throw(std::runtime_error("write"));
 				close(pipfd[1]);
 				if (dup2(pipfd[0], 0) == -1)
-					std::cerr << "dup2 failed";
+					std::cout << "dup2 failed";
 				close(pipfd[0]);
 			}
 			else

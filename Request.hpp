@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:27:27 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/08 16:33:35 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/03/04 10:01:14 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include <algorithm>
+#include <string>
+#include <vector>
 
 #define OK 200
 #define CREATED 201
@@ -39,11 +42,15 @@ private:
 	std::string							version;
 	std::map<std::string, std::string>	headers;
 	std::string							postBody;
+	std::string							query;
+	std::string							orig_query;
+	// std::vector<std::string>			query_vec;
+	// char**								qvv;
 public:
 	Request();
 	Request(std::string input);
 	
-	void								prl(std::string line);
+	void								prl(std::string);
 	std::string 						get_method();
 	std::string							get_path();
 	std::string							get_version();
@@ -52,6 +59,12 @@ public:
 	std::string							get_body();
 	void								set_body(std::string&);
 	std::string							get_file_name();
-	void								set_status(int s);
+	void								set_status(int);
+	void								set_query();
+	// char**								get_qvv() const;
+	std::string							get_query();
+	std::string							get_oquery();
+	// void								vecToChars();
+	std::string getCleanBody();
 	~Request();
 };

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   autoindex.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/16 19:50:28 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/20 21:48:26 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/29 12:27:09 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ std::string autoindex::linkGen(std::string server_root, std::string host_name, i
 	(void)port;
 	DIR *dir;
 	struct dirent *entry;
-	std::cout << urlPath << '\n';
+	// std::cout << urlPath << '\n';
 	urlPath == "/" ? urlPath	: urlPath += "/";
 	dir = opendir((server_root + urlPath).c_str());
 	if (dir == NULL)
@@ -69,7 +69,7 @@ std::string autoindex::linkGen(std::string server_root, std::string host_name, i
 	{
 		if (std::string(entry->d_name) == "." || std::string(entry->d_name) == "..")
 			continue;
-		std::cout << std::string(entry->d_name) << "\n";
+		// std::cout << std::string(entry->d_name) << "\n";
 		std::string hyperlink = "\t\t<p><a href=" + urlPath + std::string(entry->d_name) + ">" + std::string(entry->d_name) + "</a></p>\n";
 		pg += "<li>" + hyperlink + "</li>\n";
 	}

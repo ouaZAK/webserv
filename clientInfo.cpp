@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   clientInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/02/24 14:32:04 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/03/01 10:23:17 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #include "clientInfo.hpp"
 
-clientInfo::clientInfo()
+clientInfo::clientInfo() : oldByteSent(0)
 {
 	
 }

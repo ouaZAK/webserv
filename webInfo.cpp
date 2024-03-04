@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webInfo.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:26 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/02/24 14:33:51 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/02/29 12:28:30 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ webInfo::webInfo(int port, ServerInf &inf, int oneS, int oneSrv) : port(port), o
 	globDefFile = inf.getGlobDefFile();
 	if (bodySize == -1)
 		bodySize = 1000000;
-	std::cout << "\nserv name is : " << serverName << '\n' << "port nbr : " << port << '\n';
+	// std::cout << "\nserv name is : " << serverName << '\n' << "port nbr : " << port << '\n';
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == -1)
 	{

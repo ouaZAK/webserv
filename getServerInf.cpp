@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   getServerInf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asidqi <asidqi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:46:31 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/27 00:38:16 by asidqi           ###   ########.fr       */
+/*   Updated: 2024/03/02 17:03:33 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ std::map<std::string, std::string> populateMimeMap()
 	std::ifstream sis("confPars/mime.types"); //./confPars/mime.types
 	if (!sis)
 	{
-		std::cerr << "Failed to open file." << std::endl;
+		std::cout << "Failed to open file." << std::endl;
 		return mimeMap; 
 	}
 	std::string line;
