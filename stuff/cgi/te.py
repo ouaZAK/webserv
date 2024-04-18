@@ -3,7 +3,9 @@
 import sys
 
 # Print HTTP header
-print("Content-type: text/html\n")
+# print("Content-Length: 59\r")
+# upload status code, delete, query
+print("Content-type: text/html\r\n")
 
 print("<html>")
 print("<head>")

@@ -6,19 +6,20 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/29 11:33:34 by hcharia           #+#    #+#             */
-/*   Updated: 2024/02/29 12:28:14 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/18 14:47:29 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #include "Response.hpp"
 
-void	Response::set_head(Request &r, std::string s)
+void	Response::set_head(std::string s)
 {
-	responseHead = r.get_version() + " " + s + "\r\n";
+	responseHead = "HTTP/1.1 " + s + "\r\n";
 	// std::cout << responseHead;
 	for (std::vector<std::string>::iterator it = headers.begin(); it != headers.end(); it++)
 		responseHead += *it + "\r\n";
+		
 }
 
 void	Response::set_html_err(Request &r)
@@ -34,7 +35,7 @@ Response::Response(Request req)
 	if (req.get_status() == OK)
 	{
 		responseHead = "200 OK";
-		set_head(req, responseHead);
+		set_head(responseHead);
 		// set_OKheads(req);
 		return ;
 	}
@@ -96,7 +97,8 @@ Response::Response(Request req)
 		error_body = "The server does not support the functionality required to fulfill the request. This is the server's default response for unrecognized requests.";
 	}
 	set_html_err(req);
-	set_head(req, responseHead);
+	set_head(responseHead);
+	std::cout << "looook at meeeeeeee yaloahefi" << responseHead << std::endl;
 }
 
 Response::Response(Request req, std::string url)
@@ -106,7 +108,7 @@ Response::Response(Request req, std::string url)
 	headers.push_back("Content-Type: text/html");
 	headers.push_back("Location: " + url);
 	set_html_err(req);
-	set_head(req, responseHead);
+	set_head(responseHead);
 }
 
 std::string Response::delhtml()

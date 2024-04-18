@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:28:05 by hcharia           #+#    #+#             */
-/*   Updated: 2024/03/04 10:00:58 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/18 15:06:16 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ Request::Request(std::string input) : status(200), postBody(""), query("")
 		while (std::getline(ss, line))
 			postBody += line + '\n';
 	}
-	std::cout << "we are heeeeeeeeeerereerererererer\n";
+	// std::cout << "we are heeeeeeeeeerereerererererer\n";
 	set_query();
 }
 

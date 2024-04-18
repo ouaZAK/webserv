@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 17:03:16 by asidqi            #+#    #+#             */
-/*   Updated: 2024/03/04 13:09:41 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/17 16:54:14 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
 		if (lseek(tmpBodyFD, 0, SEEK_SET) == -1)
             write(tmpBodyFD, "500", 3);
 
-
+		std::cout<< "---" << tmpBodyFD << "---" << '\n';
 		// std::cerr << "send from parent " << '\n';
 		// do a while here to read 1024 little by little if bytereaded == 1024 put '\0' if byte readed > 0 join the readed untill the bytereaded == 0 then return response which is buffer in that case
 		char buffer[1025];

@@ -81,96 +81,156 @@
 // //     _cgi_envs["PATH_INFO"] = request.uri;
 // //     _cgi_envs["SERVER_SOFTWARE"] = "nginy/1.0";"
 
-#include <iostream>
-#include <unistd.h>
-#include <sys/wait.h>
+// #include <iostream>
+// #include <unistd.h>
+// #include <sys/wait.h>
 
-int main() {
-	if (file.is_open())
-		file.close();
-	cout << "CGI IS DETECTED\n";
-	int filefd = 0;
-	int pid = fork();
-	char **env;
-	env = cgi_envatment(envv);
-	if (pid == 0)
-	{
-		if (method == "POST")
-		{
-			size_t start = request.find("\r\n\r\n");
-			if (start != std::string::npos)
-			{
-				int pipfd[2];
-				start += 4;
-				std::string body = request.substr(start);
-				if (pipe(pipfd) == -1) 
-					throw (std::runtime_error("pipe"));
+// int main() {
+// 	if (file.is_open())
+// 		file.close();
+// 	cout << "CGI IS DETECTED\n";
+// 	int filefd = 0;
+// 	int pid = fork();
+// 	char **env;
+// 	env = cgi_envatment(envv);
+// 	if (pid == 0)
+// 	{
+// 		if (method == "POST")
+// 		{
+// 			size_t start = request.find("\r\n\r\n");
+// 			if (start != std::string::npos)
+// 			{
+// 				int pipfd[2];
+// 				start += 4;
+// 				std::string body = request.substr(start);
+// 				if (pipe(pipfd) == -1) 
+// 					throw (std::runtime_error("pipe"));
 
-				ssize_t bytes_written = write(pipfd[1], body.c_str(), body.size());
-				if (bytes_written == -1 || static_cast<size_t>(bytes_written) != body.size())
-					throw(std::runtime_error("write"));
-				close(pipfd[1]);
-				if (dup2(pipfd[0], 0) == -1)
-					std::cout << "dup2 failed";
-				close(pipfd[0]);
-			}
-			else
-				throw(std::runtime_error("Unable to find the start of the body"));
+// 				ssize_t bytes_written = write(pipfd[1], body.c_str(), body.size());
+// 				if (bytes_written == -1 || static_cast<size_t>(bytes_written) != body.size())
+// 					throw(std::runtime_error("write"));
+// 				close(pipfd[1]);
+// 				if (dup2(pipfd[0], 0) == -1)
+// 					std::cout << "dup2 failed";
+// 				close(pipfd[0]);
+// 			}
+// 			else
+// 				throw(std::runtime_error("Unable to find the start of the body"));
 		
-		}
+// 		}
 
-		filefd = open("cgi.html", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-		dup2(filefd, 1);
-		close(filefd);
-		char *argv[2];
-		argv[0] = (char *)filename.c_str();
-		argv[1] = NULL;
+// 		filefd = open("cgi.html", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+// 		dup2(filefd, 1);
+// 		close(filefd);
+// 		char *argv[2];
+// 		argv[0] = (char *)filename.c_str();
+// 		argv[1] = NULL;
 		
-		if (execve(filename.c_str(), argv, env) == -1)
-			kill(getpid(), SIGKILL);
-	}
-	else if (pid < 0)
-	{
-		cout << "Error fork" << endl;
-	}
-	else
-	{
-		int monitor_process_id = fork();
-		if (monitor_process_id == 0)
-		{
-			sleep(5);
-			// cout << "---------------()---------------\n";
-			kill(pid, SIGTERM);
-			kill(getpid(), SIGKILL);
-		}
-		else if (monitor_process_id < 0)
-			cout << "Error fork" << endl;
-		else
-		{
-			int status;
-			waitpid(pid, &status, 0);
-			kill(monitor_process_id, SIGKILL);
-			if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL))
-			{
+// 		if (execve(filename.c_str(), argv, env) == -1)
+// 			kill(getpid(), SIGKILL);
+// 	}
+// 	else if (pid < 0)
+// 	{
+// 		cout << "Error fork" << endl;
+// 	}
+// 	else
+// 	{
+// 		int monitor_process_id = fork();
+// 		if (monitor_process_id == 0)
+// 		{
+// 			sleep(5);
+// 			// cout << "---------------()---------------\n";
+// 			kill(pid, SIGTERM);
+// 			kill(getpid(), SIGKILL);
+// 		}
+// 		else if (monitor_process_id < 0)
+// 			cout << "Error fork" << endl;
+// 		else
+// 		{
+// 			int status;
+// 			waitpid(pid, &status, 0);
+// 			kill(monitor_process_id, SIGKILL);
+// 			if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL))
+// 			{
 
-				// cout << "---------------501 error---------------\n";
-				this->status = 501;
-				filename = "./501.html";
-			}
-			else if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM))
-			{
-				// cout << "---------------408 error---------------\n";
-				this->status = 408;
-				filename = "./408.html";
-			}
-			else
-				filename = "./cgi.html";
-		}
-	}
-	for(int i = 0; env[i] != NULL; i++) {
-		delete[] env[i];
-	}
-	delete[] env;
+// 				// cout << "---------------501 error---------------\n";
+// 				this->status = 501;
+// 				filename = "./501.html";
+// 			}
+// 			else if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM))
+// 			{
+// 				// cout << "---------------408 error---------------\n";
+// 				this->status = 408;
+// 				filename = "./408.html";
+// 			}
+// 			else
+// 				filename = "./cgi.html";
+// 		}
+// 	}
+// 	for(int i = 0; env[i] != NULL; i++) {
+// 		delete[] env[i];
+// 	}
+// 	delete[] env;
+
+//     return 0;
+// }
+
+
+
+
+
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
+int main(int argc, char *argv[])
+{
+    struct addrinfo hints, *res, *p;
+    int status;
+    char ipstr[INET6_ADDRSTRLEN];
+
+    if (argc != 2) {
+        fprintf(stderr,"usage: showip hostname\n");
+        return 1;
+    }
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC; // AF_INET or AF_INET6 to force version
+    hints.ai_socktype = SOCK_STREAM;
+
+    if ((status = getaddrinfo(argv[1], NULL, &hints, &res)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
+        return 2;
+    }
+
+    printf("IP addresses for %s:\n\n", argv[1]);
+
+    for(p = res;p != NULL; p = p->ai_next) {
+        void *addr;
+        char *ipver;
+
+        // get the pointer to the address itself,
+        // different fields in IPv4 and IPv6:
+        if (p->ai_family == AF_INET) { // IPv4
+            struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
+            addr = &(ipv4->sin_addr);
+            ipver = "IPv4";
+        } else { // IPv6
+            struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)p->ai_addr;
+            addr = &(ipv6->sin6_addr);
+            ipver = "IPv6";
+        }
+
+        // convert the IP to a string and print it:
+        inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
+        printf("  %s: %s\n", ipver, ipstr);
+    }
+
+    freeaddrinfo(res); // free the linked list
 
     return 0;
 }

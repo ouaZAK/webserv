@@ -3,14 +3,14 @@ server
     listen        8080 7070 ;
     server_name   example.com ;
     host            localhost ;
-    error_pages  50.html 404.html 400.html 413.html 405.html 403.html ;
+    error_pages  500.html 404.html 40.html 413.html 405.html 403.html ;
     client_body_size  1000000000 ;
     default_file    index.html ;
     root    stuff ;
     autoindex   off ;
     location /dir/
     {
-        default_file  lala.html ;
+        default_file  lal.html ;
         methods GET POST DELETE ;
         cgi_extension   .py ;
         cgi_bin  /usr/local/bin/python3 ;
@@ -32,66 +32,7 @@ server
     }
     location /kkk/
     {
-        alias           cgi/ ;
-        default_file    inDex3.html ;
-        methods         GET  POST DELETE ;
-        cgi_bin         /usr/local/bin/python3 ;
-        cgi_extension   .ZOOT ;
-    }
-}
-server
-{
-    listen        7777  ;
-    server_name   bruh.com ;
-    host            10.12.2.4 ;
-    error_pages   404.html 405.html 403.html ;
-    client_body_size  1000000000 ;
-    default_file    index.html ;
-    root    oxer-html ;
-    location /dir/
-    {
-        default_file  default.html ;
-        methods GET ;
-        cgi_extension   .py ;
-        cgi_bin  /usr/local/bin/python3 ;
-    }
-    location /put_test/
-    {
-        default_file  index1.html ;
-        methods POST ;
-        cgi_extension   .bla ;
-        cgi_bin  /cgi ;
-    }
-    location /directory/
-    {
-        default_file  iNdex2.html ;
-        methods  GET  POST DELETE ;
-        cgi_bin  /usr/local/bin/python3 ;
-        cgi_extension  .BRUH ;
-        return 301 /dir/ ;
-    }
-    location /kkk/
-    {
-        alias           cgi/te.py ;
-        default_file    inDex3.html ;
-        methods         GET  POST DELETE ;
-        cgi_bin         /usr/local/bin/python3 ;
-        cgi_extension   .ZOOT ;
-    }
-}
-
-server
-{
-    listen        8888  ;
-    server_name   bruh.com ;
-    host            127.0.0.1 ;
-    error_pages   404.html 405.html 403.html ;
-    client_body_size  100 ;
-    default_file    index.html ;
-    root    stuff ;
-    location /
-    {
-        alias           cgi/te.py ;
+        alias           /dir/ ;
         default_file    inDex3.html ;
         methods         GET  POST DELETE ;
         cgi_bin         /usr/local/bin/python3 ;

@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/03/04 16:02:19 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/18 15:05:25 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void webserv::listening()
 {
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
-		if (listen(mapIt->first, 5) < 0)
+		if (listen(mapIt->first, 30) < 0) // need more gpt
 		{
 			std::cout << "failed to listen" << std::endl;
 			return;
@@ -181,27 +181,25 @@ void webserv::extractBody(int i)
 void webserv::setResStatus(int i, int status, std::string &htmlFile, std::string statusHtml)
 {
 	int x, y;
-	if (!htmlFile.empty())
+	for (std::vector<std::string>::iterator it = clientMap[i].getErrorPages().begin(); it != clientMap[i].getErrorPages().end(); ++it)
 	{
-		for (std::vector<std::string>::iterator it = clientMap[i].getErrorPages().begin(); it != clientMap[i].getErrorPages().end(); ++it)
+		// std::cout << statusHtml << " " << *it << '\n';
+		if (statusHtml == *it)
 		{
-			// std::cout << statusHtml << " " << *it << '\n';
-			if (statusHtml == *it)
+			x = access(("dirOfErrors/" + statusHtml).c_str(), F_OK);
+			y = access(("dirOfErrors/" + statusHtml).c_str(), R_OK);
+			// std::cout << "x : " << x << "y: " << y << '\n';
+			if (x != -1 && y != -1)
 			{
-				x = access(("dirOfErrors/" + statusHtml).c_str(), F_OK);
-				y = access(("dirOfErrors/" + statusHtml).c_str(), R_OK);
-				// std::cout << "x : " << x << "y: " << y << '\n';
-				if (x != -1 && y != -1)
-				{
-					htmlFile = readFile("dirOfErrors/" + statusHtml);
-					resError = false;
-					break;
-				}
+				htmlFile = readFile("dirOfErrors/" + statusHtml);
+				resError = false;
+				break;
 			}
 		}
 	}
 	clientMap[i].getReq().set_status(status);
-	clientMap[i].setRes(clientMap[i].getReq());
+	Response res(clientMap[i].getReq());
+	clientMap[i].setRes(res);
 }
 
 bool countSlash(std::string &dir)
@@ -384,10 +382,19 @@ void webserv::reading(int i)
 	// std::string
 	Request req(clientMap[i].getReqChunk());
 	// std::cout << "status : " << req.get_status() << '\n';
-	if (req.get_status() != 200)
+	int resp = req.get_status();
+	if (resp != 200)// hakim: 0_0 this need to be revised in case for other 400 errors
 	{
-		htmlFile = "dirOfErrors/400.html";
-		setResStatus(i, 400, htmlFile, "400.html");
+		if (resp == 400)
+		{
+			htmlFile = "dirOfErrors/400.html";
+			setResStatus(i, 400, htmlFile, "400.html");//resp insead of 400	
+		}
+		else if (resp == 414)
+		{
+			htmlFile = "dirOfErrors/414.html";
+			setResStatus(i, 414, htmlFile, "414.html");//resp insead of 400
+		}
 		clientMap[i].clearReqChunk();
 		FD_SET(i, &write_set);
 		FD_CLR(i, &read_set);
@@ -464,11 +471,15 @@ void webserv::redirOrAutoIndx(int i)
 	//chipi chipi chapa chapa dupi dupi dapa dapa boum boum boum boum chipi chipi chapa chapa dupi dupi dapa dapa dupi dupi boum boum boum
 	// HERE def file or global def file
 	// std::cout << urlPath << '\n';
-	htmlFile = readFile(urlPath + clientMap[i].getDefFile()); // read default file
-	std::cout << OR1 <<  urlPath + clientMap[i].getGlobDefFile() << OR2 << '\n';
+	htmlFile = readFile(urlPath + "/" + clientMap[i].getDefFile()); // read default file
+	std::cout << OR1 << htmlFile << " " << "urlpath: [" << urlPath << "] " <<  urlPath + "/" + clientMap[i].getDefFile() << OR2 << '\n';
 	
 	if (htmlFile.empty())
-		htmlFile = readFile(root + "/" + clientMap[i].getGlobDefFile()); // read global default file
+	{
+		// htmlFile = readFile(root + "/" + clientMap[i].getGlobDefFile()); // read global default file
+		htmlFile = readFile(urlPath + "/" + clientMap[i].getGlobDefFile()); // read global default file
+	std::cout << OR1 << "if empty [" << urlPath + clientMap[i].getGlobDefFile() << "]" << "--- " << root + "/" + clientMap[i].getGlobDefFile() << OR2 << '\n';	
+	}
 	if (htmlFile.empty() && AutoIndx) // if no default file and auIndx on list AIndx
 	{
 		// std::cout << OR1 << "---------------------------- wasir gad auto index bdak html -------------------" << OR2 << '\n';
@@ -511,9 +522,9 @@ std::string webserv::serveFile(int i)
 	x = access(urlPath.c_str(), F_OK); // if file path exist
 	if (x == -1)
 	{
+		std::cout << BL1 << " NO file to read\n" << OR2 << '\n';
 		htmlFile = "dirOfErrors/404.html";
 		setResStatus(i, 404, htmlFile, "404.html");
-		// std::cout << BL1 << " NO file to read\n" << OR2 << '\n';
 	}
 	if (x != -1)
 	{
@@ -531,12 +542,13 @@ std::string webserv::serveFile(int i)
 		if (resError) // if resEroor is true ofc
 			htmlFile = clientMap[i].getRes().getHtmlError();
 		// print(htmlFile, "BOOOOOM------lalala");
+		std::cout << "loooooooooook at meeeeeeeeee: " << clientMap[i].getRes().getHead() << "] : " << resError << '\n';
 		fileContent = clientMap[i].getRes().getHead() + "Content-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
 		htmlFile.clear();
 		return (fileContent);
 	}
 	// if its not error then ok 200
-	fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
+	fileContent = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(htmlFile.length())  + "\r\nContent-Type: text/html\r\n\r\n" + htmlFile;
 
 	// search for the mime type of the url ( example."mimeType" )
 	if (!is_dir)
@@ -554,7 +566,7 @@ std::string webserv::serveFile(int i)
 		{
 			if (urlPath.find("." + typeIt->first) != std::string::npos)
 			{
-				std::cout << " (((((((((((( FOUND IT ))))))))))))\n" << aCgi << '\n';
+				// std::cout << " (((((((((((( FOUND IT ))))))))))))\n" << aCgi << '\n';
 				if (!aCgi)
 					fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
 				else
@@ -564,7 +576,7 @@ std::string webserv::serveFile(int i)
 				return (fileContent);
 			}
 		}
-		fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + "application/octet-stream" + "\r\n\r\n" + htmlFile;
+		fileContent = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(htmlFile.length()) + "\r\nContent-Type: " + "application/octet-stream" + "\r\n\r\n" + htmlFile;
 	}
 	// setResStatus(i, 403, htmlFile, "403.html");
 	htmlFile.clear();
@@ -624,9 +636,9 @@ void webserv::checkLocMeth(int i)
 	}
 	else // check if stat fails
 	{
-		std::cout << "stat failed\n";
-		htmlFile = "dirOfErrors/500.html";
-		setResStatus(i, 500, htmlFile, "500.html");
+		std::cout << "stat failed\n"; //tkhrbi9a hna
+		// htmlFile = "dirOfErrors/500.html";
+		// setResStatus(i, 500, htmlFile, "500.html");
 	}
 	
 	if ((is_dir && !countSlash(dir)))
@@ -675,7 +687,7 @@ void webserv::updateMaxSocket()
 
 void webserv::writing(int i)
 {
-	// std::cout << YL1 << "WRITE block " << YL2 << std::endl;
+	std::cout << YL1 << "WRITE block " << YL2 << std::endl;
 
 	// join url with path
 	urlPath = clientMap[i].getRoot() + clientMap[i].getReq().get_path();
@@ -720,7 +732,7 @@ void webserv::writing(int i)
 		close(i);
 		clientMap.erase(clientMap.find(i)); // rmove client
 		std::cout << "error in send" << std::endl;
-		std::cout << "MAXSOCKET : >>>>>>>>>>> " << maxSocket << '\n';
+		// std::cout << "MAXSOCKET : >>>>>>>>>>> " << maxSocket << '\n';
 		return;
 	}
 
@@ -743,7 +755,7 @@ void webserv::writing(int i)
 	updateMaxSocket();
 	close(i);
 	clientMap.erase(clientMap.find(i)); // rmove client
-	std::cout << "MAXSOCKET : >>>>>>>>>>> " << maxSocket << '\n';
+	// std::cout << "MAXSOCKET : >>>>>>>>>>> " << maxSocket << '\n';
 }
 
 void	webserv::checkKeepAlive()
@@ -779,7 +791,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 		serverMap.insert(std::make_pair(it->getSock(), *it));
 
 	// set to non blocking
-	// setNoBlocking();
+	setNoBlocking();
 
 	// to close the socket after program ends
 	int nbr = 1;
