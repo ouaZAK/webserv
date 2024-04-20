@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/20 12:17:52 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/20 15:44:07 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ private:
 	size_t posRNRN;
 	bool resError;
 	std::string htmlFile;
-
+	std::string strToJoinChunk;
 	// ayman
 	bool aCgi;
 

@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/20 12:25:38 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/20 16:09:57 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,11 +182,35 @@ bool webserv::extractBody(int i)
 		std::cout << BL1 << "tmpBody\n [" << tmpBody << "]" << BL2 << '\n';
 		posRNRN = tmpBody.find("\r\n\r\n", 0) + 4;
 		body = tmpBody.substr(posRNRN, tmpBody.length() - posRNRN);
-		std::cout << YL1 << "body+++++++\n[" << body << "]" << YL2 << '\n';
-		// if (transfer == "chunked" && clientMap[i].getReq().get_headers()["Content-Type"].find("multipart/form-data") != std::string::npos)
-		// {
-			/* parse hex only with no boundry */
-		// }
+		std::cout << YL1 << "body in extract body +++++++\n[" << body << "]" << YL2 << '\n';
+		
+		std::string bodyCopy = body;
+		
+		if (transfer == "chunked" /*&& clientMap[i].getReq().get_headers()["Content-Type"].find("multipart/form-data") != std::string::npos*/)
+		{
+			while (strToJoinChunk.size() < body.size())
+			{
+				size_t RN = bodyCopy.find("\r\n", 0);
+				std::string strHexNbr = bodyCopy.substr(0, RN);
+				if (strHexNbr == "0")
+					break;
+				std::cout << BL1 << "strHexNbr\n [" << strHexNbr << "]" << BL2 << '\n';
+				
+				int hexNb;
+				std::istringstream s(strHexNbr);
+				s >> std::hex >> hexNb;
+				std::cout << "hexNb: " << hexNb << '\n';
+				std::cout << "RN: " << RN << '\n';
+				strToJoinChunk += bodyCopy.substr(RN + 2, hexNb);
+				std::cout << "[" <<strToJoinChunk << "]" << '\n';
+				
+				bodyCopy = bodyCopy.substr(RN + 2 + 2 + hexNb, bodyCopy.size() - RN + 2 + hexNb);
+				std::cout << BL1 << "bodyCopy after \n[" << bodyCopy << "]" << BL2 << '\n';
+			}
+			// pause();
+			bodyCopy = strToJoinChunk;
+			strToJoinChunk.clear();
+		}
 		if (clientMap[i].getReq().get_headers()["Content-Type"].find("multipart/form-data") == std::string::npos)
 		{
 			if (!checkSize(i))
@@ -196,12 +220,20 @@ bool webserv::extractBody(int i)
 			file << body;
 			return true;
 		}
-		std::string bodyCopy = body;
+		std::string boundry;
+		if (transfer != "chunked")
+		{
+			lenBndry = body.find("\r\n", 0); // to know length of first line
+			boundry = body.substr(0, lenBndry + 2);
+		std::cout << BL1 << "boundary [" << boundry << "]!!!!!" << BL2 << '\n';
+		}
+		else
+		{
+			lenBndry = bodyCopy.find("\r\n", 0); // to know length of first line
+			boundry = bodyCopy.substr(0, lenBndry + 2);
+			std::cout << BL1 << "boundary [" << boundry << "]!!!!!" << BL2 << '\n';
+		}
 		
-		lenBndry = body.find("\r\n", 0); // to know length of first line
-		std::string boundry = body.substr(0, lenBndry + 2);
-		
-		// std::cout << BL1 << "boundary [" << boundry << "]!!!!!" << BL2 << '\n';
 		size_t findBndry;
 		findBndry = bodyCopy.find(boundry.c_str(), lenBndry);
 		if (findBndry == std::string::npos)
@@ -255,11 +287,6 @@ bool webserv::extractBody(int i)
 				}
 			}
 		}
-		// posRNRN = body.find("\r\n\r\n", 0) + 4;
-		// cleanBody = body.substr(posRNRN, body.length() - posRNRN - (lenBndry + 6)); /* 4 for "-" and 2 for '\n' */
-		// std::cout << BL1 << "last \n[" << cleanBody << "]" << BL2 << '\n';
-																					// print(cleanBody, "cleanBody: " );
-		clientMap[i].getReq().set_body(cleanBody);
 	}
 	catch (const std::exception &e)
 	{
@@ -357,7 +384,7 @@ void webserv::parseChunk(int i)
 	
 	// std::string hexaNbr = sub
 	// std::cout << sub.size() << '\n';
-	print(str, "POST---------");
+	print(str, "body in CHUNKED ---------");
 }
 
 bool webserv::getRequest(int i)
@@ -379,8 +406,8 @@ bool webserv::getRequest(int i)
 	}
 	else if (req.get_method() == "POST")
 	{
-		if (transfer == "chunked")
-			parseChunk(i);
+		// if (transfer == "chunked")
+		// 	parseChunk(i);
 		if (!extractBody(i))
 			return false;
 		if (body.length() < bodyLength)
@@ -429,7 +456,7 @@ void webserv::reading(int i)
 	resError = true;
 	try
 	{
-		buff = new char[BUFFERSIZE];
+		buff = new char[BUFFERSIZE + 1];
 	}
 	catch (std::exception &e)
 	{
