@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/18 15:05:25 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/20 12:25:38 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,21 +149,115 @@ void webserv::acceptSockets(int i)
 	// std::cout << "socket is " << i  << " client sock is " << newClientSocket << '\n';
 }
 
-void webserv::extractBody(int i)
+int	webserv::checkSize(int i)
+{
+	if (body.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200 /* and 200 range */)
+	{
+		// Response res(clientMap[i].getReq());   // then send req to res
+		htmlFile = "dirOfErrors/413.html";
+		setResStatus(i, 413, htmlFile, "413.html");
+		clientMap[i].clearReqChunk();
+		return 0;
+	}
+	return 1;
+}
+
+void	webserv::creatFile(int i, std::string bodyCopy, Request req)
+{
+	req.set_body(bodyCopy);
+	std::string filename = req.get_file_name();
+	print(filename, "+++++++++++++++++++++++++++");
+	std::ofstream file(clientMap[i].getRoot() + "/" + filename);
+	file << cleanBody;
+}
+
+bool webserv::extractBody(int i)
 {
 	try
 	{
 		std::string tmpBody;
-		size_t posNwl;
-
+		size_t lenBndry;
+		
 		tmpBody = clientMap[i].getReqChunk();
+		std::cout << BL1 << "tmpBody\n [" << tmpBody << "]" << BL2 << '\n';
 		posRNRN = tmpBody.find("\r\n\r\n", 0) + 4;
 		body = tmpBody.substr(posRNRN, tmpBody.length() - posRNRN);
-		// std::cout << BL1 << "[" << body << "]" << BL2 << '\n';
-		posNwl = body.find("\r\n", 0); // to know length of first line
-		posRNRN = body.find("\r\n\r\n", 0) + 4;
-		cleanBody = body.substr(posRNRN, body.length() - posRNRN - (posNwl + 6)); /* 4 for "-" and 2 for '\n' */
-		// std::cout << BL1 << "[" << cleanBody << "]" << BL2 << '\n';
+		std::cout << YL1 << "body+++++++\n[" << body << "]" << YL2 << '\n';
+		// if (transfer == "chunked" && clientMap[i].getReq().get_headers()["Content-Type"].find("multipart/form-data") != std::string::npos)
+		// {
+			/* parse hex only with no boundry */
+		// }
+		if (clientMap[i].getReq().get_headers()["Content-Type"].find("multipart/form-data") == std::string::npos)
+		{
+			if (!checkSize(i))
+				return false;
+			std::string filename = "text";
+			std::ofstream file(clientMap[i].getRoot() + "/" + filename);
+			file << body;
+			return true;
+		}
+		std::string bodyCopy = body;
+		
+		lenBndry = body.find("\r\n", 0); // to know length of first line
+		std::string boundry = body.substr(0, lenBndry + 2);
+		
+		// std::cout << BL1 << "boundary [" << boundry << "]!!!!!" << BL2 << '\n';
+		size_t findBndry;
+		findBndry = bodyCopy.find(boundry.c_str(), lenBndry);
+		if (findBndry == std::string::npos)
+		{
+			posRNRN = body.find("\r\n\r\n", 0) + 4;
+			cleanBody = body.substr(posRNRN, body.length() - posRNRN - (lenBndry + 7)); /* 4 for "-" and 2 for '\n' */
+			if (!checkSize(i))
+				return false;
+			
+			Request req = clientMap[i].getReq();
+			creatFile(i, bodyCopy, req);
+			// std::cout << "created\n";
+		}
+		while (bodyCopy.find(boundry.c_str(), lenBndry) != std::string::npos)
+		{
+			// std::cout << "bodyCopy size : " << bodyCopy.size()  << '\n';
+			// if (bodyCopy.find(boundry.c_str(), lenBndry) - bodyCopy.size())
+			posRNRN = bodyCopy.find("\r\n\r\n", 0) + 4;
+			cleanBody = bodyCopy.substr(posRNRN, bodyCopy.find(boundry.c_str(), lenBndry) - posRNRN - 3);
+			// std::cout << OR1 << "cleanbodyCopy \n[" << cleanBody << "]" << OR2 << '\n';
+
+			if (!checkSize(i))
+				return false;
+		
+			clientMap[i].getReq().set_body(bodyCopy);
+			Request req = clientMap[i].getReq();
+			creatFile(i, bodyCopy, req);
+
+			// std::cout << "*******   created   *******\n";
+			bodyCopy = bodyCopy.substr(bodyCopy.find(boundry.c_str(), lenBndry), bodyCopy.size() - bodyCopy.find(boundry.c_str()));
+			// std::cout << GR1 << "next bodyCopy \n[" << bodyCopy << "]" << GR2 << '\n';
+			// std::cout << bodyCopy.find(boundry.c_str(), lenBndry) << '\n';
+		
+			if (bodyCopy.find(boundry.c_str(), lenBndry) == std::string::npos)
+			{
+				std::string::iterator it = boundry.end();
+				boundry.erase(--it);
+				boundry.erase(--it);
+				// boundry.append("--");
+				// std::cout << "stop\n" << (boundry) << '\n';
+				if (bodyCopy.find((boundry).c_str(), lenBndry + 2) != std::string::npos)
+				{
+					posRNRN = bodyCopy.find("\r\n\r\n", 0) + 4;
+					cleanBody = bodyCopy.substr(posRNRN, bodyCopy.length() - posRNRN - (lenBndry + 7));
+
+					if (!checkSize(i))
+						return false;
+					creatFile(i, bodyCopy, req);
+					// std::cout << "created endof file\n";
+					break;
+				}
+			}
+		}
+		// posRNRN = body.find("\r\n\r\n", 0) + 4;
+		// cleanBody = body.substr(posRNRN, body.length() - posRNRN - (lenBndry + 6)); /* 4 for "-" and 2 for '\n' */
+		// std::cout << BL1 << "last \n[" << cleanBody << "]" << BL2 << '\n';
 																					// print(cleanBody, "cleanBody: " );
 		clientMap[i].getReq().set_body(cleanBody);
 	}
@@ -171,13 +265,9 @@ void webserv::extractBody(int i)
 	{
 		std::cout << e.what() << "$$$$$$$$$$$$$$$$$________________$$$$$$$$$$$$$$$$$" << '\n';
 	}
+	return true;
 }
-// -----------------------------1979963113310278981522104977
-// Content-Disposition: form-data; name="fileInput"; filename=""
-// Content-Type: application/octet-stream
 
-// lala
-// -----------------------------1979963113310278981522104977--
 void webserv::setResStatus(int i, int status, std::string &htmlFile, std::string statusHtml)
 {
 	int x, y;
@@ -264,8 +354,10 @@ void webserv::parseChunk(int i)
 	pos1 += 4;
 	pos2 += 4;
 	std::string sub = str.substr(pos1, pos2 - pos1);
+	
+	// std::string hexaNbr = sub
 	// std::cout << sub.size() << '\n';
-	// print(sub, "POST---------");
+	print(str, "POST---------");
 }
 
 bool webserv::getRequest(int i)
@@ -289,24 +381,26 @@ bool webserv::getRequest(int i)
 	{
 		if (transfer == "chunked")
 			parseChunk(i);
-		extractBody(i);
+		if (!extractBody(i))
+			return false;
 		if (body.length() < bodyLength)
 			return (true);
-		if (cleanBody.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200 /* and 200 range */)
-		{
-			// Response res(clientMap[i].getReq());   // then send req to res
-			htmlFile = "dirOfErrors/413.html";
-			setResStatus(i, 413, htmlFile, "413.html");
-			clientMap[i].clearReqChunk();
-			return false;
-		}
+		// if (cleanBody.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200 /* and 200 range */)
+		// {
+		// 	// Response res(clientMap[i].getReq());   // then send req to res
+		// 	htmlFile = "dirOfErrors/413.html";
+		// 	setResStatus(i, 413, htmlFile, "413.html");
+		// 	clientMap[i].clearReqChunk();
+		// 	return false;
+		// }
 		// std::cout << "clean body size" << cleanBody.size() << " " << "[" << cleanBody << "]" << clientMap[i].getBodySize()<< "\n";
-		req.set_body(body);
-		// std::cout << "body" << body << '\n';
-		std::string filename = req.get_file_name();
-		/***** get the proper root if its default one or inside location ******/
-		std::ofstream file(clientMap[i].getRoot() + clientMap[i].getReq().get_path() + filename); /* get the root path */
-		file << cleanBody;
+		// req.set_body(body);
+		// // std::cout << "body" << body << '\n';
+		// std::string filename = req.get_file_name();
+		// /***** get the proper root if its default one or inside location ******/
+		// std::ofstream file(clientMap[i].getRoot() + "/" + filename); /* get the root path */
+		// file << cleanBody;
+		// print(cleanBody, "BOUNDARY");
 		// htmlFile = "dirOfErrors/201.html";
 		// setResStatus(i, 201, htmlFile, "201.html");
 		// std::cout<< " body lenght --------------- \n" << OR1  << cleanBody << " " << cleanBody.size() << OR2 << '\n';
@@ -591,18 +685,18 @@ bool webserv::is_alias(int i, std::string &dir)
 	{
 		for (std::vector<std::string>::iterator itV = locIt->locDirName.begin(); itV != locIt->locDirName.end(); itV++)
 		{
-			// std::cout << "location: [" << *itV << "]  |  dir: [" << dir << "]\n";
+			std::cout << "location: [" << *itV << "]  |  dir: [" << dir << "]\n";
 			if (dir == *itV && !locIt->alias.empty())
 			{
-				dir = ("/" + locIt->alias);
-				// std::cout << "it is\n dir now is " << dir << '\n';
+				dir = (/*"/" + */locIt->alias);
+				std::cout << "it is\n dir now is " << dir << '\n';
 				struct stat fileStat;
 				if (stat((clientMap[i].getRoot() + dir).c_str(), &fileStat) == 0)
 				{
 					if (S_ISDIR(fileStat.st_mode))
 					{
 						is_dir = true;
-						dir += "/";
+						// dir += "/";
 						return (true);
 					}
 					else
@@ -643,12 +737,12 @@ void webserv::checkLocMeth(int i)
 	
 	if ((is_dir && !countSlash(dir)))
 		urlPath = clientMap[i].getRoot() + dir; // taygadha ha ki me
-	// std::cout << "is dir : -> " << is_dir << dir << '\n';
+	std::cout << "urlpath dir : -> " << urlPath << '\n';
 	// std::cout << "\n ---------- \n there is 2 slash dir is [" << dir << "] " << urlPath << '\n';
 	size_t pos1 = urlPath.find("/", 0);
 	size_t pos2 = urlPath.find("/", pos1 + 1);
 	dir = urlPath.substr(pos1, (pos2 + 1) - pos1);
-	// std::cout << "last dir {" << dir << "} " << (pos2) << " " << (pos1) << '\n';
+	std::cout << "last dir {" << dir << "} " << (pos2) << " " << (pos1) << '\n';
 	check_dir(i, dir);
 
 }

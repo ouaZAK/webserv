@@ -1,9 +1,0 @@
-lalala 
-yohoho
-sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss@
-
------------------------------112655615915819619771324168402
-Content-Disposition: form-data; name="fileUpload[]"; filename="txtSmall.txt"
-Content-Type: text/plain
-
-lala

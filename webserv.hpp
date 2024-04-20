@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/03/04 13:05:14 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/20 12:17:52 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ public:
 	void acceptSockets(int i);
 	void reading(int i);
 	void writing(int i);
-	void extractBody(int i);
+	bool extractBody(int i);
 	bool getRequest(int i);
 	std::string serveFile(int i);
 	void checkLocMeth(int i);
@@ -100,6 +100,8 @@ public:
 	void parseChunk(int i);
 	bool is_alias(int i, std::string &dir);
 	void checkKeepAlive();
+	void	creatFile(int i, std::string bodyCopy, Request req);
+	int	checkSize(int i);
 	// void	updateMaxSocket(int i);
 
 	// virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;

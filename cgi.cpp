@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 17:03:16 by asidqi            #+#    #+#             */
-/*   Updated: 2024/04/17 16:54:14 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/18 16:29:23 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <fstream>
 #include "Request.hpp"
 #include <sys/wait.h>
-
+#include <signal.h>
 #include "webserv.hpp"
 
 // cgiElem["REMOTE_ADDR"] = "";
@@ -91,10 +91,33 @@ std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
 	else
 	{
 		// Wait for the child process to finish
-		// int status;
-		if (waitpid(-1, NULL, 0) == -1)
-            write(tmpBodyFD, "500", 3);
+		time_t start_time = time(NULL);
+		int exitStatus;
+		while (waitpid(pid, &exitStatus, WNOHANG) == 0)
+		{
+			if (time(NULL) - start_time > 3)
+			{
+            	write(tmpBodyFD, "500", 3);
+				close(tmpBodyFD);
+				close(fileFD);
+				dup2(stdOutput, 1);
+				dup2(stdInput, 0);
+				kill(pid, SIGTERM);
+				return ("500");
+			}
+		}
+		int status = WEXITSTATUS(exitStatus);
+		if(status != 0)
+		{
+			write(tmpBodyFD, "500", 3);
+			close(tmpBodyFD);
+			close(fileFD);
+			dup2(stdOutput, 1);
+			dup2(stdInput, 0);
+			return ("500");
+		}
 
+		
 		// int exstatus = WIFEXITED(status);
 		if (lseek(tmpBodyFD, 0, SEEK_SET) == -1)
             write(tmpBodyFD, "500", 3);
@@ -103,7 +126,6 @@ std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
 		// std::cerr << "send from parent " << '\n';
 		// do a while here to read 1024 little by little if bytereaded == 1024 put '\0' if byte readed > 0 join the readed untill the bytereaded == 0 then return response which is buffer in that case
 		char buffer[1025];
-
 		int byteReaded;
 		while (true)
 		{
@@ -113,6 +135,7 @@ std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
 			{
 				write(tmpBodyFD, "500", 3);
 				dup2(stdOutput, 1);
+				dup2(stdInput, 0);
 				return ("");
 			}
 			else if (byteReaded == 0)
@@ -123,6 +146,8 @@ std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
 	}
 	dup2(stdOutput, 1);
 	dup2(stdInput, 0);
+	// close(tmpBodyFD);
+	// close(fileFD);
 	// std::cerr << "response from child: \n[" << joined << "] size: " << joined.size() << '\n';
 	if (!pid)
 		exit(0);
