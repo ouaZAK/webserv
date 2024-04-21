@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/29 11:33:34 by hcharia           #+#    #+#             */
-/*   Updated: 2024/04/18 14:47:29 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/21 09:14:37 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ Response::Response(Request req)
 	else if (req.get_status() == CREATED)
 	{
 		responseHead = "201 Created";
-		error_body = "";
+		error_body = "file created with success";
 	}
 	else if (req.get_status() == NOT_FOUND)
 	{
@@ -98,7 +98,7 @@ Response::Response(Request req)
 	}
 	set_html_err(req);
 	set_head(responseHead);
-	std::cout << "looook at meeeeeeee yaloahefi" << responseHead << std::endl;
+	std::cout << "looook at meeeeeeee responsehead: " << responseHead << std::endl;
 }
 
 Response::Response(Request req, std::string url)

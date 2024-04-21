@@ -6,14 +6,14 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/20 16:09:57 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/21 11:48:27 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
 #include <cstdio>
 
-// TO DO :
+// TO DO : lal.html in alias hang the server?????  ayman work
 
 #define BL1 "\x1b[34m"
 #define BL2 "\x1b[0m"
@@ -166,8 +166,13 @@ void	webserv::creatFile(int i, std::string bodyCopy, Request req)
 {
 	req.set_body(bodyCopy);
 	std::string filename = req.get_file_name();
-	print(filename, "+++++++++++++++++++++++++++");
-	std::ofstream file(clientMap[i].getRoot() + "/" + filename);
+	std::string rmUpload = clientMap[i].getReq().get_path();
+	// print((rmUpload), "rmupl\n\n");
+	size_t begin = rmUpload.find("/upload", 0);
+	if (begin != std::string::npos)
+		rmUpload = rmUpload.substr(0,  begin);
+	print((clientMap[i].getRoot() + rmUpload + "/" + filename), "+++++++++++++++++++++++++++\n+++++++++++++++++++++++++++\n\n");
+	std::ofstream file(clientMap[i].getRoot() + rmUpload + "/" + filename);
 	file << cleanBody;
 }
 
@@ -342,7 +347,7 @@ bool webserv::check_dir(int i, std::string dir)
 	{
 		for (std::vector<std::string>::iterator itV = locIt->locDirName.begin(); itV != locIt->locDirName.end(); itV++)
 		{
-			// std::cout << "location: [" << *itV << "]  |  dir: [" << dir << "]\n";
+			std::cout << "location: [" << *itV << "]  |  dir: [" << dir << "]\n";
 			if (dir == *itV)
 			{
 				if (locIt->redirect_status == 301)
@@ -355,7 +360,7 @@ bool webserv::check_dir(int i, std::string dir)
 				}
 				for (std::vector<std::string>::iterator itV2 = locIt->methods.begin(); itV2 != locIt->methods.end(); itV2++)
 				{
-					// std::cout << clientMap[i].getReq().get_method() << " <- req  |  itV -> " << *itV2 << "\n";
+					std::cout << clientMap[i].getReq().get_method() << " <- req  |  itV -> " << *itV2 << "\n";
 					if (clientMap[i].getReq().get_method() == *itV2)
 					{
 						clientMap[i].setDefFile(locIt->default_file); /* get the default file in every directory */
@@ -363,7 +368,7 @@ bool webserv::check_dir(int i, std::string dir)
 						return (false);
 					}
 				}
-				// std::cout << "not allowed return from directory\n\n";
+				std::cout << "not allowed return from directory\n\n";
 				htmlFile = "dirOfErrors/405.html";
 				setResStatus(i, 405, htmlFile, "405.html");
 				return (true);
@@ -393,7 +398,6 @@ bool webserv::getRequest(int i)
 	std::string dir = clientMap[i].getReq().get_path();
 	if (check_dir(i, dir))
 	{
-		// std::cout << YL1 << "its a directory so check method" << YL2 << '\n';
 		clientMap[i].setReqFull(clientMap[i].getReqChunk());
 		clientMap[i].clearReqChunk();
 		return false;
@@ -626,12 +630,24 @@ std::string webserv::serveFile(int i)
 	// if its dir show default file or show index
 	if (resError)
 	{
-		if (!aCgi && clientMap[i].getReq().get_method() == "POST") // thank you hakime
+		if (is_dir && clientMap[i].getReq().get_method() == "DELETE")
+		{
+			std::cout << YL1 << "its  DELETE dir" << YL2 << '\n';
+			htmlFile = "dirOfErrors/403.html";
+			setResStatus(i, 403, htmlFile, "403.html");
+		}
+		else if (!aCgi && clientMap[i].getReq().get_method() == "POST") // thank you hakime
 		{
 			std::cout << "upload html response ***********************************\n";
-			htmlFile = readFile(clientMap[i].getRoot() + "/upload/Done.html");
+			// htmlFile = readFile(clientMap[i].getRoot() + "/upload/Done.html");
+			// htmlFile = "derOfErrors/201.html";
+			// setResStatus(i, 201, htmlFile, "201.html");
+			clientMap[i].getReq().set_status(201);
+			Response res(clientMap[i].getReq());
+			clientMap[i].setRes(res);
+			resError = false;
 		}
-		else if (is_dir && clientMap[i].getReq().get_status() != 301)
+		else if (is_dir && clientMap[i].getReq().get_method() != "DELETE" && clientMap[i].getReq().get_status() != 301)
 			redirOrAutoIndx(i);
 		else if (clientMap[i].getReq().get_status() != 301) // if not redirection get default file
 		{
@@ -640,30 +656,39 @@ std::string webserv::serveFile(int i)
 				htmlFile = readFile(clientMap[i].getRoot() + "/index.html");
 		}
 	}
-	x = access(urlPath.c_str(), F_OK); // if file path exist
-	if (x == -1)
+	if (urlPath.find("upload", 0) == std::string::npos)
 	{
-		std::cout << BL1 << " NO file to read\n" << OR2 << '\n';
-		htmlFile = "dirOfErrors/404.html";
-		setResStatus(i, 404, htmlFile, "404.html");
-	}
-	if (x != -1)
-	{
-		x = access(urlPath.c_str(), R_OK); // if file has permission to read
-		if (x == -1 || (is_dir && access(urlPath.c_str(), X_OK) == -1))
+		x = access(urlPath.c_str(), F_OK); // if file path exist
+		if (x == -1)
 		{
-			// std::cout << BL1 << " NO PERMISSION TO READ\n" << OR2 << '\n';
-			htmlFile = "dirOfErrors/403.html";
-			setResStatus(i, 403, htmlFile, "403.html");
+			std::cout << BL1 << " NO file to read\n" << OR2 << '\n';
+			htmlFile = "dirOfErrors/404.html";
+			setResStatus(i, 404, htmlFile, "404.html");
+		}
+		if (x != -1)
+		{
+			x = access(urlPath.c_str(), R_OK); // if file has permission to read
+			if (x == -1 || (is_dir && access(urlPath.c_str(), X_OK) == -1))
+			{
+				// std::cout << BL1 << " NO PERMISSION TO READ\n" << OR2 << '\n';
+				htmlFile = "dirOfErrors/403.html";
+				setResStatus(i, 403, htmlFile, "403.html");
+			}
 		}
 	}
 	if (clientMap[i].getReq().get_status() != 200) // if status != 200 means there is an error or redirection HAKIME RESPONSE CREATED HERE
 	{
-		// std::cout << BL1 << resError << " STATUS ERROR : " << clientMap[i].getReq().get_status() << OR2 << '\n';
+		std::cout << BL1 << resError << " STATUS ERROR : " << clientMap[i].getReq().get_status() << OR2 << '\n';
 		if (resError) // if resEroor is true ofc
 			htmlFile = clientMap[i].getRes().getHtmlError();
-		// print(htmlFile, "BOOOOOM------lalala");
-		std::cout << "loooooooooook at meeeeeeeeee: " << clientMap[i].getRes().getHead() << "] : " << resError << '\n';
+		else if (clientMap[i].getReq().get_status() == 201)
+		{
+			htmlFile = readFile(clientMap[i].getRoot() + "/Done.html");
+			if (htmlFile.empty())
+				htmlFile = clientMap[i].getRes().getHtmlError();
+		}
+		print(htmlFile, "BOOOOOM------lalala");
+		// std::cout << "loooooooooook at meeeeeeeeee: " << clientMap[i].getRes().getHead() << "] : " << resError << '\n';
 		fileContent = clientMap[i].getRes().getHead() + "Content-Length: " + std::to_string(htmlFile.length()) + "\r\n\r\n" + htmlFile;
 		htmlFile.clear();
 		return (fileContent);
@@ -679,7 +704,11 @@ std::string webserv::serveFile(int i)
 		if (clientMap[i].getReq().get_method() == "DELETE")
 		{
 			// std::cout << "DEEELEEEETEEEE\n";
-			htmlFile = clientMap[i].getRes().delhtml();
+			clientMap[i].getReq().set_status(204);
+			Response res(clientMap[i].getReq());
+			clientMap[i].setRes(res);
+			htmlFile = clientMap[i].getRes().getHtmlError();
+			// htmlFile = clientMap[i].getRes().delhtml();
 			if (std::remove((clientMap[i].getRoot() + clientMap[i].getReq().get_path()).c_str()) != 0)
 				std::cout << "not deleted\n";
 		}
@@ -689,7 +718,12 @@ std::string webserv::serveFile(int i)
 			{
 				// std::cout << " (((((((((((( FOUND IT ))))))))))))\n" << aCgi << '\n';
 				if (!aCgi)
-					fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
+				{
+					if (clientMap[i].getReq().get_method() == "DELETE")
+						fileContent = "HTTP/1.1 204 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
+					else
+						fileContent = "HTTP/1.1 200 OK\nContent-Length: " + std::to_string(htmlFile.length()) + "\nContent-Type: " + typeIt->second + "\r\n\r\n" + htmlFile;
+				}
 				else
 					fileContent = "HTTP/1.1 200 OK\n" + htmlFile;
 				htmlFile.clear();
