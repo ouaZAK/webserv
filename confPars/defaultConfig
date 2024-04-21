@@ -3,7 +3,7 @@ server
     listen        8080 7070 ;
     server_name   example.com ;
     host            localhost ;
-    error_pages  500.html 404.html 40.html 413.html 405.html 403.html ;
+    error_pages  500.html 404.html 400.html 413.html 405.html 403.html ;
     client_body_size  1000000000 ;
     default_file    index.html ;
     root    stuff ;
@@ -31,7 +31,7 @@ server
     }
     location /kkk/
     {
-        alias           /lal.html/ ;
+        alias           /dir/ ;
         default_file    inDex3.html ;
         methods         GET  POST DELETE ;
         cgi_bin         /usr/local/bin/python3 ;

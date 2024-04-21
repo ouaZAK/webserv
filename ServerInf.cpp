@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/02/29 12:28:22 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/21 19:11:07 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,6 +213,8 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
                 throw std::runtime_error ("Missing alias in alias directive");
             else if (!tmp.alias.empty())
                 throw std::runtime_error ("alias directive repeated!");
+            else if (el[0] != '/' || el.back() != '/')
+                throw "Fix ya d*mn alias directive.";
             std::string nextToken;
             ss >> nextToken; // Attempt to read the next token, which should be the semicolon
             if (nextToken != ";")

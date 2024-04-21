@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/20 19:07:07 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/21 18:22:53 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,7 @@
 #include "cgi.hpp"
 
 // #define PORT 8080
-#define MAX_CLIENTS 10
-#define BUFFERSIZE 4096
+#define BUFFERSIZE 300000
 
 class webserv
 {
