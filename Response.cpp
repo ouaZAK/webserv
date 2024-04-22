@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/29 11:33:34 by hcharia           #+#    #+#             */
-/*   Updated: 2024/04/21 09:14:37 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/22 12:58:59 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 void	Response::set_head(std::string s)
 {
 	responseHead = "HTTP/1.1 " + s + "\r\n";
-	// std::cout << responseHead;
 	for (std::vector<std::string>::iterator it = headers.begin(); it != headers.end(); it++)
 		responseHead += *it + "\r\n";
 		
@@ -36,7 +35,6 @@ Response::Response(Request req)
 	{
 		responseHead = "200 OK";
 		set_head(responseHead);
-		// set_OKheads(req);
 		return ;
 	}
 	else if (req.get_status() == BAD_REQUEST)
@@ -98,7 +96,6 @@ Response::Response(Request req)
 	}
 	set_html_err(req);
 	set_head(responseHead);
-	std::cout << "looook at meeeeeeee responsehead: " << responseHead << std::endl;
 }
 
 Response::Response(Request req, std::string url)

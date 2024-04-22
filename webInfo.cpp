@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/27 08:58:26 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/18 09:40:42 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/22 10:06:32 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,16 +57,13 @@ webInfo::webInfo(int port, ServerInf &inf, int oneS, int oneSrv) : port(port), o
 	errorPages = inf.getErrorPages();
 	bodySize = inf.getBodySize();
 	globDefFile = inf.getGlobDefFile();
-	// if (bodySize == -1)
-	// 	bodySize = 1000000;
-	// std::cout << "\nserv name is : " << serverName << '\n' << "port nbr : " << port << '\n';
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == -1)
 	{
 		std::cout << "failed to create server socket" << std::endl;
 		return ;
 	}
-	memset(&serverAddress, 0, sizeof serverAddress);
+	memset(&serverAddress, 0, sizeof(serverAddress));
 	serverAddress.sin_family = AF_INET;
 	serverAddress.sin_port = htons(port);
 	unsigned int host = convert(inf.getHost());

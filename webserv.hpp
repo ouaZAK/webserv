@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/21 18:22:53 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/22 12:42:42 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,8 +101,4 @@ public:
 	void checkKeepAlive();
 	void	creatFile(int i, std::string bodyCopy, Request req);
 	int	checkSize(int i);
-	// void	updateMaxSocket(int i);
-
-	// virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;
-	// void	testConnection(int);
 };

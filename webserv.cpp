@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/21 19:12:00 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/22 13:09:30 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,9 @@
 // to do : buff check 4096 in stack not new
 std::string readFile(const std::string &str)
 {
-	std::ifstream file(str, std::ios::binary);
+	std::ifstream file(str, std::ios::binary); // the file will be read in binary mode, treating the data as raw bytes rather than text.
 	if (!file.is_open())
-	{
-		// std::cout << "failed to open file" << std::endl;
 		return ("");
-	}
 	std::stringstream inStr;
 	inStr << file.rdbuf();
 	return (inStr.str());
@@ -31,10 +28,9 @@ void webserv::setNoBlocking()
 {
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
-		int flags = fcntl(mapIt->first, F_GETFL, 0);
-		if (fcntl(mapIt->first, F_SETFL, flags | O_NONBLOCK) == -1)
+		if (fcntl(mapIt->first, F_SETFL, O_NONBLOCK) == -1) // F_SETFL tells the fcntl to set the file status flag with O_NONBLOCK to the fd
 			if (serverMap.size() == 1)
-				throw "Error:\nFatal error";
+				throw "Error:fcntl failed\nFatal error";
 	}
 }
 
@@ -46,13 +42,13 @@ void webserv::creatAddresses()
 
 void webserv::bindSockets()
 {
-	std::vector<struct sockaddr_in>::iterator adrIt = serverAddress.begin();
+	std::vector<struct sockaddr_in>::iterator adrIt = serverAddress.begin(); // serverMap and serverAddress are the same size
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
-		if (bind(mapIt->first, reinterpret_cast<struct sockaddr *>(&(*adrIt)), sizeof(*adrIt)) < 0)
+		if (bind(mapIt->first, reinterpret_cast<struct sockaddr *>(&(*adrIt)), sizeof(*adrIt)) < 0) // once a socket is bound to a port it's ready to start listening for incoming connections
 		{
 			if (serverMap.size() == 1)
-				throw "Error:\nFatal error";
+				throw "Error: bind failed\nFatal error";
 			return;
 		}
 		++adrIt;
@@ -63,11 +59,8 @@ void webserv::listening()
 {
 	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
 	{
-		if (listen(mapIt->first, 30) < 0) // need more gpt
-		{
-			std::cout << "failed to listen" << std::endl;
-			return;
-		}
+		if (listen(mapIt->first, 30) < 0)
+			throw "Error: listen failed\nFatal error";
 	}
 }
 
@@ -98,8 +91,7 @@ void webserv::acceptSockets(int i)
 	}
 
 	// nonblocking fds
-	int flags = fcntl(newClientSocket, F_GETFL, 0);
-	if (fcntl(newClientSocket, F_SETFL, flags | O_NONBLOCK) < 0)
+	if (fcntl(newClientSocket, F_SETFL, O_NONBLOCK) < 0)
 	{
 		std::cout << "failed to set non blocking\n";
 		close(newClientSocket);
@@ -414,7 +406,7 @@ void webserv::reading(int i)
 
 	Request req(clientMap[i].getReqChunk());
 	int resp = req.get_status();
-	if (resp != 200)// hakim: 0_0 this need to be revised in case for other 400 errors
+	if (resp != 200)
 	{
 		if (resp == 400)
 		{
@@ -527,22 +519,19 @@ std::string webserv::serveFile(int i)
 				htmlFile = readFile(clientMap[i].getRoot() + "/index.html");
 		}
 	}
-	if (urlPath.find("upload", 0) == std::string::npos)
+	x = access(urlPath.c_str(), F_OK); // if file path exist
+	if (x == -1)
 	{
-		x = access(urlPath.c_str(), F_OK); // if file path exist
-		if (x == -1)
+		htmlFile = "dirOfErrors/404.html";
+		setResStatus(i, 404, htmlFile, "404.html");
+	}
+	if (x != -1)
+	{
+		x = access(urlPath.c_str(), R_OK); // if file has permission to read
+		if (x == -1 || (is_dir && access(urlPath.c_str(), X_OK) == -1))
 		{
-			htmlFile = "dirOfErrors/404.html";
-			setResStatus(i, 404, htmlFile, "404.html");
-		}
-		if (x != -1)
-		{
-			x = access(urlPath.c_str(), R_OK); // if file has permission to read
-			if (x == -1 || (is_dir && access(urlPath.c_str(), X_OK) == -1))
-			{
-				htmlFile = "dirOfErrors/403.html";
-				setResStatus(i, 403, htmlFile, "403.html");
-			}
+			htmlFile = "dirOfErrors/403.html";
+			setResStatus(i, 403, htmlFile, "403.html");
 		}
 	}
 	if (clientMap[i].getReq().get_status() != 200) // if status != 200 means there is an error or redirection HAKIME RESPONSE CREATED HERE
@@ -766,7 +755,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 		// std::cout << "after select " << check << '\n';
 		for (int i = 3; i <= maxSocket; ++i)
 		{
-			std::cout << i << '\n';
+			// std::cout << i << '\n';
 			if (serverMap.count(i)) // if its server socket we have to accept it not read it
 			{
 				if (FD_ISSET(i, &copyRead))
@@ -803,8 +792,6 @@ std::map<int, webInfo> webserv::getmap() const
 {
 	return (serverMap);
 }
-// create vector of characters from buffer
-//  creat a file and put the buffer in it append the rest
-//  or put the buffer in  a stream then put it back in a std string
+
 
 // elmakawi was here

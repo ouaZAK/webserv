@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:27:27 by hcharia           #+#    #+#             */
-/*   Updated: 2024/03/04 10:01:14 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/22 12:42:01 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,6 @@ private:
 	std::string							postBody;
 	std::string							query;
 	std::string							orig_query;
-	// std::vector<std::string>			query_vec;
-	// char**								qvv;
 public:
 	Request();
 	Request(std::string input);
@@ -61,10 +59,8 @@ public:
 	std::string							get_file_name();
 	void								set_status(int);
 	void								set_query();
-	// char**								get_qvv() const;
 	std::string							get_query();
 	std::string							get_oquery();
-	// void								vecToChars();
 	std::string getCleanBody();
 	~Request();
 };

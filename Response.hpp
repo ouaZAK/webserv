@@ -27,7 +27,6 @@ public:
 	Response(Request);
 	Response(Request req, std::string url);
 	void	set_html_err(Request &r);
-	// void	set_OKheads(Request r);
 	void	set_head(std::string);
 	std::string	getHead() const;
 	std::string	getHtmlError() const;
