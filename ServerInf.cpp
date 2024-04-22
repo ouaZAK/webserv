@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/04/21 19:11:07 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/22 19:32:29 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -411,15 +411,15 @@ std::string ServerInf::filltmp(std::ifstream &inFile)
 
 void	ServerInf::print() const
 {
-	std::cout << "Server Name: " << server_name << std::endl;
-	std::cout << "Ports: ";
+	// std::cout << "Server Name: " << server_name << std::endl;
+	// std::cout << "Ports: ";
 	for (std::vector<int>::const_iterator it = ports.begin(); it != ports.end(); ++it)
 	{
 		std::cout << *it << " ";
 	}
 	std::cout << std::endl;
 
-	std::cout << "Error Pages: ";
+	// std::cout << "Error Pages: ";
 	for (std::vector<std::string>::const_iterator it = error_pages.begin(); it != error_pages.end(); ++it)
 	{
 		std::cout << *it << " ";

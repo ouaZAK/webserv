@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/22 13:09:30 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/22 19:33:17 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 // to do : buff check 4096 in stack not new
 std::string readFile(const std::string &str)
 {
+	// InputFile open a file to read from
 	std::ifstream file(str, std::ios::binary); // the file will be read in binary mode, treating the data as raw bytes rather than text.
 	if (!file.is_open())
 		return ("");
@@ -47,6 +48,7 @@ void webserv::bindSockets()
 	{
 		if (bind(mapIt->first, reinterpret_cast<struct sockaddr *>(&(*adrIt)), sizeof(*adrIt)) < 0) // once a socket is bound to a port it's ready to start listening for incoming connections
 		{
+			std::cout << "failed to bind" << '\n';
 			if (serverMap.size() == 1)
 				throw "Error: bind failed\nFatal error";
 			return;
@@ -114,11 +116,11 @@ void webserv::acceptSockets(int i)
 	clientMap[newClientSocket].setHost(serverMap[i].getHost());
 	clientMap[newClientSocket].setGlobDefFile(serverMap[i].getGlobDefFile());
 	clientMap[newClientSocket].setServerNam(serverMap[i].getServnam());
-	clientMap[newClientSocket].last = time(NULL);
 }
 
 int	webserv::checkSize(int i)
 {
+	// if extracted body is > than body length in reauest header
 	if (body.size() > clientMap[i].getBodySize() && clientMap[i].getReq().get_status() == 200)
 	{
 		htmlFile = "dirOfErrors/413.html";
@@ -134,10 +136,11 @@ void	webserv::creatFile(int i, std::string bodyCopy, Request req)
 	req.set_body(bodyCopy);
 	std::string filename = req.get_file_name();
 	std::string rmUpload = clientMap[i].getReq().get_path();
+	//if its upload remove it from url so we creat path of the file
 	size_t begin = rmUpload.find("/upload", 0);
 	if (begin != std::string::npos)
 		rmUpload = rmUpload.substr(0,  begin);
-	std::ofstream file(clientMap[i].getRoot() + rmUpload + "/" + filename);
+	std::ofstream file(clientMap[i].getRoot() + rmUpload + "/" + filename); // OutputFile open file for writing
 	file << cleanBody;
 }
 
@@ -164,8 +167,8 @@ bool webserv::extractBody(int i)
 					break;
 				
 				int hexNb;
-				std::istringstream s(strHexNbr);
-				s >> std::hex >> hexNb;
+				std::istringstream s(strHexNbr); // its like ifstream intead of file it read from std::string
+				s >> std::hex >> hexNb; // its in iomanip so the stream can read the hex notation as it is
 				strToJoinChunk += bodyCopy.substr(RN + 2, hexNb);
 				
 				bodyCopy = bodyCopy.substr(RN + 2 + 2 + hexNb, bodyCopy.size() - RN + 2 + hexNb);
@@ -291,18 +294,19 @@ bool webserv::check_dir(int i, std::string dir)
 		{
 			if (dir == *itV)
 			{
-				if (locIt->redirect_status == 301)
+				if (locIt->redirect_status == 301) // if its redirection
 				{
 					clientMap[i].getReq().set_status(301);
 					Response res(clientMap[i].getReq(), locIt->redirect_to_dir);
 					clientMap[i].setRes(res);
 					return (true);
 				}
+				/* get the default file in directory locDirName */
 				for (std::vector<std::string>::iterator itV2 = locIt->methods.begin(); itV2 != locIt->methods.end(); itV2++)
 				{
 					if (clientMap[i].getReq().get_method() == *itV2)
 					{
-						clientMap[i].setDefFile(locIt->default_file); /* get the default file in every directory */
+						clientMap[i].setDefFile(locIt->default_file);
 						return (false);
 					}
 				}
@@ -378,7 +382,7 @@ void webserv::reading(int i)
 		updateMaxSocket();
 		return;
 	}
-	int bytesReaded = recv(i, buff, BUFFERSIZE, 0);
+	int bytesReaded = recv(i, buff, BUFFERSIZE, 0);// 0 for normal operation or set other flags to block system until reading all the data from sock for ex
 	if (bytesReaded == -1)
 	{
 		std::cout << "error in reacv" << std::endl;
@@ -396,7 +400,6 @@ void webserv::reading(int i)
 		delete (buff);
 		return;
 	}
-	clientMap[i].last = time(NULL);
 	buff[bytesReaded] = '\0';
 	std::string bufTmp;
 	std::string tmp = clientMap[i].getReqChunk();
@@ -668,42 +671,16 @@ void webserv::writing(int i)
 	}
 
 	clientMap[i].oldByteSent += written;
-	// last time client did something
-	clientMap[i].last = time(NULL);
-	
 	if ((size_t)clientMap[i].oldByteSent < fileContent.length())
 		return;
 
 	FD_CLR(i, &write_set);
 	shutdown(i, SHUT_WR);
-
-	// check for keep alive
-	// if (clientMap[i].getReq().get_headers()["Connection"] == "keep-alive")
-	// 	return;
-
+	
 	// update maxClient
 	updateMaxSocket();
 	close(i);
 	clientMap.erase(clientMap.find(i)); // rmove client
-}
-
-void	webserv::checkKeepAlive()
-{
-	time_t now = time(NULL);
-	// loop on clientMap and check if the connection is keep alive and erase that client map
-	for (std::map<int, clientInfo>::iterator it = clientMap.begin(); it != clientMap.end();)
-	{
-		if (now - it->second.last > 1)
-		{
-			FD_CLR(it->first, &read_set);
-			FD_CLR(it->first, &write_set);
-			updateMaxSocket();
-			close(it->first);
-			clientMap.erase(it++);
-		}
-		else
-			it++;
-	}
 }
 
 webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::string> mime)
@@ -742,8 +719,6 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 	setFds();
 	while (1)
 	{
-		// checkKeepAlive();
-		
 		copyRead = read_set;
 		copyWrite = write_set;
 
@@ -752,10 +727,8 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 		if (check < 0)
 			throw("internal error 500 or something");
 			
-		// std::cout << "after select " << check << '\n';
 		for (int i = 3; i <= maxSocket; ++i)
 		{
-			// std::cout << i << '\n';
 			if (serverMap.count(i)) // if its server socket we have to accept it not read it
 			{
 				if (FD_ISSET(i, &copyRead))
@@ -767,10 +740,8 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 			{
 				if (aCgi && resError)
 				{
-					std::cout << "CGI\n";
 					slowCgi cgiScr(clientMap[i]);
 					htmlFile = cgiScr.slowCgiExecute(clientMap[i]);
-					std::cout << "here : [" << htmlFile << "]\n";
 					if (htmlFile == "500")
 					{
 						htmlFile = "dirOfErrors/500.html";
@@ -792,6 +763,3 @@ std::map<int, webInfo> webserv::getmap() const
 {
 	return (serverMap);
 }
-
-
-// elmakawi was here

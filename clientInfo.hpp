@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: Invalid date        by                   #+#    #+#             */
-/*   Updated: 2024/03/01 10:24:42 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/22 16:35:57 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@ class clientInfo
 		bool autoIndx;
 	public:
 		long long oldByteSent;
-		time_t	last;
 		clientInfo();
 		~clientInfo();
 		
