@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 19:43:49 by asidqi            #+#    #+#             */
-/*   Updated: 2024/04/22 19:32:29 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/23 11:39:49 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -273,6 +273,8 @@ std::string ServerInf::filloc(std::ifstream &inFile, Location &tmp)
 		}
 		else if ("}" == el)
 			break;
+		else
+			throw (std::runtime_error ("Unknown directive"));
 	}
 	return (line);
 }

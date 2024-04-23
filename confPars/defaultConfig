@@ -10,19 +10,13 @@ server
     autoindex   on ;
     location /dir/
     {
-        gyj
-        cgi_extension   .p ;
-
         default_file  la.html ;
         methods  GET POST DELETE ;
-        cgi_bin  /usr/local/bin/python3 ;
     }
     location /test/
     {
         default_file  iNdex2.html ;
         methods  GET  POST DELETE ;
-        cgi_bin  /usr/local/bin/python3 ;
-        cgi_extension  .BRUH ;
         return 301 /dir/ ;
     }
     location /kkk/
@@ -30,8 +24,6 @@ server
         alias           /dir/ ;
         default_file    inDex3.html ;
         methods         GET  POST DELETE ;
-        cgi_bin         /usr/local/bin/python3 ;
-        cgi_extension   .ZOOT ;
     }
 }
 server

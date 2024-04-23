@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/23 11:16:46 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/23 11:49:06 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -702,10 +702,7 @@ webserv::webserv(std::vector<webInfo> &serverList, std::map<std::string, std::st
 		setsockopt(mapIt->first, SOL_SOCKET, SO_REUSEADDR, &nbr, sizeof(nbr));
 
 	// print
-	std::cout << "serversokt are : ";
-	for (mapIt = serverMap.begin(); mapIt != serverMap.end(); ++mapIt)
-		std::cout << "[" << mapIt->first << "] ";
-	std::cout << std::endl;
+	std::cout << "server is listening... \n";
 
 	// create server address
 	creatAddresses();
