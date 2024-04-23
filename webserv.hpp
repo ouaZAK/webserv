@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 11:15:31 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/22 16:39:40 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/23 11:13:21 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,6 @@ public:
 	void updateMaxSocket();
 	void parseChunk(int i);
 	bool is_alias(int i, std::string &dir);
-	void	creatFile(int i, std::string bodyCopy, Request req);
+	void	creatFile(int i, std::string bodyCopy, Request &req);
 	int	checkSize(int i);
 };

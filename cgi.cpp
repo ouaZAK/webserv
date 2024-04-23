@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/22 17:03:16 by asidqi            #+#    #+#             */
-/*   Updated: 2024/04/18 16:29:23 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/23 11:26:57 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,6 @@ std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
 			if (lseek(fileFD, 0, SEEK_SET) == -1)
 				write(tmpBodyFD, "500", 3);
 		}
-		// std::cout << "[" << "./" + clientMap.getRoot() + clientMap.getReq().get_path() << "]" << std::endl;
 		dup2(fileFD, 0);
 		dup2(tmpBodyFD, 1);
 		if (execve(("./" + clientMap.getRoot() + clientMap.getReq().get_path()).c_str(), NULL, envp) == -1)
@@ -117,13 +116,10 @@ std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
 			return ("500");
 		}
 
-		
 		// int exstatus = WIFEXITED(status);
 		if (lseek(tmpBodyFD, 0, SEEK_SET) == -1)
             write(tmpBodyFD, "500", 3);
 
-		std::cout<< "---" << tmpBodyFD << "---" << '\n';
-		// std::cerr << "send from parent " << '\n';
 		// do a while here to read 1024 little by little if bytereaded == 1024 put '\0' if byte readed > 0 join the readed untill the bytereaded == 0 then return response which is buffer in that case
 		char buffer[1025];
 		int byteReaded;
@@ -146,9 +142,8 @@ std::string slowCgi::slowCgiExecute(clientInfo &clientMap)
 	}
 	dup2(stdOutput, 1);
 	dup2(stdInput, 0);
-	// close(tmpBodyFD);
-	// close(fileFD);
-	// std::cerr << "response from child: \n[" << joined << "] size: " << joined.size() << '\n';
+	close(tmpBodyFD);
+	close(fileFD);
 	if (!pid)
 		exit(0);
 	return (joined);

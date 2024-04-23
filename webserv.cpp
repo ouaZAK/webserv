@@ -6,7 +6,7 @@
 /*   By: zouaraqa <zouaraqa@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/20 19:04:51 by zouaraqa          #+#    #+#             */
-/*   Updated: 2024/04/22 19:33:17 by zouaraqa         ###   ########.fr       */
+/*   Updated: 2024/04/23 11:16:46 by zouaraqa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ int	webserv::checkSize(int i)
 	return 1;
 }
 
-void	webserv::creatFile(int i, std::string bodyCopy, Request req)
+void	webserv::creatFile(int i, std::string bodyCopy, Request &req)
 {
 	req.set_body(bodyCopy);
 	std::string filename = req.get_file_name();
@@ -142,6 +142,7 @@ void	webserv::creatFile(int i, std::string bodyCopy, Request req)
 		rmUpload = rmUpload.substr(0,  begin);
 	std::ofstream file(clientMap[i].getRoot() + rmUpload + "/" + filename); // OutputFile open file for writing
 	file << cleanBody;
+	req.set_body(cleanBody);
 }
 
 bool webserv::extractBody(int i)
@@ -205,9 +206,8 @@ bool webserv::extractBody(int i)
 			cleanBody = body.substr(posRNRN, body.length() - posRNRN - (lenBndry + 7)); /* 4 for "-" and 2 for '\n' */
 			if (!checkSize(i))
 				return false;
-			
-			Request req = clientMap[i].getReq();
-			creatFile(i, bodyCopy, req);
+
+			creatFile(i, bodyCopy, clientMap[i].getReq());
 		}
 		while (bodyCopy.find(boundry.c_str(), lenBndry) != std::string::npos)
 		{
@@ -218,8 +218,7 @@ bool webserv::extractBody(int i)
 				return false;
 		
 			clientMap[i].getReq().set_body(bodyCopy);
-			Request req = clientMap[i].getReq();
-			creatFile(i, bodyCopy, req);
+			creatFile(i, bodyCopy, clientMap[i].getReq());
 
 			bodyCopy = bodyCopy.substr(bodyCopy.find(boundry.c_str(), lenBndry), bodyCopy.size() - bodyCopy.find(boundry.c_str()));
 		
@@ -235,7 +234,7 @@ bool webserv::extractBody(int i)
 
 					if (!checkSize(i))
 						return false;
-					creatFile(i, bodyCopy, req);
+					creatFile(i, bodyCopy, clientMap[i].getReq());
 					break;
 				}
 			}
@@ -661,7 +660,6 @@ void webserv::writing(int i)
 	long long written = send(i, fileContent.c_str() + clientMap[i].oldByteSent, fileContent.length() - clientMap[i].oldByteSent, 0);
 	if (written < 0)
 	{
-		std::cout << "error in send" << std::endl;
 		FD_CLR(i, &write_set);
 		shutdown(i, SHUT_WR);
 		updateMaxSocket();
